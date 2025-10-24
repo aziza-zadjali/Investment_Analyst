@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 from io import BytesIO
 from openpyxl import Workbook
-from openpyxl.styles import Font, PatternFill, Alignment, Border, Side, numbers
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 from utils.llm_handler import LLMHandler
 
@@ -77,6 +77,11 @@ with col_r2:
         m2_product1_price = st.number_input("Product 1 - Price", min_value=0.0, value=120.0, key="m2p1p")
         m2_product2_units = st.number_input("Product 2 - Units/month", min_value=0, value=150, key="m2p2u")
         m2_product2_price = st.number_input("Product 2 - Price", min_value=0.0, value=550.0, key="m2p2p")
+    else:
+        m2_product1_units = 0
+        m2_product1_price = 0
+        m2_product2_units = 0
+        m2_product2_price = 0
 
 st.markdown("**Growth Rates**")
 col_g1, col_g2, col_g3 = st.columns(3)
@@ -147,9 +152,12 @@ if st.button("🚀 Generate Professional Financial Model", type="primary", use_c
                     units_p2_m2 = m2_product2_units * ((1 + units_growth) ** i) * ((1 - churn_rate) ** i)
                     price_p2_m2 = m2_product2_price * ((1 + price_growth/12) ** i)
                     m2p2_revenue.append(units_p2_m2 * price_p2_m2)
+                else:
+                    m2p1_revenue.append(0)
+                    m2p2_revenue.append(0)
             
-            total_revenue = [m1p1 + m1p2 + (m2p1_revenue[i] if enable_market2 else 0) + (m2p2_revenue[i] if enable_market2 else 0) 
-                           for i, (m1p1, m1p2) in enumerate(zip(m1p1_revenue, m1p2_revenue))]
+            total_revenue = [m1p1 + m1p2 + m2p1 + m2p2 
+                           for m1p1, m1p2, m2p1, m2p2 in zip(m1p1_revenue, m1p2_revenue, m2p1_revenue, m2p2_revenue)]
             
             # Cost projections
             progress.progress(40)
@@ -167,21 +175,21 @@ if st.button("🚀 Generate Professional Financial Model", type="primary", use_c
             cash_balance = [initial_cash]
             for ebit in ebitda:
                 cash_balance.append(cash_balance[-1] + ebit)
-            cash_balance = cash_balance[1:]
+            cash_balance = cash_balance[1:]  # Remove initial opening balance
             
-            # Store data
+            # Store data with all keys
             st.session_state.model_data = {
                 'company_name': company_name,
                 'currency': currency,
                 'fiscal_year_end': fiscal_year_end,
                 'forecast_start': forecast_start,
-                'months': months,
+                'months': months.tolist(),
                 'num_months': num_months,
                 'initial_cash': initial_cash,
                 'm1p1_revenue': m1p1_revenue,
                 'm1p2_revenue': m1p2_revenue,
-                'm2p1_revenue': m2p1_revenue if enable_market2 else [],
-                'm2p2_revenue': m2p2_revenue if enable_market2 else [],
+                'm2p1_revenue': m2p1_revenue,
+                'm2p2_revenue': m2p2_revenue,
                 'total_revenue': total_revenue,
                 'cogs': cogs,
                 'gross_profit': gross_profit,
@@ -193,7 +201,7 @@ if st.button("🚀 Generate Professional Financial Model", type="primary", use_c
             }
             st.session_state.model_complete = True
             progress.progress(100)
-            st.success("✅ Model generated!")
+            st.success("✅ Model generated successfully!")
 
 # Display & Download
 if st.session_state.model_complete:
@@ -210,7 +218,8 @@ if st.session_state.model_complete:
     with col_m3:
         st.metric("Total EBITDA", f"{data['currency']} {sum(data['ebitda']):,.0f}")
     with col_m4:
-        st.metric("Final Cash", f"{data['currency']} {data['cash_balance'][-1]:,.0f}")
+        final_cash = data['cash_balance'][-1] if data['cash_balance'] else 0
+        st.metric("Final Cash", f"{data['currency']} {final_cash:,.0f}")
     
     # Charts
     st.line_chart(pd.DataFrame({
@@ -222,7 +231,7 @@ if st.session_state.model_complete:
     
     # Generate Excel
     if 'excel_file' not in st.session_state:
-        with st.spinner("📄 Generating Excel with formulas..."):
+        with st.spinner("📄 Generating Excel with 6 sheets..."):
             wb = Workbook()
             
             # SHEET 1: Cover
@@ -253,13 +262,12 @@ if st.session_state.model_complete:
             
             # Headers
             for col_idx, month in enumerate(data['months'], start=5):
-                ws_ass.cell(1, col_idx, month)
-                ws_ass.cell(1, col_idx).number_format = 'YYYY-MM-DD'
+                cell = ws_ass.cell(1, col_idx, month)
+                cell.number_format = 'YYYY-MM-DD'
             
             # Revenue section
             row = 5
-            ws_ass.cell(row, 1, "REVENUE")
-            ws_ass.cell(row, 1).font = Font(bold=True)
+            ws_ass.cell(row, 1, "REVENUE").font = Font(bold=True)
             
             row += 1
             ws_ass.cell(row, 1, "Market 1 - Product 1")
@@ -287,32 +295,24 @@ if st.session_state.model_complete:
             ws_pl['A1'] = f"{data['company_name']} - PROFIT & LOSS - monthly"
             ws_pl['A1'].font = Font(size=14, bold=True)
             
-            # Headers
             for col_idx, month in enumerate(data['months'], start=5):
                 ws_pl.cell(1, col_idx, month)
-                ws_pl.cell(1, col_idx).number_format = 'YYYY-MM-DD'
             
-            # Revenue
             row = 5
-            ws_pl.cell(row, 1, "REVENUE")
-            ws_pl.cell(row, 1).font = Font(bold=True)
+            ws_pl.cell(row, 1, "REVENUE").font = Font(bold=True)
             for col_idx, val in enumerate(data['total_revenue'], start=5):
                 ws_pl.cell(row, col_idx, round(val, 2))
             
-            # COGS
             row += 2
             ws_pl.cell(row, 1, "Cost of Goods Sold")
             for col_idx, val in enumerate(data['cogs'], start=5):
                 ws_pl.cell(row, col_idx, round(val, 2))
             
-            # Gross Profit
             row += 1
-            ws_pl.cell(row, 1, "Gross Profit")
-            ws_pl.cell(row, 1).font = Font(bold=True)
+            ws_pl.cell(row, 1, "Gross Profit").font = Font(bold=True)
             for col_idx, val in enumerate(data['gross_profit'], start=5):
                 ws_pl.cell(row, col_idx, round(val, 2))
             
-            # Operating Expenses
             row += 2
             ws_pl.cell(row, 1, "Personnel Costs")
             for col_idx, val in enumerate(data['personnel_costs'], start=5):
@@ -323,10 +323,8 @@ if st.session_state.model_complete:
             for col_idx, val in enumerate(data['opex'], start=5):
                 ws_pl.cell(row, col_idx, round(val, 2))
             
-            # EBITDA
             row += 2
-            ws_pl.cell(row, 1, "EBITDA")
-            ws_pl.cell(row, 1).font = Font(bold=True)
+            ws_pl.cell(row, 1, "EBITDA").font = Font(bold=True)
             for col_idx, val in enumerate(data['ebitda'], start=5):
                 ws_pl.cell(row, col_idx, round(val, 2))
             
@@ -348,22 +346,20 @@ if st.session_state.model_complete:
                 ws_cf.cell(row, col_idx, round(val, 2))
             
             row += 2
-            ws_cf.cell(row, 1, "Closing Cash")
-            ws_cf.cell(row, 1).font = Font(bold=True)
+            ws_cf.cell(row, 1, "Closing Cash").font = Font(bold=True)
             for col_idx, val in enumerate(data['cash_balance'], start=5):
                 ws_cf.cell(row, col_idx, round(val, 2))
             
-            # SHEET 5: P&L - annual (aggregated)
+            # SHEET 5 & 6: Annual summaries
             ws_pl_annual = wb.create_sheet("P&L - annual")
             ws_pl_annual['A1'] = f"{data['company_name']} - PROFIT & LOSS - annual"
             ws_pl_annual['A1'].font = Font(size=14, bold=True)
             
-            # SHEET 6: CF - annual (aggregated)
             ws_cf_annual = wb.create_sheet("CF - annual")
             ws_cf_annual['A1'] = f"{data['company_name']} - CASH FLOW - annual"
             ws_cf_annual['A1'].font = Font(size=14, bold=True)
             
-            # Save to buffer
+            # Save
             buffer = BytesIO()
             wb.save(buffer)
             buffer.seek(0)
