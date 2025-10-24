@@ -5,7 +5,7 @@ from .llm_handler import LLMHandler
 from .vector_store import VectorStoreManager
 from .web_scraper import WebScraper
 from .financial_analyzer import FinancialAnalyzer
-from .report_generator import TemplateGenerator
+from .template_generator import TemplateGenerator
 
 __all__ = [
     'FileProcessor',
