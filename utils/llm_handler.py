@@ -1,11 +1,18 @@
 """
 LLM interaction handler using LangChain and OpenAI
 """
-from langchain_core.prompts import PromptTemplate
+
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
-from langchain.schema import HumanMessage, SystemMessage
+try:
+    from langchain.prompts import PromptTemplate
+    from langchain.chains import LLMChain
+    from langchain.schema import HumanMessage, SystemMessage
+except ImportError:
+    # For newer LangChain versions
+    from langchain_core.prompts import PromptTemplate
+    from langchain.chains import LLMChain
+    from langchain_core.messages import HumanMessage, SystemMessage
+
 from typing import Dict, List, Any, Optional
 import streamlit as st
 from config.prompts import PROMPTS
@@ -137,28 +144,6 @@ class LLMHandler:
             
         except Exception as e:
             return f"Memo generation failed: {str(e)}"
-    
-    def qualify_deal(self, startup_info: Dict, criteria: Dict) -> str:
-        """Qualify deal against investment criteria"""
-        if not self.llm:
-            return "LLM not initialized."
-        
-        try:
-            prompt = PROMPTS.get('deal_qualification', '').format(
-                startup_info=str(startup_info),
-                **criteria
-            )
-            
-            messages = [
-                SystemMessage(content="You are a deal sourcing analyst."),
-                HumanMessage(content=prompt)
-            ]
-            
-            response = self.llm.invoke(messages)
-            return response.content
-            
-        except Exception as e:
-            return f"Deal qualification failed: {str(e)}"
     
     def embed_text(self, text: str) -> List[float]:
         """Generate embeddings for text"""
