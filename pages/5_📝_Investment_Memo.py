@@ -5,7 +5,7 @@ Investment Memo Generation Page
 import streamlit as st
 import sys
 sys.path.append('.')
-from utils.report_generator import ReportGenerator
+from utils.template_generator import TemplateGenerator
 from utils.llm_handler import LLMHandler
 
 st.set_page_config(page_title="Investment Memo", page_icon="📝", layout="wide")
@@ -13,7 +13,7 @@ st.set_page_config(page_title="Investment Memo", page_icon="📝", layout="wide"
 st.title("📝 Investment Memo Generator")
 st.markdown("Create professional investment memos automatically")
 
-generator = ReportGenerator()
+generator = TemplateGenerator()
 llm = LLMHandler()
 
 # Memo inputs
