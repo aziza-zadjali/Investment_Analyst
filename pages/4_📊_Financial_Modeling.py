@@ -270,39 +270,39 @@ if st.session_state.model_complete:
             ws['A3'] = "OVERVIEW"
             ws['A3'].font = Font(bold=True)
             ws['B5'] = "Company Name"
-            ws['D5'] = data['company_name']
+            ws['D5'] = data.get('company_name', 'N/A')
             ws['B6'] = "Financial year end"
-            ws['D6'] = data['fiscal_year_end']
+            ws['D6'] = data.get('fiscal_year_end', '')
             ws['B7'] = "First forecast month"
-            ws['D7'] = data['forecast_start']
+            ws['D7'] = data.get('forecast_start', '')
             ws['B8'] = "Last forecast month"
-            ws['D8'] = data['forecast_end']
+            ws['D8'] = data.get('forecast_end', '')
             ws['B9'] = "Frequency"
             ws['D9'] = "Monthly"
             ws['B10'] = "Currency"
-            ws['D10'] = data['currency']
+            ws['D10'] = data.get('currency', 'NZ$')
             ws['B11'] = "Number of months"
-            ws['D11'] = data['num_months']
+            ws['D11'] = data.get('num_months', 36)
             
             # SHEET 2: Assumptions - monthly
             ws_ass = wb.create_sheet("Assumptions - monthly")
-            ws_ass['A1'] = data['company_name']
+            ws_ass['A1'] = data.get('company_name', 'Company')
             ws_ass['A2'] = "ASSUMPTIONS"
             ws_ass['A2'].font = Font(bold=True)
             
             # Headers
-            for col_idx, month in enumerate(data['months'], start=5):
+            for col_idx, month in enumerate(data.get('months', []), start=5):
                 ws_ass.cell(1, col_idx, month)
             
             # Input Parameters
             row = 4
             ws_ass.cell(row, 1, "INPUT PARAMETERS").font = Font(bold=True)
             row += 1
-            ws_ass.cell(row, 1, f"Units Growth: {data['units_growth']:.1f}% monthly")
+            ws_ass.cell(row, 1, f"Units Growth: {data.get('units_growth', 0):.1f}% monthly")
             row += 1
-            ws_ass.cell(row, 1, f"Price Growth: {data['price_growth']:.1f}% annually")
+            ws_ass.cell(row, 1, f"Price Growth: {data.get('price_growth', 0):.1f}% annually")
             row += 1
-            ws_ass.cell(row, 1, f"Churn Rate: {data['churn_rate']:.1f}% monthly")
+            ws_ass.cell(row, 1, f"Churn Rate: {data.get('churn_rate', 0):.1f}% monthly")
             
             # Revenue section
             row += 2
@@ -310,92 +310,92 @@ if st.session_state.model_complete:
             
             row += 1
             ws_ass.cell(row, 1, "Market 1 - Product 1")
-            for col_idx, val in enumerate(data['m1p1_revenue'], start=5):
+            for col_idx, val in enumerate(data.get('m1p1_revenue', []), start=5):
                 ws_ass.cell(row, col_idx, round(val, 2))
             
             row += 1
             ws_ass.cell(row, 1, "Market 1 - Product 2")
-            for col_idx, val in enumerate(data['m1p2_revenue'], start=5):
+            for col_idx, val in enumerate(data.get('m1p2_revenue', []), start=5):
                 ws_ass.cell(row, col_idx, round(val, 2))
             
-            if data['enable_market2']:
+            if data.get('enable_market2', False):
                 row += 1
                 ws_ass.cell(row, 1, "Market 2 - Product 1")
-                for col_idx, val in enumerate(data['m2p1_revenue'], start=5):
+                for col_idx, val in enumerate(data.get('m2p1_revenue', []), start=5):
                     ws_ass.cell(row, col_idx, round(val, 2))
                 
                 row += 1
                 ws_ass.cell(row, 1, "Market 2 - Product 2")
-                for col_idx, val in enumerate(data['m2p2_revenue'], start=5):
+                for col_idx, val in enumerate(data.get('m2p2_revenue', []), start=5):
                     ws_ass.cell(row, col_idx, round(val, 2))
             
             # SHEET 3: P&L - monthly
             ws_pl = wb.create_sheet("P&L - monthly")
-            ws_pl['A1'] = f"{data['company_name']} - PROFIT & LOSS - monthly"
+            ws_pl['A1'] = f"{data.get('company_name', 'Company')} - PROFIT & LOSS - monthly"
             ws_pl['A1'].font = Font(size=14, bold=True)
             
-            for col_idx, month in enumerate(data['months'], start=5):
+            for col_idx, month in enumerate(data.get('months', []), start=5):
                 ws_pl.cell(1, col_idx, month)
             
             row = 5
             ws_pl.cell(row, 1, "REVENUE").font = Font(bold=True)
-            for col_idx, val in enumerate(data['total_revenue'], start=5):
+            for col_idx, val in enumerate(data.get('total_revenue', []), start=5):
                 ws_pl.cell(row, col_idx, round(val, 2))
             
             row += 2
             ws_pl.cell(row, 1, "Cost of Goods Sold")
-            for col_idx, val in enumerate(data['cogs'], start=5):
+            for col_idx, val in enumerate(data.get('cogs', []), start=5):
                 ws_pl.cell(row, col_idx, round(val, 2))
             
             row += 1
             ws_pl.cell(row, 1, "Gross Profit").font = Font(bold=True)
-            for col_idx, val in enumerate(data['gross_profit'], start=5):
+            for col_idx, val in enumerate(data.get('gross_profit', []), start=5):
                 ws_pl.cell(row, col_idx, round(val, 2))
             
             row += 2
-            ws_pl.cell(row, 1, f"Personnel Costs ({data['num_staff']} staff @ {data['currency']}{data['avg_salary']:,.0f}/month)")
-            for col_idx, val in enumerate(data['personnel_costs'], start=5):
+            ws_pl.cell(row, 1, f"Personnel Costs ({data.get('num_staff', 0)} staff @ {data.get('currency', 'NZ$')}{data.get('avg_salary', 0):,.0f}/month)")
+            for col_idx, val in enumerate(data.get('personnel_costs', []), start=5):
                 ws_pl.cell(row, col_idx, round(val, 2))
             
             row += 1
-            ws_pl.cell(row, 1, f"Other OpEx (S&M: {data['currency']}{data['sales_marketing']:,.0f}, G&A: {data['currency']}{data['gna']:,.0f})")
-            for col_idx, val in enumerate(data['opex'], start=5):
+            ws_pl.cell(row, 1, f"Other OpEx (S&M: {data.get('currency', 'NZ$')}{data.get('sales_marketing', 0):,.0f}, G&A: {data.get('currency', 'NZ$')}{data.get('gna', 0):,.0f})")
+            for col_idx, val in enumerate(data.get('opex', []), start=5):
                 ws_pl.cell(row, col_idx, round(val, 2))
             
             row += 2
             ws_pl.cell(row, 1, "EBITDA").font = Font(bold=True)
-            for col_idx, val in enumerate(data['ebitda'], start=5):
+            for col_idx, val in enumerate(data.get('ebitda', []), start=5):
                 ws_pl.cell(row, col_idx, round(val, 2))
             
             # SHEET 4: CF - monthly
             ws_cf = wb.create_sheet("CF - monthly")
-            ws_cf['A1'] = f"{data['company_name']} - CASH FLOW - monthly"
+            ws_cf['A1'] = f"{data.get('company_name', 'Company')} - CASH FLOW - monthly"
             ws_cf['A1'].font = Font(size=14, bold=True)
             
-            for col_idx, month in enumerate(data['months'], start=5):
+            for col_idx, month in enumerate(data.get('months', []), start=5):
                 ws_cf.cell(1, col_idx, month)
             
             row = 5
             ws_cf.cell(row, 1, "Opening Cash")
-            ws_cf.cell(row, 5, data['initial_cash'])
+            ws_cf.cell(row, 5, data.get('initial_cash', 0))
             
             row += 1
             ws_cf.cell(row, 1, "EBITDA")
-            for col_idx, val in enumerate(data['ebitda'], start=5):
+            for col_idx, val in enumerate(data.get('ebitda', []), start=5):
                 ws_cf.cell(row, col_idx, round(val, 2))
             
             row += 2
             ws_cf.cell(row, 1, "Closing Cash").font = Font(bold=True)
-            for col_idx, val in enumerate(data['cash_balance'], start=5):
+            for col_idx, val in enumerate(data.get('cash_balance', []), start=5):
                 ws_cf.cell(row, col_idx, round(val, 2))
             
             # SHEET 5 & 6: Annual summaries
             ws_pl_annual = wb.create_sheet("P&L - annual")
-            ws_pl_annual['A1'] = f"{data['company_name']} - PROFIT & LOSS - annual"
+            ws_pl_annual['A1'] = f"{data.get('company_name', 'Company')} - PROFIT & LOSS - annual"
             ws_pl_annual['A1'].font = Font(size=14, bold=True)
             
             ws_cf_annual = wb.create_sheet("CF - annual")
-            ws_cf_annual['A1'] = f"{data['company_name']} - CASH FLOW - annual"
+            ws_cf_annual['A1'] = f"{data.get('company_name', 'Company')} - CASH FLOW - annual"
             ws_cf_annual['A1'].font = Font(size=14, bold=True)
             
             # Save
@@ -404,6 +404,7 @@ if st.session_state.model_complete:
             buffer.seek(0)
             
             st.session_state.excel_file = buffer.getvalue()
+
     
     # Download
     st.markdown("### 📥 Download Your Custom Model")
