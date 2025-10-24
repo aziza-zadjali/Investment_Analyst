@@ -13,5 +13,5 @@ __all__ = [
     'VectorStoreManager',
     'WebScraper',
     'FinancialAnalyzer',
-    'ReportGenerator'
+    'TemplateGenerator'
 ]
