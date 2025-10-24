@@ -1,28 +1,29 @@
 """
-LLM interaction handler using LangChain and OpenAI
+LLM interaction handler using LangChain and OpenAI — optimized for 2025 releases
+and backward-compatible with legacy LangChain versions.
 """
 
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
-# ✅ Cross-version compatible imports
+# --- Fail-safe imports to cover all LangChain versions ---
 try:
-    # Legacy (≤ 0.0.331)
+    # Legacy (≤ 0.0.331)
     from langchain.prompts import PromptTemplate
     from langchain.chains import LLMChain
     from langchain.schema import HumanMessage, SystemMessage
 except ImportError:
     try:
-        # Mid-era (~ 0.1 – 0.2)
+        # Mid-range (0.1.x to <0.3)
         from langchain_core.prompts import PromptTemplate
         from langchain_core.messages import HumanMessage, SystemMessage
         from langchain.chains import LLMChain
     except ImportError:
-        # Latest (≥ 0.3.x)
+        # ≥ 0.3.0 — LLMChain deprecated/moved
         from langchain_core.prompts import PromptTemplate
         from langchain_core.messages import HumanMessage, SystemMessage
 
-        # Define fallback dummy LLMChain to avoid ImportError
         class LLMChain:
+            """Fallback placeholder class if missing in this LangChain version"""
             def __init__(self, *args, **kwargs):
                 pass
             def run(self, *args, **kwargs):
@@ -35,55 +36,52 @@ from config.constants import DEFAULT_MODEL, TEMPERATURE, MAX_TOKENS
 
 
 class LLMHandler:
-    """Handle all LLM interactions"""
+    """Central manager for all LLM-based interactions across the platform"""
 
     def __init__(self):
-        """Initialize LLM with API key from Streamlit secrets"""
+        """Initialize model and embedding engine"""
         try:
             self.api_key = st.secrets["OPENAI_API_KEY"]
             self.llm = ChatOpenAI(
                 model=DEFAULT_MODEL,
                 temperature=TEMPERATURE,
                 max_tokens=MAX_TOKENS,
-                api_key=self.api_key,
+                api_key=self.api_key
             )
             self.embeddings = OpenAIEmbeddings(api_key=self.api_key)
         except Exception as e:
-            st.error(f"Failed to initialize LLM: {str(e)}")
+            st.error(f"LLM initialization failed: {str(e)}")
             self.llm = None
             self.embeddings = None
 
+    # -------------------------------------------------------------------------
+    # Document & Investment Analysis Functions
+    # -------------------------------------------------------------------------
     def analyze_document(self, document_content: str, document_type: str = "general") -> str:
-        """Analyze document using an analyst prompt"""
+        """Run a due diligence or content analysis on uploaded documents"""
         if not self.llm:
-            return "LLM not initialized. Please check API key."
-
+            return "LLM not initialized."
         try:
-            prompt = PROMPTS.get("document_analysis", "").format(
-                document_content=document_content
-            )
+            prompt = PROMPTS.get("document_analysis", "").format(document_content=document_content)
             messages = [
                 SystemMessage(content="You are an expert investment analyst."),
-                HumanMessage(content=prompt),
+                HumanMessage(content=prompt)
             ]
             response = self.llm.invoke(messages)
             return response.content
         except Exception as e:
-            st.error(f"Error analyzing document: {str(e)}")
-            return f"Analysis failed: {str(e)}"
+            st.error(f"Document analysis failed: {str(e)}")
+            return f"Error: {str(e)}"
 
     def generate_financial_summary(self, financial_data: Dict[str, Any]) -> str:
-        """Generate financial summary from structured data"""
+        """Summarize financial datasets"""
         if not self.llm:
             return "LLM not initialized."
-
         try:
-            prompt = PROMPTS.get("financial_summary", "").format(
-                financial_data=str(financial_data)
-            )
+            prompt = PROMPTS.get("financial_summary", "").format(financial_data=str(financial_data))
             messages = [
                 SystemMessage(content="You are a financial analyst expert."),
-                HumanMessage(content=prompt),
+                HumanMessage(content=prompt)
             ]
             response = self.llm.invoke(messages)
             return response.content
@@ -91,19 +89,16 @@ class LLMHandler:
             return f"Summary generation failed: {str(e)}"
 
     def conduct_market_analysis(self, company_name: str, industry: str, market_data: str) -> str:
-        """Conduct a detailed market analysis"""
+        """Analyze market, competitors, and positioning"""
         if not self.llm:
             return "LLM not initialized."
-
         try:
             prompt = PROMPTS.get("market_analysis", "").format(
-                company_name=company_name,
-                industry=industry,
-                market_data=market_data,
+                company_name=company_name, industry=industry, market_data=market_data
             )
             messages = [
-                SystemMessage(content="You are a market research analyst."),
-                HumanMessage(content=prompt),
+                SystemMessage(content="You are an expert market research consultant."),
+                HumanMessage(content=prompt)
             ]
             response = self.llm.invoke(messages)
             return response.content
@@ -111,10 +106,9 @@ class LLMHandler:
             return f"Market analysis failed: {str(e)}"
 
     def assess_risks(self, company_info: Dict, financial_data: Dict, market_context: str) -> str:
-        """Perform comprehensive risk assessment"""
+        """Perform investment risk assessment"""
         if not self.llm:
             return "LLM not initialized."
-
         try:
             prompt = PROMPTS.get("risk_assessment", "").format(
                 company_info=str(company_info),
@@ -122,8 +116,8 @@ class LLMHandler:
                 market_context=market_context,
             )
             messages = [
-                SystemMessage(content="You are a risk assessment expert."),
-                HumanMessage(content=prompt),
+                SystemMessage(content="You are an investment risk analyst."),
+                HumanMessage(content=prompt)
             ]
             response = self.llm.invoke(messages)
             return response.content
@@ -131,25 +125,49 @@ class LLMHandler:
             return f"Risk assessment failed: {str(e)}"
 
     def generate_investment_memo(self, **kwargs) -> str:
-        """Generate a structured investment memo"""
+        """AI-generated investment memo (professional format)"""
         if not self.llm:
             return "LLM not initialized."
-
         try:
             prompt = PROMPTS.get("investment_memo", "").format(**kwargs)
             messages = [
-                SystemMessage(
-                    content="You are a senior investment professional drafting a detailed investment memo."
-                ),
-                HumanMessage(content=prompt),
+                SystemMessage(content="You are a senior venture partner writing an investment memo."),
+                HumanMessage(content=prompt)
             ]
             response = self.llm.invoke(messages)
             return response.content
         except Exception as e:
             return f"Memo generation failed: {str(e)}"
 
+    # -------------------------------------------------------------------------
+    # Deal Sourcing & Qualification
+    # -------------------------------------------------------------------------
+    def qualify_deal(self, deal: Dict[str, Any], criteria: Dict[str, Any]) -> str:
+        """Evaluate if a startup meets investment filters (sector, stage, geography)"""
+        if not self.llm:
+            return "LLM not initialized."
+        try:
+            prompt = PROMPTS.get("deal_qualification", "").format(
+                startup_info=str(deal),
+                target_stage=criteria.get("stage_range", "Seed to Series B"),
+                target_sector=", ".join(criteria.get("sectors", ["Various"])),
+                revenue_range=criteria.get("revenue_range", "$500K–$10M"),
+                geography=", ".join(criteria.get("geography", ["Global"]))
+            )
+            messages = [
+                SystemMessage(content="You are a venture analyst assessing startup fit."),
+                HumanMessage(content=prompt)
+            ]
+            response = self.llm.invoke(messages)
+            return response.content
+        except Exception as e:
+            return f"Deal qualification failed: {str(e)}"
+
+    # -------------------------------------------------------------------------
+    # Supporting Utility Functions
+    # -------------------------------------------------------------------------
     def embed_text(self, text: str) -> List[float]:
-        """Generate vector embeddings for text"""
+        """Generate text embeddings for semantic search or clustering"""
         if not self.embeddings:
             return []
         try:
@@ -159,16 +177,13 @@ class LLMHandler:
             return []
 
     def chat_completion(self, messages: List[Dict[str, str]]) -> str:
-        """Perform a general chat completion task"""
+        """Run general-purpose chat completions"""
         if not self.llm:
             return "LLM not initialized."
-
         try:
             formatted_messages = [
-                SystemMessage(content=m["content"])
-                if m["role"] == "system"
-                else HumanMessage(content=m["content"])
-                for m in messages
+                SystemMessage(content=m["content"]) if m["role"] == "system"
+                else HumanMessage(content=m["content"]) for m in messages
             ]
             response = self.llm.invoke(formatted_messages)
             return response.content
