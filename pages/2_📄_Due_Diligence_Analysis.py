@@ -1,7 +1,7 @@
 """
 Automated Due Diligence Document Analysis
 AI-powered document ingestion, analysis, red flag detection,
-and professional DOCX report generation.
+and professional report generation in DOCX and Markdown formats.
 """
 
 import streamlit as st
@@ -41,7 +41,7 @@ st.title("📄 Automated Due Diligence Document Analysis")
 st.markdown("""
 Upload or fetch company filings, legal documents, and financial statements.  
 AI analyzes content, extracts data, flags risks, and generates  
-**professional DOCX Due Diligence Reports** matching institutional templates.
+**professional reports in DOCX and Markdown formats**.
 """)
 st.divider()
 
@@ -145,21 +145,40 @@ if docs:
                 solartech_docx = tmpl.generate_docx_report(solartech_report, "Corporate Due Diligence Report")
                 early_stage_docx = tmpl.generate_docx_report(early_stage_report, "Early-Stage Investor DD Report")
             
+            st.markdown("### 📥 Download Reports")
+            
             col1, col2 = st.columns(2)
             with col1:
+                st.markdown("#### 📘 Corporate DD Report")
                 st.download_button(
-                    label="📘 Download Corporate DD Report (DOCX)",
+                    label="Download DOCX",
                     data=solartech_docx.getvalue(),
                     file_name=f"Due_Diligence_Corporate_{datetime.now():%Y%m%d}.docx",
                     mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                     use_container_width=True
                 )
-            with col2:
                 st.download_button(
-                    label="📗 Download Early-Stage Investor DD Report (DOCX)",
+                    label="Download Markdown",
+                    data=solartech_report,
+                    file_name=f"Due_Diligence_Corporate_{datetime.now():%Y%m%d}.md",
+                    mime="text/markdown",
+                    use_container_width=True
+                )
+            
+            with col2:
+                st.markdown("#### 📗 Early-Stage Investor Report")
+                st.download_button(
+                    label="Download DOCX",
                     data=early_stage_docx.getvalue(),
                     file_name=f"Due_Diligence_EarlyStage_{datetime.now():%Y%m%d}.docx",
                     mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    use_container_width=True
+                )
+                st.download_button(
+                    label="Download Markdown",
+                    data=early_stage_report,
+                    file_name=f"Due_Diligence_EarlyStage_{datetime.now():%Y%m%d}.md",
+                    mime="text/markdown",
                     use_container_width=True
                 )
 
@@ -171,7 +190,7 @@ with st.sidebar:
 1️⃣ Upload or fetch documents  
 2️⃣ Run AI analysis  
 3️⃣ Review findings  
-4️⃣ Download DOCX reports  
+4️⃣ Download reports (DOCX or MD)  
 """)
     st.markdown("### 📚 Reference Sources")
     for label, url in SOURCES.items():
