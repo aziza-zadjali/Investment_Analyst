@@ -1,0 +1,239 @@
+"""
+Unified Template & Report Generator
+Generates investment memos, due diligence reports,
+deal summaries, and financial model templates.
+"""
+
+from datetime import datetime
+from typing import Dict, List, Any
+from io import BytesIO
+import pandas as pd
+from openpyxl import Workbook
+from openpyxl.styles import Font
+
+
+class TemplateGenerator:
+    """Generate professional reports for investment analysis and deal sourcing"""
+
+    # -------------------------------------------------------------------------
+    # 1. EXECUTIVE SUMMARIES & BASIC REPORTING
+    # -------------------------------------------------------------------------
+    def generate_executive_summary(self, data: Dict[str, Any]) -> str:
+        """Generate a simple executive summary"""
+        summary = f"""
+## Executive Summary
+**Company:** {data.get('company_name', 'N/A')}
+**Industry:** {data.get('industry', 'N/A')}
+**Stage:** {data.get('stage', 'N/A')}
+**Investment Size:** ${data.get('investment_amount', 'N/A')}
+**Location:** {data.get('location', 'N/A')}
+
+{data.get('overview', 'Summary not provided.')}
+"""
+        return summary
+
+    def generate_complete_memo(self, data: Dict[str, Any]) -> str:
+        """Legacy full memo text (from early app versions)"""
+        memo_date = datetime.now().strftime("%B %d, %Y")
+        memo = f"""
+# Investment Memo: {data.get('company_name', 'Unknown')}
+
+**Date:** {memo_date}  
+**Prepared By:** {data.get('analyst_name', 'Investment Team')}
+
+---
+
+## Executive Summary
+{data.get('executive_summary', 'Summary not yet generated.')}
+
+## Investment Thesis
+{data.get('investment_thesis', 'Under analysis.')}
+
+## Risk Assessment
+{data.get('risk_assessment', 'Pending review.')}
+
+## Recommendation
+{data.get('recommendation', 'TBD')}
+"""
+        return memo
+
+    # -------------------------------------------------------------------------
+    # 2. ADVANCED MEMO & DUE DILIGENCE REPORTS
+    # -------------------------------------------------------------------------
+    def generate_investment_memo(self, data: Dict[str, Any]) -> str:
+        """Full professional-grade investment memo"""
+        date_now = datetime.now().strftime("%B %d, %Y")
+
+        memo = f"""
+# Investment Memo — {data.get('company_name', 'Company N/A')}
+
+**Date:** {date_now}  
+**Prepared by:** {data.get('analyst_name', 'Analyst Team')}  
+**Department:** Corporate Development  
+**Industry:** {data.get('industry', 'TBD')}  
+**Investment Type:** {data.get('investment_type', 'Equity')}
+
+---
+
+## I. Executive Summary
+{data.get('executive_summary', 'Summary pending.')}
+
+---
+
+## II. Investment Rationale
+
+### 1. Market Opportunity
+{data.get('market_opportunity', 'Overview pending.')}
+
+### 2. Competitive Advantage
+{data.get('competitive_advantage', 'Details pending.')}
+
+### 3. Financial Performance
+| Metric | Value |
+|--------|--------|
+| Revenue | {data.get('revenue', 'N/A')} |
+| EBITDA | {data.get('ebitda', 'N/A')} |
+| Cash Flow | {data.get('cash_flow', 'N/A')} |
+
+---
+
+## III. Key Investment Terms
+| Term | Detail |
+|------|--------|
+| Investment Size | ${data.get('investment_amount', 'N/A')} |
+| Valuation | ${data.get('valuation', 'N/A')} |
+| Equity Ownership | {data.get('ownership', 'N/A')}% |
+| Transaction Date | {data.get('transaction_date', 'TBD')} |
+
+---
+
+## IV. Risk Factors
+{data.get('risks', 'No risks identified.')}
+
+## V. Mitigation Plans
+{data.get('mitigation', 'To be defined.')}
+
+---
+
+## VI. Recommendation
+{data.get('recommendation', 'Pending final review.')}
+
+---
+
+**Prepared By:** {data.get('analyst_name', 'Analyst')}  
+**Date:** {date_now}
+"""
+        return memo
+
+    def generate_due_diligence_report(self, data: Dict[str, Any]) -> str:
+        """Structured Due Diligence report template"""
+        date_now = datetime.now().strftime("%B %d, %Y")
+
+        report = f"""
+# Due Diligence Report — {data.get('company_name', 'Target Company')}
+
+**Date:** {date_now}  
+**Prepared by:** {data.get('analyst_name', 'Analyst Team')}
+
+---
+
+## 1. Financial Review
+{data.get('financial_review', 'Section pending.')}
+
+## 2. Legal Review
+{data.get('legal_review', 'Section pending.')}
+
+## 3. Market Review
+{data.get('market_review', 'Section pending.')}
+
+## 4. Operational Review
+{data.get('operations_review', 'Section pending.')}
+
+---
+
+## Key Findings
+{data.get('key_findings', 'Findings section pending.')}
+
+## Recommendation
+{data.get('recommendation', 'Further analysis required.')}
+
+---
+**Report Date:** {date_now}
+"""
+        return report
+
+    # -------------------------------------------------------------------------
+    # 3. DEAL SOURCING REPORTS
+    # -------------------------------------------------------------------------
+    def generate_daily_deals_report(self, deals: List[Dict[str, Any]], criteria: Dict[str, Any]) -> str:
+        """Generate markdown format for Daily Deals reports"""
+        date_today = datetime.now().strftime("%B %d, %Y")
+        report = f"""
+# Daily Potential Deals Report  
+**Date:** {date_today}  
+**Generated By:** AI Investment Analyst  
+
+### Filter Criteria
+- **Sectors:** {', '.join(criteria.get('sectors', []))}
+- **Stage Range:** {criteria.get('stage_range', 'All')}
+- **Revenue Range:** {criteria.get('revenue_range', 'N/A')}
+- **Geography:** {', '.join(criteria.get('geography', []))}
+
+---
+
+"""
+        for i, deal in enumerate(deals, start=1):
+            report += f"""### {i}. {deal.get('company', 'Unnamed Deal')}
+- **Sector:** {deal.get('sector', 'N/A')}
+- **Stage:** {deal.get('stage', 'N/A')}
+- **Region:** {deal.get('region', 'N/A')}
+- **Revenue:** {deal.get('revenue', 'N/A')}
+- **Source:** {deal.get('source', 'N/A')}
+- **Founded:** {deal.get('founded', 'Unknown')}
+- **Employees:** {deal.get('employees', 'N/A')}
+- **Description:** {deal.get('description', 'Not available')}
+- **Link:** {deal.get('url', 'N/A')}
+
+---
+"""
+        report += "\n\n**End of Report**"
+        return report
+
+    # -------------------------------------------------------------------------
+    # 4. AUTO-GENERATED EXCEL FINANCIAL MODEL
+    # -------------------------------------------------------------------------
+    def generate_financial_model(self, data: Dict[str, Any]) -> BytesIO:
+        """Generate Excel output for deal's financial model"""
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Summary"
+
+        ws["A1"] = "Financial Model Template"
+        ws["A1"].font = Font(size=16, bold=True)
+
+        headers = [
+            ("Company Name", "company_name"),
+            ("Revenue", "revenue"),
+            ("EBITDA", "ebitda"),
+            ("Valuation", "valuation"),
+            ("Ownership (%)", "ownership"),
+            ("Investment Amount", "investment_amount"),
+        ]
+
+        row = 3
+        for label, key in headers:
+            ws[f"A{row}"] = label
+            ws[f"B{row}"] = data.get(key, "N/A")
+            row += 1
+
+        # Create additional sheets
+        wb.create_sheet("Assumptions - Monthly")
+        wb.create_sheet("P&L - Monthly")
+        wb.create_sheet("Cash Flow - Monthly")
+        wb.create_sheet("Summary - Annual")
+
+        # Save to Bytes buffer
+        buffer = BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)
+        return buffer
