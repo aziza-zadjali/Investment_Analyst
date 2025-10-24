@@ -232,14 +232,22 @@ if st.session_state.model_complete:
     col_m1, col_m2, col_m3, col_m4 = st.columns(4)
     
     with col_m1:
-        st.metric("Total Revenue", f"{data['currency']} {sum(data['total_revenue']):,.0f}")
+        st.metric("Total Revenue", f"{data.get('currency', 'NZ$')} {sum(data.get('total_revenue', [])):,.0f}")
     with col_m2:
-        avg_margin = np.mean([gp/rev if rev > 0 else 0 for gp, rev in zip(data['gross_profit'], data['total_revenue'])]) * 100
+        gross_profit = data.get('gross_profit', [])
+        total_revenue = data.get('total_revenue', [])
+        if gross_profit and total_revenue:
+            avg_margin = np.mean([gp/rev if rev > 0 else 0 for gp, rev in zip(gross_profit, total_revenue)]) * 100
+        else:
+            avg_margin = 0
         st.metric("Avg Gross Margin", f"{avg_margin:.1f}%")
     with col_m3:
-        st.metric("Total EBITDA", f"{data['currency']} {sum(data['ebitda']):,.0f}")
+        st.metric("Total EBITDA", f"{data.get('currency', 'NZ$')} {sum(data.get('ebitda', [])):,.0f}")
     with col_m4:
-        st.metric("Final Cash", f"{data['currency']} {data['cash_balance'][-1]:,.0f}")
+        cash_balance_list = data.get('cash_balance', [])
+        final_cash_value = cash_balance_list[-1] if cash_balance_list else 0
+        st.metric("Final Cash", f"{data.get('currency', 'NZ$')} {final_cash_value:,.0f}")
+
     
     # Charts
     st.line_chart(pd.DataFrame({
