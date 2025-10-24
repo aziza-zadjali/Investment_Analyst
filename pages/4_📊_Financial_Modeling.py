@@ -183,7 +183,7 @@ if st.button("🚀 Generate Professional Financial Model", type="primary", use_c
                 'currency': currency,
                 'fiscal_year_end': fiscal_year_end,
                 'forecast_start': forecast_start,
-                'months': months.tolist(),
+                'months': [m.to_pydatetime() for m in months],  # Convert to regular datetime
                 'num_months': num_months,
                 'initial_cash': initial_cash,
                 'm1p1_revenue': m1p1_revenue,
@@ -211,20 +211,23 @@ if st.session_state.model_complete:
     col_m1, col_m2, col_m3, col_m4 = st.columns(4)
     
     with col_m1:
-        st.metric("Total Revenue", f"{data['currency']} {sum(data['total_revenue']):,.0f}")
+        st.metric("Total Revenue", f"{data.get('currency', 'NZ$')} {sum(data.get('total_revenue', [0])):,.0f}")
     with col_m2:
-        avg_margin = np.mean([gp/rev if rev > 0 else 0 for gp, rev in zip(data['gross_profit'], data['total_revenue'])]) * 100
+        gross_profit = data.get('gross_profit', [])
+        total_revenue = data.get('total_revenue', [])
+        avg_margin = np.mean([gp/rev if rev > 0 else 0 for gp, rev in zip(gross_profit, total_revenue)]) * 100 if gross_profit and total_revenue else 0
         st.metric("Avg Gross Margin", f"{avg_margin:.1f}%")
     with col_m3:
-        st.metric("Total EBITDA", f"{data['currency']} {sum(data['ebitda']):,.0f}")
+        st.metric("Total EBITDA", f"{data.get('currency', 'NZ$')} {sum(data.get('ebitda', [0])):,.0f}")
     with col_m4:
-        final_cash = data['cash_balance'][-1] if data['cash_balance'] else 0
-        st.metric("Final Cash", f"{data['currency']} {final_cash:,.0f}")
+        cash_balance = data.get('cash_balance', [])
+        final_cash = cash_balance[-1] if cash_balance and len(cash_balance) > 0 else 0
+        st.metric("Final Cash", f"{data.get('currency', 'NZ$')} {final_cash:,.0f}")
     
     # Charts
     st.line_chart(pd.DataFrame({
-        'Revenue': data['total_revenue'],
-        'EBITDA': data['ebitda']
+        'Revenue': data.get('total_revenue', []),
+        'EBITDA': data.get('ebitda', [])
     }))
     
     st.divider()
