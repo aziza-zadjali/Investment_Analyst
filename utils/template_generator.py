@@ -1,7 +1,6 @@
 """
 Unified Template & Report Generator
-Generates investment memos, due diligence reports,
-deal summaries, and financial model templates.
+Generates investment memos and due diligence reports matching institutional sample formats
 """
 
 from datetime import datetime
@@ -13,11 +12,155 @@ from openpyxl.styles import Font
 
 
 class TemplateGenerator:
-    """Generate professional reports for investment analysis and deal sourcing"""
+    """Generate professional reports matching sample document formats"""
 
-    # -------------------------------------------------------------------------
-    # 1. EXECUTIVE SUMMARIES & BASIC REPORTING
-    # -------------------------------------------------------------------------
+    # =========================================================================
+    # DUE DILIGENCE REPORTS (Matching Sample Formats)
+    # =========================================================================
+    
+    def generate_due_diligence_report_solartech_format(self, data: Dict[str, Any]) -> str:
+        """
+        Generate DD Report matching 'Due_diligence_report.pdf' sample structure
+        """
+        date_now = datetime.now().strftime("%B %d, %Y")
+        
+        report = f"""# Due Diligence Report
+
+**Company:** {data.get('company_name', 'Target Company')}  
+**Report Date:** {date_now}  
+**Prepared by:** {data.get('analyst_name', 'Investment Team')}
+
+---
+
+## 1. Executive Summary
+
+This report summarizes the due diligence findings for **{data.get('company_name', 'the target company')}** conducted on {data.get('review_dates', date_now)}. The goal was to assess key risks, liabilities, and opportunities to ensure informed decision-making.
+
+---
+
+## 2. Scope of Review
+
+- **Financial:** {data.get('financial_scope', 'Reviewed financial statements and cash flow for recent fiscal years.')}
+- **Legal:** {data.get('legal_scope', 'Assessed compliance with corporate and regulatory laws.')}
+- **Operational:** {data.get('operational_scope', 'Evaluated business processes and operational efficiency.')}
+- **Commercial:** {data.get('commercial_scope', 'Analyzed market positioning and competitive landscape.')}
+
+---
+
+## 3. Key Findings
+
+| Category | Findings | Risk Level |
+|----------|----------|------------|
+| **Financial** | {data.get('financial_findings', 'Consistent revenue growth, stable margins.')} | {data.get('financial_risk', 'Medium')} |
+| **Legal** | {data.get('legal_findings', 'No major pending litigation identified.')} | {data.get('legal_risk', 'Low')} |
+| **Operational** | {data.get('operational_findings', 'Well-established processes with room for optimization.')} | {data.get('operational_risk', 'Low')} |
+| **Commercial** | {data.get('commercial_findings', 'Strong market presence, limited geographic expansion.')} | {data.get('commercial_risk', 'Medium')} |
+
+---
+
+## 4. Recommendations
+
+{data.get('recommendations', '''
+1. Address identified legal risks proactively to avoid future complications.
+2. Expand market presence through strategic partnerships.
+3. Optimize operational capacity to meet future growth demands.
+''')}
+
+---
+
+## 5. Conclusion
+
+{data.get('conclusion', f'''
+The due diligence process identified strong growth potential in {data.get('company_name', 'the company')}'s market positioning but highlighted certain operational and legal risks. Proceed with the investment while addressing these risks to maximize value.
+''')}
+
+---
+
+**Authorized by:**  
+{data.get('analyst_name', 'Analyst Name')}  
+{data.get('firm_name', 'Your Firm Name')}  
+**Date:** {date_now}
+"""
+        return report
+
+    def generate_due_diligence_report_early_stage_format(self, data: Dict[str, Any]) -> str:
+        """
+        Generate DD Report matching 'Due-Diligence-Report-Template-for-Early-Stage-Investors.docx' format
+        """
+        date_now = datetime.now().strftime("%B %d, %Y")
+        
+        report = f"""# Due Diligence Report Template for Early Stage Investors
+
+**Company:** {data.get('company_name', 'Company Name')}  
+**CEO:** {data.get('ceo_name', 'CEO Name')}  
+**Report Date:** {date_now}
+
+---
+
+## Company Description
+
+{data.get('company_description', 'Insert 1-2 paragraph summary description of company and its market here.')}
+
+---
+
+## Due Diligence Assessment
+
+| **Topic** | **Rating** | **Remarks** |
+|-----------|------------|-------------|
+| **Investment Thesis** | {data.get('investment_thesis_rating', 'TBD')} | {data.get('investment_thesis', 'This is where you explain the overall logic of the investment and how investors will make money.')} |
+| **What Needs To Be Believed (WNTBB)** | {data.get('wntbb_rating', 'TBD')} | {data.get('wntbb', 'Key risks that need to be assumed in order to invest. If an investor cannot make peace with an item on this list, they should not invest.')} |
+| **Failure Risk** | {data.get('failure_risk_rating', 'TBD')} | {data.get('failure_risk', 'Main weaknesses in the plan and the degree to which they are mitigated.')} |
+| **Leadership Assessment** | {data.get('leadership_rating', 'TBD')} | {data.get('leadership_assessment', 'Assessment of the management team. Does the CEO possess the experience and leadership abilities to succeed?')} |
+| **Technology, IP and Product Roadmap** | {data.get('tech_rating', 'TBD')} | {data.get('tech_assessment', 'Assessment of the technology and technology risk as well as the IP situation.')} |
+| **Customer Need and Go-To-Market Plan** | {data.get('gtm_rating', 'TBD')} | {data.get('gtm_assessment', 'Assessment of the plan to take the product to market.')} |
+| **Uniqueness and Competition** | {data.get('competition_rating', 'TBD')} | {data.get('competition_assessment', 'Assessment of the overall competitiveness and defensibility of the offering.')} |
+| **Market Size and Market Opportunity** | {data.get('market_rating', 'TBD')} | {data.get('market_assessment', 'Assessment of the actual addressable market.')} |
+| **Financial Projections and Funding Strategy** | {data.get('financial_rating', 'TBD')} | {data.get('financial_assessment', 'Assessment of the financial plan and capital raising strategy.')} |
+| **Exit Strategy** | {data.get('exit_rating', 'TBD')} | {data.get('exit_assessment', 'Assessment of the likely exit opportunities.')} |
+| **Deal Terms and Payoff** | {data.get('terms_rating', 'TBD')} | {data.get('terms_assessment', 'Summary of the relationship between the deal terms and the expected investor return.')} |
+
+---
+
+## Individual Assessments
+
+| **Team Member** | **Rating** | **Summary Remarks** |
+|-----------------|------------|---------------------|
+| {data.get('member1_name', 'Name 1')} | {data.get('member1_rating', '+')} | {data.get('member1_remarks', 'Positive assessment.')} |
+| {data.get('member2_name', 'Name 2')} | {data.get('member2_rating', '0')} | {data.get('member2_remarks', 'Neutral assessment.')} |
+| {data.get('member3_name', 'Name 3')} | {data.get('member3_rating', '++')} | {data.get('member3_remarks', 'Very positive assessment.')} |
+
+---
+
+### Rating Key
+
+**(++)** = Very Positive  
+**(+)** = Positive  
+**(0)** = Neutral  
+**(--)** = Negative but issues can be overcome  
+**( / )** = Very Negative, issues cannot be overcome
+
+---
+
+**Prepared by:** {data.get('analyst_name', 'Analyst Team')}  
+**Date:** {date_now}
+"""
+        return report
+
+    # =========================================================================
+    # LEGACY & BACKWARDS COMPATIBILITY
+    # =========================================================================
+    
+    def generate_due_diligence_report(self, data: Dict[str, Any]) -> str:
+        """
+        Main DD report generator - defaults to SolarTech format
+        """
+        report_format = data.get('format', 'solartech')
+        
+        if report_format == 'early_stage':
+            return self.generate_due_diligence_report_early_stage_format(data)
+        else:
+            return self.generate_due_diligence_report_solartech_format(data)
+
     def generate_executive_summary(self, data: Dict[str, Any]) -> str:
         """Generate a simple executive summary"""
         summary = f"""
@@ -32,34 +175,6 @@ class TemplateGenerator:
 """
         return summary
 
-    def generate_complete_memo(self, data: Dict[str, Any]) -> str:
-        """Legacy full memo text (from early app versions)"""
-        memo_date = datetime.now().strftime("%B %d, %Y")
-        memo = f"""
-# Investment Memo: {data.get('company_name', 'Unknown')}
-
-**Date:** {memo_date}  
-**Prepared By:** {data.get('analyst_name', 'Investment Team')}
-
----
-
-## Executive Summary
-{data.get('executive_summary', 'Summary not yet generated.')}
-
-## Investment Thesis
-{data.get('investment_thesis', 'Under analysis.')}
-
-## Risk Assessment
-{data.get('risk_assessment', 'Pending review.')}
-
-## Recommendation
-{data.get('recommendation', 'TBD')}
-"""
-        return memo
-
-    # -------------------------------------------------------------------------
-    # 2. ADVANCED MEMO & DUE DILIGENCE REPORTS
-    # -------------------------------------------------------------------------
     def generate_investment_memo(self, data: Dict[str, Any]) -> str:
         """Full professional-grade investment memo"""
         date_now = datetime.now().strftime("%B %d, %Y")
@@ -125,46 +240,6 @@ class TemplateGenerator:
 """
         return memo
 
-    def generate_due_diligence_report(self, data: Dict[str, Any]) -> str:
-        """Structured Due Diligence report template"""
-        date_now = datetime.now().strftime("%B %d, %Y")
-
-        report = f"""
-# Due Diligence Report — {data.get('company_name', 'Target Company')}
-
-**Date:** {date_now}  
-**Prepared by:** {data.get('analyst_name', 'Analyst Team')}
-
----
-
-## 1. Financial Review
-{data.get('financial_review', 'Section pending.')}
-
-## 2. Legal Review
-{data.get('legal_review', 'Section pending.')}
-
-## 3. Market Review
-{data.get('market_review', 'Section pending.')}
-
-## 4. Operational Review
-{data.get('operations_review', 'Section pending.')}
-
----
-
-## Key Findings
-{data.get('key_findings', 'Findings section pending.')}
-
-## Recommendation
-{data.get('recommendation', 'Further analysis required.')}
-
----
-**Report Date:** {date_now}
-"""
-        return report
-
-    # -------------------------------------------------------------------------
-    # 3. DEAL SOURCING REPORTS
-    # -------------------------------------------------------------------------
     def generate_daily_deals_report(self, deals: List[Dict[str, Any]], criteria: Dict[str, Any]) -> str:
         """Generate markdown format for Daily Deals reports"""
         date_today = datetime.now().strftime("%B %d, %Y")
@@ -199,9 +274,6 @@ class TemplateGenerator:
         report += "\n\n**End of Report**"
         return report
 
-    # -------------------------------------------------------------------------
-    # 4. AUTO-GENERATED EXCEL FINANCIAL MODEL
-    # -------------------------------------------------------------------------
     def generate_financial_model(self, data: Dict[str, Any]) -> BytesIO:
         """Generate Excel output for deal's financial model"""
         wb = Workbook()
