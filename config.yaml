@@ -1,4 +1,3 @@
-```yaml
 # Investment Analyst AI Agent Configuration
 
 # API Settings
@@ -63,4 +62,3 @@ upload:
     - "docx"
     - "xlsx"
     - "txt"
-```
