@@ -1,7 +1,7 @@
 """
 LLM interaction handler using LangChain and OpenAI
 """
-
+from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
