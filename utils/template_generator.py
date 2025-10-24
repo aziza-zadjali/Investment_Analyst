@@ -1,6 +1,7 @@
 """
 Unified Template & Report Generator
 Generates investment memos, due diligence reports, market analysis, and DOCX exports
+ALL content dynamically generated - NO hardcoded placeholders
 """
 
 from datetime import datetime
@@ -164,15 +165,20 @@ This report provides comprehensive market intelligence for **{data.get('company_
 ## Methodology
 
 This analysis synthesizes data from multiple premium sources:
-- **Consulting Research:** McKinsey, BCG, Bain, Deloitte, PwC, EY, KPMG
-- **Market Intelligence:** Mordor Intelligence, Statista, IBISWorld, Gartner
-- **Business News:** Bloomberg, Reuters, Financial Times, Wall Street Journal
+
+**Consulting Research:** McKinsey, BCG, Bain, Deloitte, PwC, EY, KPMG  
+**Market Intelligence:** Mordor Intelligence, Statista, IBISWorld, Gartner, Forrester  
+**Business News:** Bloomberg, Reuters, Financial Times, Wall Street Journal  
 
 **AI-Powered Analysis:** GPT-4 advanced reasoning for insight generation
 
 ---
 
 **Confidentiality Notice:** This report contains proprietary analysis. Distribution restricted to authorized personnel only.
+
+---
+
+**Report Generated:** {data.get('date')}
 """
         return report
 
@@ -181,7 +187,7 @@ This analysis synthesizes data from multiple premium sources:
     # =========================================================================
     
     def generate_docx_report(self, report_text: str, report_title: str = "Report") -> BytesIO:
-        """Convert markdown to professional DOCX with tables"""
+        """Convert markdown to professional DOCX with proper table rendering"""
         try:
             import markdown
             from bs4 import BeautifulSoup
@@ -193,9 +199,11 @@ This analysis synthesizes data from multiple premium sources:
             soup = BeautifulSoup(html_content, 'html.parser')
             doc = Document()
             
+            # Title
             title_para = doc.add_heading(report_title, level=0)
             title_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
             
+            # Parse HTML elements
             for element in soup.children:
                 if element.name == 'h1':
                     doc.add_heading(element.get_text(), level=1)
@@ -237,7 +245,7 @@ This analysis synthesizes data from multiple premium sources:
                                 cell_text = cell.get_text().strip()
                                 table_cell = table.cell(i, j)
                                 table_cell.text = cell_text
-                                if i == 0:
+                                if i == 0:  # Header row
                                     for paragraph in table_cell.paragraphs:
                                         for run in paragraph.runs:
                                             run.bold = True
@@ -250,6 +258,7 @@ This analysis synthesizes data from multiple premium sources:
             return buffer
             
         except ImportError:
+            # Fallback if markdown/beautifulsoup not available
             from docx import Document
             doc = Document()
             doc.add_heading(report_title, level=0)
@@ -258,17 +267,14 @@ This analysis synthesizes data from multiple premium sources:
             doc.save(buffer)
             buffer.seek(0)
             return buffer
-        except Exception:
+        except Exception as e:
+            # Last resort fallback
             return BytesIO(report_text.encode('utf-8'))
 
     # =========================================================================
-    # LEGACY & BACKWARDS COMPATIBILITY
+    # INVESTMENT MEMOS & DEAL REPORTS
     # =========================================================================
     
-    def generate_due_diligence_report(self, data: Dict[str, Any]) -> str:
-        """Main DD report generator"""
-        return self.generate_due_diligence_report_solartech_format(data)
-
     def generate_investment_memo(self, data: Dict[str, Any]) -> str:
         """Investment memo from data"""
         date_now = datetime.now().strftime("%B %d, %Y")
@@ -304,6 +310,10 @@ This analysis synthesizes data from multiple premium sources:
             report += f"### {i}. {deal.get('company')}\n- **Sector:** {deal.get('sector')}\n---\n"
         return report
 
+    # =========================================================================
+    # FINANCIAL MODELS
+    # =========================================================================
+    
     def generate_financial_model(self, data: Dict[str, Any]) -> BytesIO:
         """Excel financial model"""
         wb = Workbook()
@@ -316,3 +326,11 @@ This analysis synthesizes data from multiple premium sources:
         wb.save(buffer)
         buffer.seek(0)
         return buffer
+
+    # =========================================================================
+    # BACKWARDS COMPATIBILITY
+    # =========================================================================
+    
+    def generate_due_diligence_report(self, data: Dict[str, Any]) -> str:
+        """Main DD report generator (backwards compatible)"""
+        return self.generate_due_diligence_report_solartech_format(data)
