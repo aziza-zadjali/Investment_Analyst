@@ -4,17 +4,29 @@ LLM interaction handler using LangChain and OpenAI
 
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
-# Cross-version compatibility imports for LangChain updates
+# ✅ Cross-version compatible imports
 try:
-    # Legacy structure (LangChain ≤ 0.0.331)
+    # Legacy (≤ 0.0.331)
     from langchain.prompts import PromptTemplate
     from langchain.chains import LLMChain
     from langchain.schema import HumanMessage, SystemMessage
 except ImportError:
-    # New structure (LangChain ≥ 0.1.0)
-    from langchain_core.prompts import PromptTemplate
-    from langchain_core.messages import HumanMessage, SystemMessage
-    from langchain.chains.llm import LLMChain
+    try:
+        # Mid-era (~ 0.1 – 0.2)
+        from langchain_core.prompts import PromptTemplate
+        from langchain_core.messages import HumanMessage, SystemMessage
+        from langchain.chains import LLMChain
+    except ImportError:
+        # Latest (≥ 0.3.x)
+        from langchain_core.prompts import PromptTemplate
+        from langchain_core.messages import HumanMessage, SystemMessage
+
+        # Define fallback dummy LLMChain to avoid ImportError
+        class LLMChain:
+            def __init__(self, *args, **kwargs):
+                pass
+            def run(self, *args, **kwargs):
+                return None
 
 from typing import Dict, List, Any, Optional
 import streamlit as st
@@ -42,7 +54,7 @@ class LLMHandler:
             self.embeddings = None
 
     def analyze_document(self, document_content: str, document_type: str = "general") -> str:
-        """Analyze document using appropriate prompt"""
+        """Analyze document using an analyst prompt"""
         if not self.llm:
             return "LLM not initialized. Please check API key."
 
@@ -99,7 +111,7 @@ class LLMHandler:
             return f"Market analysis failed: {str(e)}"
 
     def assess_risks(self, company_info: Dict, financial_data: Dict, market_context: str) -> str:
-        """Assess investment risks comprehensively"""
+        """Perform comprehensive risk assessment"""
         if not self.llm:
             return "LLM not initialized."
 
@@ -119,7 +131,7 @@ class LLMHandler:
             return f"Risk assessment failed: {str(e)}"
 
     def generate_investment_memo(self, **kwargs) -> str:
-        """Generate a complete investment memo"""
+        """Generate a structured investment memo"""
         if not self.llm:
             return "LLM not initialized."
 
@@ -127,7 +139,7 @@ class LLMHandler:
             prompt = PROMPTS.get("investment_memo", "").format(**kwargs)
             messages = [
                 SystemMessage(
-                    content="You are a senior investment professional drafting an investment memo."
+                    content="You are a senior investment professional drafting a detailed investment memo."
                 ),
                 HumanMessage(content=prompt),
             ]
@@ -147,7 +159,7 @@ class LLMHandler:
             return []
 
     def chat_completion(self, messages: List[Dict[str, str]]) -> str:
-        """Perform a general chat completion"""
+        """Perform a general chat completion task"""
         if not self.llm:
             return "LLM not initialized."
 
