@@ -1,0 +1,66 @@
+```yaml
+# Investment Analyst AI Agent Configuration
+
+# API Settings
+openai:
+  model: "gpt-4-turbo-preview"
+  temperature: 0.3
+  max_tokens: 4000
+  
+embedding:
+  model: "text-embedding-3-small"
+  chunk_size: 1000
+  chunk_overlap: 200
+
+# Vector Store Settings
+vector_store:
+  type: "faiss"
+  similarity_threshold: 0.7
+  top_k: 5
+
+# Web Scraping Settings
+scraping:
+  timeout: 30
+  max_retries: 3
+  user_agent: "Investment-Analyst-Bot/1.0"
+  
+# Data Sources
+data_sources:
+  accelerators:
+    - "https://www.ycombinator.com/companies"
+    - "https://techstars.com/portfolio"
+  funding_platforms:
+    - "https://www.crunchbase.com"
+    - "https://www.angellist.com"
+  market_data:
+    - "https://finance.yahoo.com"
+    - "https://www.bloomberg.com"
+
+# Financial Modeling
+financial:
+  projection_years: 5
+  discount_rate: 0.10
+  growth_assumptions:
+    conservative: 0.05
+    moderate: 0.15
+    aggressive: 0.30
+
+# Report Templates
+report:
+  memo_sections:
+    - "Executive Summary"
+    - "Company Overview"
+    - "Market Analysis"
+    - "Financial Analysis"
+    - "Risk Assessment"
+    - "Investment Recommendation"
+  
+# File Upload Settings
+upload:
+  max_file_size_mb: 200
+  allowed_extensions:
+    - "pdf"
+    - "docx"
+    - "xlsx"
+    - "txt"
+```
