@@ -188,16 +188,3 @@ def check_api_connection():
 
 if __name__ == "__main__":
     main()
-```
-
----
-
-## File 7: `config/__init__.py`
-
-```python
-"""Configuration module initialization"""
-
-from .prompts import PROMPTS
-from .constants import *
-
-__all__ = ['PROMPTS', 'constants']
