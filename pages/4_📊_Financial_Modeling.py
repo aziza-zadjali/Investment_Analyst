@@ -438,7 +438,8 @@ with st.sidebar:
     
     if st.session_state.model_complete:
         st.markdown("### 📋 Your Model Inputs")
-        st.caption(f"**Company:** {st.session_state.model_data['company_name']}")
-        st.caption(f"**Currency:** {st.session_state.model_data['currency']}")
-        st.caption(f"**Periods:** {st.session_state.model_data['num_months']} months")
-        st.caption(f"**Opening Cash:** {st.session_state.model_data['currency']}{st.session_state.model_data['initial_cash']:,.0f}")
+        model_data = st.session_state.model_data
+        st.caption(f"**Company:** {model_data.get('company_name', 'N/A')}")
+        st.caption(f"**Currency:** {model_data.get('currency', 'N/A')}")
+        st.caption(f"**Periods:** {model_data.get('num_months', 0)} months")
+        st.caption(f"**Opening Cash:** {model_data.get('currency', 'NZ$')}{model_data.get('initial_cash', 0):,.0f}")
