@@ -1,6 +1,6 @@
 """
 Automated Due Diligence Document Analysis
-AI-powered analysis with dynamic report generation - NO hardcoded content
+AI-powered analysis with persistent state - downloads don't reset analysis
 """
 
 import streamlit as st
@@ -85,6 +85,13 @@ st.divider()
 
 if docs:
     st.header("🤖 Step 2 – AI Document Analysis")
+    
+    # Initialize session state
+    if 'analysis_complete' not in st.session_state:
+        st.session_state.analysis_complete = False
+    if 'analysis_results' not in st.session_state:
+        st.session_state.analysis_results = {}
+    
     if st.button("🚀 Run Automated Analysis", type="primary", use_container_width=True):
         with st.spinner("Analyzing documents with AI..."):
             progress = st.progress(0)
@@ -107,37 +114,52 @@ if docs:
                 
                 progress.progress(idx / len(docs))
             
+            # Store in session state
+            st.session_state.analysis_results = {
+                'fin_results': fin_results,
+                'leg_results': leg_results,
+                'ops_results': ops_results,
+                'red_flags': red_flags,
+                'company_name': ticker if 'ticker' in locals() and ticker else docs[0].get("name", "Target Company").split('.')[0],
+                'num_docs': len(docs)
+            }
+            st.session_state.analysis_complete = True
             st.success("✅ Analysis complete!")
-            
-            st.header("📊 Analysis Results")
-            tab1, tab2, tab3, tab4 = st.tabs(["💰 Financial", "⚖️ Legal", "🏢 Operational", "🚩 Red Flags"])
-            with tab1: st.markdown(fin_results if fin_results else "_No financial documents analyzed._")
-            with tab2: st.markdown(leg_results if leg_results else "_No legal documents analyzed._")
-            with tab3: st.markdown(ops_results if ops_results else "_No operational documents analyzed._")
-            with tab4:
-                if red_flags:
-                    for flag in red_flags: st.warning(flag)
-                else:
-                    st.success("✅ No critical red flags detected")
-            
-            st.divider()
-            st.header("📝 Step 3 – Generate Due Diligence Reports")
-            
-            # === EXTRACT STRUCTURED DATA FROM AI (NO HARDCODING) ===
-            with st.spinner("Extracting structured insights from analysis..."):
+    
+    # Display results if available (persists across reruns)
+    if st.session_state.analysis_complete:
+        results = st.session_state.analysis_results
+        
+        st.header("📊 Analysis Results")
+        tab1, tab2, tab3, tab4 = st.tabs(["💰 Financial", "⚖️ Legal", "🏢 Operational", "🚩 Red Flags"])
+        with tab1: st.markdown(results['fin_results'] if results['fin_results'] else "_No financial documents analyzed._")
+        with tab2: st.markdown(results['leg_results'] if results['leg_results'] else "_No legal documents analyzed._")
+        with tab3: st.markdown(results['ops_results'] if results['ops_results'] else "_No operational documents analyzed._")
+        with tab4:
+            if results['red_flags']:
+                for flag in results['red_flags']: st.warning(flag)
+            else:
+                st.success("✅ No critical red flags detected")
+        
+        st.divider()
+        st.header("📝 Step 3 – Generate Due Diligence Reports")
+        
+        # Extract structured insights (cached)
+        if 'structured_response' not in st.session_state:
+            with st.spinner("Extracting structured insights..."):
                 extraction_prompt = f"""
 Analyze the following due diligence findings and extract structured data:
 
 FINANCIAL ANALYSIS:
-{fin_results if fin_results else "No financial documents provided"}
+{results['fin_results'] if results['fin_results'] else "No financial documents provided"}
 
 LEGAL ANALYSIS:
-{leg_results if leg_results else "No legal documents provided"}
+{results['leg_results'] if results['leg_results'] else "No legal documents provided"}
 
 OPERATIONAL ANALYSIS:
-{ops_results if ops_results else "No operational documents provided"}
+{results['ops_results'] if results['ops_results'] else "No operational documents provided"}
 
-Provide a concise extraction in this format:
+Provide concise extraction in this format:
 1. Financial Risk Level (Low/Medium/High)
 2. Financial Summary (2-3 sentences)
 3. Legal Risk Level (Low/Medium/High)
@@ -146,81 +168,90 @@ Provide a concise extraction in this format:
 6. Operational Summary (2-3 sentences)
 7. Top 3 Recommendations
 8. Investment Thesis (3-4 sentences)
-9. Overall Assessment (2-3 sentences)
 """
-                structured_response = llm.chat_completion([
+                st.session_state.structured_response = llm.chat_completion([
                     {"role": "system", "content": "Extract structured due diligence insights precisely."},
                     {"role": "user", "content": extraction_prompt}
                 ])
-            
-            # Build report data from REAL AI analysis
-            company_name = ticker if 'ticker' in locals() and ticker else docs[0].get("name", "Target Company").split('.')[0]
-            
-            report_data = {
-                "company_name": company_name,
-                "analyst_name": "AI Due Diligence Team",
-                "review_dates": datetime.now().strftime("%B %d, %Y"),
-                "financial_scope": f"Analyzed {len([d for d in docs if 'financial' in d.get('name','').lower()])} financial documents",
-                "legal_scope": f"Reviewed {len([d for d in docs if 'legal' in d.get('name','').lower()])} legal documents",
-                "operational_scope": f"Examined {len([d for d in docs if 'operation' in d.get('name','').lower() or 'business' in d.get('name','').lower()])} operational documents",
-                "commercial_scope": "Market positioning and competitive landscape assessment",
-                "financial_findings": fin_results[:300].strip() if fin_results else "No financial data available for analysis",
-                "financial_risk": "High" if len(red_flags) > 2 else ("Medium" if len(red_flags) > 0 else "Low"),
-                "legal_findings": leg_results[:300].strip() if leg_results else "No legal data available for analysis",
-                "legal_risk": "Medium" if "litigation" in leg_results.lower() or "compliance" in leg_results.lower() else "Low",
-                "operational_findings": ops_results[:300].strip() if ops_results else "No operational data available for analysis",
-                "operational_risk": "Low",
-                "commercial_findings": "Market analysis based on provided documentation",
-                "commercial_risk": "Medium",
-                "recommendations": structured_response[:500] if structured_response else f"Based on analysis of {len(docs)} documents, recommend thorough review before proceeding.",
-                "conclusion": f"Due diligence completed for {company_name}. " + ("Critical risks identified requiring mitigation." if red_flags else "No major blockers identified from document review."),
-                "company_description": f"Analysis based on {len(docs)} documents including financial, legal, and operational materials.",
-                "investment_thesis": structured_response if structured_response else f"Investment opportunity in {company_name} based on comprehensive document analysis.",
-                "investment_thesis_rating": "++" if len(red_flags) == 0 else ("+" if len(red_flags) < 2 else "0"),
-                "wntbb": "Risk factors extracted from document analysis and AI assessment.",
-                "wntbb_rating": "0" if red_flags else "+",
-                "failure_risk": f"{len(red_flags)} potential risk factors identified in analysis.",
-                "failure_risk_rating": "--" if len(red_flags) > 3 else ("0" if len(red_flags) > 0 else "+"),
-                "leadership_assessment": "Leadership assessment requires management interviews and additional documentation.",
-                "leadership_rating": "0",
-                "tech_assessment": ops_results[:200] if "technology" in ops_results.lower() or "tech" in ops_results.lower() else "Technology review from available operational documents.",
-                "tech_rating": "+",
-                "gtm_assessment": "Go-to-market strategy assessment from business documentation review.",
-                "gtm_rating": "0",
-                "competition_assessment": "Competitive landscape requires additional market research data.",
-                "competition_rating": "0",
-                "market_assessment": "Market size analysis from available data and documentation.",
-                "market_rating": "+",
-                "financial_assessment": fin_results[:200] if fin_results else "Financial projections require additional detailed statements.",
-                "financial_rating": "++" if fin_results and "strong" in fin_results.lower() else "0",
-                "exit_assessment": "Exit strategy evaluation pending market conditions and growth trajectory analysis.",
-                "exit_rating": "+",
-                "terms_assessment": "Deal terms assessment pending negotiation and valuation analysis.",
-                "terms_rating": "0"
-            }
-            
-            # Generate reports with REAL DATA
-            solartech_report = tmpl.generate_due_diligence_report_solartech_format(report_data)
-            early_stage_report = tmpl.generate_due_diligence_report_early_stage_format(report_data)
-            
-            with st.spinner("Generating DOCX reports..."):
+        
+        structured_response = st.session_state.structured_response
+        company_name = results['company_name']
+        
+        report_data = {
+            "company_name": company_name,
+            "analyst_name": "AI Due Diligence Team",
+            "review_dates": datetime.now().strftime("%B %d, %Y"),
+            "financial_scope": f"Analyzed {len([d for d in docs if 'financial' in d.get('name','').lower()])} financial documents",
+            "legal_scope": f"Reviewed {len([d for d in docs if 'legal' in d.get('name','').lower()])} legal documents",
+            "operational_scope": f"Examined {len([d for d in docs if 'operation' in d.get('name','').lower() or 'business' in d.get('name','').lower()])} operational documents",
+            "commercial_scope": "Market positioning and competitive landscape assessment",
+            "financial_findings": results['fin_results'][:300].strip() if results['fin_results'] else "No financial data available for analysis",
+            "financial_risk": "High" if len(results['red_flags']) > 2 else ("Medium" if len(results['red_flags']) > 0 else "Low"),
+            "legal_findings": results['leg_results'][:300].strip() if results['leg_results'] else "No legal data available for analysis",
+            "legal_risk": "Medium" if "litigation" in results['leg_results'].lower() or "compliance" in results['leg_results'].lower() else "Low",
+            "operational_findings": results['ops_results'][:300].strip() if results['ops_results'] else "No operational data available for analysis",
+            "operational_risk": "Low",
+            "commercial_findings": "Market analysis based on provided documentation",
+            "commercial_risk": "Medium",
+            "recommendations": structured_response[:500] if structured_response else f"Based on analysis of {results['num_docs']} documents, recommend thorough review.",
+            "conclusion": f"Due diligence completed for {company_name}. " + ("Critical risks identified." if results['red_flags'] else "No major blockers identified."),
+            "company_description": f"Analysis based on {results['num_docs']} documents.",
+            "investment_thesis": structured_response if structured_response else f"Investment opportunity in {company_name}.",
+            "investment_thesis_rating": "++" if len(results['red_flags']) == 0 else ("+" if len(results['red_flags']) < 2 else "0"),
+            "wntbb": "Risk factors extracted from analysis.",
+            "wntbb_rating": "0" if results['red_flags'] else "+",
+            "failure_risk": f"{len(results['red_flags'])} risk factors identified.",
+            "failure_risk_rating": "--" if len(results['red_flags']) > 3 else ("0" if len(results['red_flags']) > 0 else "+"),
+            "leadership_assessment": "Leadership assessment requires management interviews.",
+            "leadership_rating": "0",
+            "tech_assessment": results['ops_results'][:200] if "tech" in results['ops_results'].lower() else "Technology review from operational documents.",
+            "tech_rating": "+",
+            "gtm_assessment": "Go-to-market strategy from business documentation.",
+            "gtm_rating": "0",
+            "competition_assessment": "Competitive landscape requires market research.",
+            "competition_rating": "0",
+            "market_assessment": "Market size from available data.",
+            "market_rating": "+",
+            "financial_assessment": results['fin_results'][:200] if results['fin_results'] else "Financial projections require additional statements.",
+            "financial_rating": "++" if results['fin_results'] and "strong" in results['fin_results'].lower() else "0",
+            "exit_assessment": "Exit strategy pending market conditions.",
+            "exit_rating": "+",
+            "terms_assessment": "Deal terms pending negotiation.",
+            "terms_rating": "0"
+        }
+        
+        # Generate and cache reports
+        if 'reports_generated' not in st.session_state:
+            with st.spinner("Generating reports..."):
+                solartech_report = tmpl.generate_due_diligence_report_solartech_format(report_data)
+                early_stage_report = tmpl.generate_due_diligence_report_early_stage_format(report_data)
                 solartech_docx = tmpl.generate_docx_report(solartech_report, f"Due Diligence Report - {company_name}")
                 early_stage_docx = tmpl.generate_docx_report(early_stage_report, f"Early-Stage DD Report - {company_name}")
-            
-            st.markdown("### 📥 Download Reports")
-            col1, col2 = st.columns(2)
-            with col1:
-                st.markdown("#### 📘 Corporate DD Report")
-                st.download_button("Download DOCX", solartech_docx.getvalue(), f"DD_Corporate_{company_name}_{datetime.now():%Y%m%d}.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", use_container_width=True)
-                st.download_button("Download Markdown", solartech_report, f"DD_Corporate_{company_name}_{datetime.now():%Y%m%d}.md", "text/markdown", use_container_width=True)
-            with col2:
-                st.markdown("#### 📗 Early-Stage Investor Report")
-                st.download_button("Download DOCX", early_stage_docx.getvalue(), f"DD_EarlyStage_{company_name}_{datetime.now():%Y%m%d}.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", use_container_width=True)
-                st.download_button("Download Markdown", early_stage_report, f"DD_EarlyStage_{company_name}_{datetime.now():%Y%m%d}.md", "text/markdown", use_container_width=True)
+                
+                st.session_state.reports_generated = {
+                    'solartech_md': solartech_report,
+                    'early_stage_md': early_stage_report,
+                    'solartech_docx': solartech_docx.getvalue(),
+                    'early_stage_docx': early_stage_docx.getvalue(),
+                    'company_name': company_name
+                }
+        
+        reports = st.session_state.reports_generated
+        
+        st.markdown("### 📥 Download Reports (All Formats Available)")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("#### 📘 Corporate DD Report")
+            st.download_button("📄 Download DOCX", reports['solartech_docx'], f"DD_Corporate_{reports['company_name']}_{datetime.now():%Y%m%d}.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", use_container_width=True, key="dl1")
+            st.download_button("📝 Download Markdown", reports['solartech_md'], f"DD_Corporate_{reports['company_name']}_{datetime.now():%Y%m%d}.md", "text/markdown", use_container_width=True, key="dl2")
+        with col2:
+            st.markdown("#### 📗 Early-Stage Investor Report")
+            st.download_button("📄 Download DOCX", reports['early_stage_docx'], f"DD_EarlyStage_{reports['company_name']}_{datetime.now():%Y%m%d}.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", use_container_width=True, key="dl3")
+            st.download_button("📝 Download Markdown", reports['early_stage_md'], f"DD_EarlyStage_{reports['company_name']}_{datetime.now():%Y%m%d}.md", "text/markdown", use_container_width=True, key="dl4")
 
 with st.sidebar:
     st.markdown("### 💡 Usage Guide")
-    st.info("1️⃣ Upload/fetch documents\n2️⃣ Run AI analysis\n3️⃣ Review findings\n4️⃣ Download reports")
+    st.info("1️⃣ Upload/fetch documents\n2️⃣ Run AI analysis\n3️⃣ Review findings\n4️⃣ Download all report formats")
     st.markdown("### 📚 Reference Sources")
     for label, url in SOURCES.items():
         st.markdown(f"- [{label}]({url})")
