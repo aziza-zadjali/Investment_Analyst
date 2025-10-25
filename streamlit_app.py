@@ -73,9 +73,9 @@ def main():
         ### The Investment Process Challenge
         
         Investment analysis is:
-        - ⏱️ **Time-consuming**: Thousands of documents to review
-        - 🔀 **Fragmented**: Data scattered across multiple sources
-        - 📝 **Manual**: Repetitive tasks in modeling and memo drafting
+        -  **Time-consuming**: Thousands of documents to review
+        -  **Fragmented**: Data scattered across multiple sources
+        -  **Manual**: Repetitive tasks in modeling and memo drafting
         
         ### Our Solution
         
