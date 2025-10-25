@@ -46,15 +46,23 @@ def main():
         
     # Main content
     # Container for your header
+
 with st.container():
     st.markdown(
         """
-        <h1 style='text-align: center; color: #1F77B4;'>
-            🚀 Welcome to Investment Analyst AI
-        </h1>
+        <div style='
+            border: 3px solid #1F77B4;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            color: #1F77B4;
+        '>
+            <h1 style='margin: 0;'>🚀 Welcome to Investment Analyst AI</h1>
+        </div>
         """,
         unsafe_allow_html=True
     )
+
     
     st.markdown("### Accelerate Your Investment Analysis with AI")
     
