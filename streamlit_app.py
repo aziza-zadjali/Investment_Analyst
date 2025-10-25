@@ -93,8 +93,8 @@ with st.container():
     st.markdown("---")
     
     # Overview sections
- def main():
-    st.header("Platform overview")
+    def main():
+        st.header("Platform overview")
 
     with st.container():
         st.markdown(
