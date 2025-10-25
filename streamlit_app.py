@@ -19,7 +19,7 @@ def encode_image(path):
 qdb_logo = encode_image("QDB_Logo.png")
 regulus_logo = encode_image("regulus_logo.png")
 
-# ===== SECTION 1: HEADER (Light) =====
+# ===== SECTION 1: HEADER (Light Background) =====
 qdb_section_start("light")
 
 st.markdown(f"""
@@ -66,23 +66,42 @@ with col2:
 
 qdb_section_end()
 
-# ===== SECTION 2: QUICK TOOLS (Dark) =====
-qdb_section_start("dark")
+# ===== SECTION 2: QUICK TOOLS (Dark Background - Pure HTML) =====
+st.markdown(f"""
+<div style='background: linear-gradient(135deg, #2C3E5E 0%, {QDB_DARK_BLUE} 100%); padding: 80px 20px; margin: 0 -3rem; margin-bottom: 0;'>
+    <div style='max-width: 1400px; margin: 0 auto;'>
+        <h2 style='text-align:center; color:white; margin-bottom:50px; font-size:2.2rem; font-weight:600;'>Quick Access Tools</h2>
+        <div style='display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;'>
+            <a href="?page=market" style='text-decoration: none;'>
+                <div style='background: linear-gradient(135deg, {QDB_PURPLE} 0%, #764BA2 100%); color: white; border-radius: 50px; padding: 20px 40px; text-align: center; font-size: 1.1rem; font-weight: 600; box-shadow: 0 4px 15px rgba(94, 42, 132, 0.3); transition: all 0.3s ease; cursor: pointer;'>
+                    📊 Market Analysis
+                </div>
+            </a>
+            <a href="?page=financial" style='text-decoration: none;'>
+                <div style='background: linear-gradient(135deg, {QDB_PURPLE} 0%, #764BA2 100%); color: white; border-radius: 50px; padding: 20px 40px; text-align: center; font-size: 1.1rem; font-weight: 600; box-shadow: 0 4px 15px rgba(94, 42, 132, 0.3); transition: all 0.3s ease; cursor: pointer;'>
+                    💰 Financial Modeling
+                </div>
+            </a>
+            <a href="?page=memo" style='text-decoration: none;'>
+                <div style='background: linear-gradient(135deg, {QDB_PURPLE} 0%, #764BA2 100%); color: white; border-radius: 50px; padding: 20px 40px; text-align: center; font-size: 1.1rem; font-weight: 600; box-shadow: 0 4px 15px rgba(94, 42, 132, 0.3); transition: all 0.3s ease; cursor: pointer;'>
+                    📝 Investment Memo
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
-st.markdown("<h2 style='text-align:center;color:white;margin-bottom:30px;font-size:2.2rem;'>Quick Access Tools</h2>", unsafe_allow_html=True)
-
-col_t1, col_t2, col_t3 = st.columns(3, gap="large")
-with col_t1:
-    if st.button("📊 Market Analysis", use_container_width=True, key="btn_market"):
+# Handle navigation from HTML buttons
+query_params = st.query_params
+if "page" in query_params:
+    page = query_params["page"]
+    if page == "market":
         st.switch_page("pages/3_Market_Analysis.py")
-with col_t2:
-    if st.button("💰 Financial Modeling", use_container_width=True, key="btn_fin"):
+    elif page == "financial":
         st.switch_page("pages/4_Financial_Modeling.py")
-with col_t3:
-    if st.button("📝 Investment Memo", use_container_width=True, key="btn_memo"):
+    elif page == "memo":
         st.switch_page("pages/5_Investment_Memo.py")
-
-qdb_section_end()
 
 # ===== FOOTER =====
 st.markdown(f"<div style='height:3px;background:{QDB_PURPLE};margin:50px 0 25px 0;border-radius:2px;'></div>", unsafe_allow_html=True)
