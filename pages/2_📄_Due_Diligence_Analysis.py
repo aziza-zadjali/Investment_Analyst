@@ -118,6 +118,8 @@ if st.button("🔍 Run Enhanced Due Diligence Analysis", type="primary", use_con
     with st.spinner("🤖 Performing comprehensive due diligence analysis..."):
         
         combined_text = ""
+        processed_files = 0
+        skipped_files = 0
         
         # STEP 1: Extract from uploaded documents
         if uploaded_files:
@@ -126,22 +128,62 @@ if st.button("🔍 Run Enhanced Due Diligence Analysis", type="primary", use_con
             for uploaded_file in uploaded_files:
                 try:
                     if uploaded_file.type == "application/pdf":
-                        pdf_reader = PyPDF2.PdfReader(uploaded_file)
-                        for page in pdf_reader.pages:
-                            text = page.extract_text()
-                            if text:
-                                combined_text += text + "\n"
+                        # Enhanced PDF handling with encryption support
+                        try:
+                            pdf_reader = PyPDF2.PdfReader(uploaded_file)
+                            
+                            # Check if PDF is encrypted
+                            if pdf_reader.is_encrypted:
+                                try:
+                                    # Try to decrypt with empty password (some PDFs allow this)
+                                    decrypt_result = pdf_reader.decrypt('')
+                                    if decrypt_result == 0:
+                                        # Decryption failed
+                                        st.warning(f"⚠️ {uploaded_file.name} is password-protected. Skipping this file.")
+                                        st.caption("💡 Tip: Please upload an unencrypted version or add pycryptodome to requirements.txt")
+                                        skipped_files += 1
+                                        continue
+                                except Exception as decrypt_error:
+                                    st.warning(f"⚠️ Could not decrypt {uploaded_file.name}. Skipping.")
+                                    skipped_files += 1
+                                    continue
+                            
+                            # Extract text from PDF
+                            for page in pdf_reader.pages:
+                                text = page.extract_text()
+                                if text:
+                                    combined_text += text + "\n"
+                            
+                            processed_files += 1
+                            
+                        except Exception as pdf_error:
+                            if "PyCryptodome" in str(pdf_error) or "AES" in str(pdf_error):
+                                st.warning(f"⚠️ {uploaded_file.name} requires PyCryptodome library for decryption. Skipping.")
+                                st.caption("💡 Add `pycryptodome>=3.19.0` to requirements.txt to process encrypted PDFs")
+                            else:
+                                st.warning(f"⚠️ Could not process {uploaded_file.name}: {str(pdf_error)}")
+                            skipped_files += 1
+                            continue
                     
                     elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
                         doc = docx.Document(uploaded_file)
                         for para in doc.paragraphs:
                             combined_text += para.text + "\n"
+                        processed_files += 1
+                    
+                    else:
+                        # Other file types
+                        st.caption(f"ℹ️ {uploaded_file.name} - Unsupported file type, skipping")
+                        skipped_files += 1
                     
                 except Exception as e:
-                    st.warning(f"⚠️ Could not process {uploaded_file.name}: {e}")
+                    st.warning(f"⚠️ Error processing {uploaded_file.name}: {str(e)}")
+                    skipped_files += 1
             
-            if combined_text:
-                st.success(f"✅ Processed {len(uploaded_files)} documents ({len(combined_text)} characters)")
+            if processed_files > 0:
+                st.success(f"✅ Successfully processed {processed_files} documents ({len(combined_text)} characters)")
+            if skipped_files > 0:
+                st.info(f"ℹ️ Skipped {skipped_files} files (encrypted or unsupported)")
         
         # STEP 2: Extract from company website (if enabled)
         web_data = {}
@@ -195,6 +237,7 @@ if st.button("🔍 Run Enhanced Due Diligence Analysis", type="primary", use_con
 **Please ensure:**
 - Documents are uploaded and readable, OR
 - Company website is accessible with investor relations content
+- If uploading encrypted PDFs, add pycryptodome to requirements.txt
             """)
             st.stop()
         
@@ -209,8 +252,8 @@ if st.button("🔍 Run Enhanced Due Diligence Analysis", type="primary", use_con
             'data_sources': []
         }
         
-        if uploaded_files:
-            analysis_results['data_sources'].append(f"{len(uploaded_files)} uploaded documents")
+        if processed_files > 0:
+            analysis_results['data_sources'].append(f"{processed_files} uploaded documents")
         if web_extraction_success:
             analysis_results['data_sources'].append(f"{len(web_data)} web sources")
         
@@ -466,6 +509,7 @@ with st.sidebar:
   - Adverse Media
 ✓ **Optional Web Data Extraction**
 ✓ **Professional Reports (MD & DOCX)**
+✓ **Encrypted PDF Handling**
 """)
     
     if st.session_state.dd_complete:
