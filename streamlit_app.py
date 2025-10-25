@@ -53,12 +53,12 @@ with st.container():
     st.markdown(
         """
         <div style='
-            background-color: #ADE1FF;
-            border: 3px solid #1F77B4;
+            background-color: #EBEBEB;
+            border: 3px solid #EBEBEB;
             border-radius: 10px;
             padding: 20px;
             text-align: center;
-            color: #1F77B4;
+            color: #000000;
         '>
             <h1 style='margin: 0;'>🚀 Welcome to Investment Analyst AI</h1>
         </div>
