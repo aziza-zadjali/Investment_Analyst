@@ -34,22 +34,6 @@ def encode_image(path):
 qdb_logo = encode_image("QDB_Logo.png")
 regulus_logo = encode_image("regulus_logo.png")
 
-# Get query parameters
-query_params = st.query_params
-page = query_params.get("page", None)
-
-# Handle page navigation
-if page == "deal":
-    st.switch_page("pages/deal_sourcing.py")
-elif page == "dd":
-    st.switch_page("pages/due_diligence.py")
-elif page == "market":
-    st.switch_page("pages/market_analysis.py")
-elif page == "fin":
-    st.switch_page("pages/financial_modeling.py")
-elif page == "memo":
-    st.switch_page("pages/investment_memo.py")
-
 # ===== HERO SECTION =====
 st.markdown(
     f"""
@@ -102,102 +86,54 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ===== TOP NAVIGATION =====
+# ===== TOP NAVIGATION WITH STREAMLIT BUTTONS =====
 st.markdown(
     f"""
 <style>
-.navbar {{
-  background-color:#F6F5F2;
-  display:flex;
-  justify-content:center;
-  gap:40px;
-  padding:18px 10px;
-  margin:-10px -3rem 4px -3rem;
-  font-size:1.07rem;
+.stButton > button {{
+  background-color: transparent !important;
+  border: none !important;
+  color: {QDB_DARK_BLUE} !important;
+  font-weight: 600 !important;
+  font-size: 1.07rem !important;
+  padding: 10px 20px !important;
+  border-bottom: 2.5px solid transparent !important;
+  transition: all 0.3s !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }}
-.nav-item {{
-  position:relative;
-  font-weight:600;
-  color:{QDB_DARK_BLUE};
-  cursor:pointer;
-  border-bottom:2.5px solid transparent;
-  transition:color 0.3s, border-color 0.3s;
+.stButton > button:hover {{
+  color: #319795 !important;
+  border-bottom: 2.5px solid #319795 !important;
+  background-color: transparent !important;
 }}
-.nav-item a {{
-  text-decoration:none;
-  color:{QDB_DARK_BLUE};
-  transition:color 0.3s;
+.stButton > button:focus {{
+  box-shadow: none !important;
 }}
-.nav-item:hover, .nav-item:hover a {{
-  color:#319795;
-  border-color:#319795;
-}}
-.card {{
-  position:absolute; top:38px; left:50%;
-  transform:translateX(-50%);
-  width:320px;
-  background:white;
-  border-radius:12px;
-  box-shadow:0 8px 32px rgba(0,0,0,0.1);
-  opacity:0; visibility:hidden;
-  transition:all 0.25s ease;
-  z-index:10;
-  pointer-events:none;
-}}
-.nav-item:hover .card {{
-  opacity:1; visibility:visible; transform:translate(-50%,15px); pointer-events:auto;
-}}
-.card a {{
-  display:block; padding:17px;
-  text-decoration:none; color:{QDB_DARK_BLUE};
-}}
-.card a:hover {{
-  background-color:#F0F9F8; border-radius:12px; color:#319795;
-}}
-.card h4 {{margin:0; font-size:1.05rem;}}
-.card p {{margin:6px 0 10px; font-size:0.9rem; color:#555; line-height:1.4;}}
 </style>
-
-<div class="navbar">
-  <div class="nav-item">
-    <a href="?page=deal">Deal Sourcing</a>
-    <div class="card">
-      <a href="?page=deal"><h4>Deal Sourcing</h4>
-      <p>Discover and qualify investment opportunities using AI‑based ranking.</p></a>
-    </div>
-  </div>
-  <div class="nav-item">
-    <a href="?page=dd">Due Diligence</a>
-    <div class="card">
-      <a href="?page=dd"><h4>Due Diligence</h4>
-      <p>Run comprehensive due diligence across financial, legal, and operational data.</p></a>
-    </div>
-  </div>
-  <div class="nav-item">
-    <a href="?page=market">Market Analysis</a>
-    <div class="card">
-      <a href="?page=market"><h4>Market Analysis</h4>
-      <p>Extract actionable insights and competitive landscape summaries instantly.</p></a>
-    </div>
-  </div>
-  <div class="nav-item">
-    <a href="?page=fin">Financial Modeling</a>
-    <div class="card">
-      <a href="?page=fin"><h4>Financial Modeling</h4>
-      <p>Build predictive financial models with AI‑powered accuracy checks.</p></a>
-    </div>
-  </div>
-  <div class="nav-item">
-    <a href="?page=memo">Investment Memo</a>
-    <div class="card">
-      <a href="?page=memo"><h4>Investment Memo</h4>
-      <p>Create professional‑grade summary memos ready for executive review.</p></a>
-    </div>
-  </div>
-</div>
 """,
     unsafe_allow_html=True,
 )
+
+# Navigation buttons in columns
+nav_cols = st.columns([1, 1, 1, 1, 1, 1])
+with nav_cols[0]:
+    st.markdown("<div style='height:20px;'></div>", unsafe_allow_html=True)
+with nav_cols[1]:
+    if st.button("Deal Sourcing", key="nav_deal"):
+        st.switch_page("pages/Deal_Sourcing.py")
+with nav_cols[2]:
+    if st.button("Due Diligence", key="nav_dd"):
+        st.switch_page("pages/Due_Diligence.py")
+with nav_cols[3]:
+    if st.button("Market Analysis", key="nav_market"):
+        st.switch_page("pages/Market_Analysis.py")
+with nav_cols[4]:
+    if st.button("Financial Modeling", key="nav_fin"):
+        st.switch_page("pages/Financial_Modeling.py")
+with nav_cols[5]:
+    if st.button("Investment Memo", key="nav_memo"):
+        st.switch_page("pages/Investment_Memo.py")
 
 # ===== CHOOSE PATH SECTION =====
 st.markdown("<div id='choose-path'></div>", unsafe_allow_html=True)
@@ -214,71 +150,79 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-button_style = """
-  background-color:#319795;
-  color:white;
-  border:none;
-  border-radius:40px;
-  padding:12px 30px;
-  font-size:0.95rem;
-  font-weight:600;
-  box-shadow:0 3px 12px rgba(49,151,149,0.3);
-  text-decoration:none;
-  transition:all 0.25s ease;
-  display:inline-block;
-"""
-hover_in = "this.style.backgroundColor='#2C7A7B'"
-hover_out = "this.style.backgroundColor='#319795'"
-
 col1, col2 = st.columns(2, gap="large")
 
 with col1:
     st.markdown(
         f"""
-        <div style="background:white; border-radius:16px; padding:35px; height:390px;
+        <div style="background:white; border-radius:16px; padding:35px; height:360px;
                     box-shadow:0 5px 20px rgba(0,0,0,0.08); border-top:4px solid #2C3E5E;
                     display:flex; flex-direction:column; justify-content:space-between;">
             <div>
                 <h3 style="color:#1B2B4D; font-size:1.6rem; font-weight:600; margin-bottom:16px;">Deal Sourcing Path</h3>
                 <ul style="margin-top:10px; line-height:1.9; color:#333;">
-                    <li><a href='?page=deal' style='color:#1B2B4D; text-decoration:none;'>AI‑powered deal identification</a></li>
-                    <li><a href='?page=market' style='color:#1B2B4D; text-decoration:none;'>Market analysis handoff</a></li>
-                    <li><a href='?page=dd' style='color:#1B2B4D; text-decoration:none;'>Proceed to due diligence</a></li>
+                    <li>AI‑powered deal identification</li>
+                    <li>Market analysis handoff</li>
+                    <li>Proceed to due diligence</li>
                 </ul>
-            </div>
-            <div style="margin-top:auto;text-align:center;">
-                <a href="?page=deal" style="{button_style}" onmouseover="{hover_in}" onmouseout="{hover_out}">
-                  Start Deal Sourcing
-                </a>
             </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
+    st.markdown("<div style='text-align:center; margin-top:20px;'>", unsafe_allow_html=True)
+    if st.button("Start Deal Sourcing", key="deal_btn", use_container_width=False):
+        st.switch_page("pages/Deal_Sourcing.py")
+    st.markdown("</div>", unsafe_allow_html=True)
 
 with col2:
     st.markdown(
         f"""
-        <div style="background:white; border-radius:16px; padding:35px; height:390px;
+        <div style="background:white; border-radius:16px; padding:35px; height:360px;
                     box-shadow:0 5px 20px rgba(0,0,0,0.08); border-top:4px solid #2C3E5E;
                     display:flex; flex-direction:column; justify-content:space-between;">
             <div>
                 <h3 style="color:#1B2B4D; font-size:1.6rem; font-weight:600; margin-bottom:16px;">Due Diligence Path</h3>
                 <ul style="margin-top:10px; line-height:1.9; color:#333;">
-                    <li><a href='?page=dd' style='color:#1B2B4D; text-decoration:none;'>Upload and analyze company data</a></li>
-                    <li><a href='?page=market' style='color:#1B2B4D; text-decoration:none;'>Market fit comparatives</a></li>
-                    <li><a href='?page=memo' style='color:#1B2B4D; text-decoration:none;'>Create Investment Memo</a></li>
+                    <li>Upload and analyze company data</li>
+                    <li>Market fit comparatives</li>
+                    <li>Create Investment Memo</li>
                 </ul>
-            </div>
-            <div style="margin-top:auto;text-align:center;">
-                <a href="?page=dd" style="{button_style}" onmouseover="{hover_in}" onmouseout="{hover_out}">
-                  Start Due Diligence
-                </a>
             </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
+    st.markdown("<div style='text-align:center; margin-top:20px;'>", unsafe_allow_html=True)
+    if st.button("Start Due Diligence", key="dd_btn", use_container_width=False):
+        st.switch_page("pages/Due_Diligence.py")
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# Style the main action buttons with teal
+st.markdown(
+    """
+<style>
+div[data-testid="column"] .stButton > button[key="deal_btn"],
+div[data-testid="column"] .stButton > button[key="dd_btn"] {
+  background-color: #319795 !important;
+  color: white !important;
+  border-radius: 40px !important;
+  padding: 12px 30px !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  box-shadow: 0 3px 12px rgba(49,151,149,0.3) !important;
+  border: none !important;
+  transition: all 0.25s ease !important;
+}
+div[data-testid="column"] .stButton > button[key="deal_btn"]:hover,
+div[data-testid="column"] .stButton > button[key="dd_btn"]:hover {
+  background-color: #2C7A7B !important;
+}
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
 qdb_section_end()
 
 # ===== FOOTER (Minimal Width + Branding) =====
