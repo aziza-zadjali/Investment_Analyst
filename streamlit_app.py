@@ -1,4 +1,7 @@
-""" Investment Analyst AI – Regulus Edition Footer refined | Powered by Regulus AI only """
+"""
+Investment Analyst AI – Regulus Edition
+Footer refined | Powered by Regulus AI only
+"""
 
 import streamlit as st
 import base64
@@ -17,8 +20,8 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed",
 )
-
 apply_qdb_styling()
+
 
 def encode_image(path):
     """Safely embed logos"""
@@ -33,171 +36,248 @@ regulus_logo = encode_image("regulus_logo.png")
 
 # ===== HERO SECTION =====
 st.markdown(
-    f"""<div style="background: linear-gradient(135deg, #1B2B4D 0, #2C3E5E 100%);
-             color: white; text-align: center; margin: 0 -3rem;
-             padding: 110px 20px 100px 20px; position: relative;
-             overflow: hidden;">
+    f"""
+<div style="
+    background: linear-gradient(135deg, #1B2B4D 0%, #2C3E5E 100%);
+    color: white;
+    text-align: center;
+    margin: 0 -3rem;
+    padding: 110px 20px 100px 20px;
+    position: relative;
+    overflow: hidden;">
+  
+  <!-- QDB Logo -->
+  <div style="position:absolute; top:25px; left:35px;">
+    {"<img src='"+qdb_logo+"' style='max-height:70px;'>" if qdb_logo else "<b>QDB</b>"}
+  </div>
 
-        <!-- QDB Logo -->
-        <div style="position:absolute; top:25px; left:35px;">
-            <img src="{qdb_logo}" style="max-height:70px;" alt="QDB Logo" />
-        </div>
+  <!-- Central Content -->
+  <div style="max-width:950px; margin:0 auto;">
+    <h1 style="font-size:2.5rem; font-weight:700; letter-spacing:-0.3px;">
+      Investment Analyst AI
+    </h1>
+    <p style="color:#E2E8F0; font-size:1.05rem; margin-bottom:8px;">
+      Supporting Qatar’s Economic Vision with Data‑Driven Investment Insights
+    </p>
+    <p style="color:#CBD5E0; font-size:0.95rem; line-height:1.6; max-width:720px; margin:0 auto 30px;">
+      End‑to‑End AI Platform for Deal Sourcing, Due Diligence, Market Analysis & Investment Memoranda
+    </p>
+    <a href="#choose-path" style="
+        background-color:#CBD5E0;
+        color:#1B2B4D;
+        border-radius:40px;
+        padding:12px 34px;
+        font-weight:600;
+        font-size:0.95rem;
+        text-decoration:none;
+        display:inline-block;
+        box-shadow:0 4px 14px rgba(203,213,224,0.3);
+        transition:all 0.3s ease;">
+        Explore Analysis Workflows
+    </a>
+  </div>
 
-        <!-- Central Content -->
-        <div style="max-width:950px; margin:0 auto;">
-            <h1 style="font-size:2.5rem; font-weight:700; letter-spacing:-0.3px;">
-                Investment Analyst AI
-            </h1>
-            <p style="color:#E2E8F0; font-size:1.05rem; margin-bottom:8px;">
-                Supporting Qatar's Economic Vision with Data‑Driven Investment Insights
-            </p>
-            <p style="color:#CBD5E0; font-size:0.95rem; line-height:1.6;
-                      max-width:720px; margin:0 auto 30px;">
-                End‑to‑End AI Platform for Deal Sourcing, Due Diligence, Market Analysis & Investment Memos
-            </p>
-        </div>
-    </div>""",
+  <!-- Wave Divider -->
+  <svg viewBox="0 0 1440 140" xmlns="http://www.w3.org/2000/svg" style="position:absolute; bottom:-1px; left:0; width:100%;">
+    <path fill="#F6F5F2" d="M0,32L80,42.7C160,53,320,75,480,80C640,85,800,75,960,69.3C1120,64,1280,75,1360,80L1440,85L1440,140L0,140Z"></path>
+  </svg>
+</div>
+""",
     unsafe_allow_html=True,
 )
 
 # ===== TOP NAVIGATION =====
 st.markdown(
-    f"""<style>
-        .topnav {{
-            display:flex;
-            flex-wrap:wrap;
-            justify-content:center;
-            gap:20px;
-            margin:60px 0 40px 0;
-        }}
-        .topbtn {{
-            border:none;
-            border-radius:40px;
-            padding:12px 32px;
-            font-weight:600;
-            font-size:0.95rem;
-            cursor:pointer;
-            transition:all 0.3s ease;
-            text-decoration:none;
-            color:white;
-        }}
-        .teal{{background-color:#319795;}}
-        .teal:hover{{background-color:#2C7A7B;}}
-        .gray{{background-color:#2D3748;}}
-        .gray:hover{{background-color:#4A5568;}}
-    </style>
+    f"""
+<style>
+.navbar {{
+  background-color:#F6F5F2;
+  display:flex;
+  justify-content:center;
+  gap:40px;
+  padding:18px 10px;
+  margin:-10px -3rem 4px -3rem;
+  font-size:1.07rem;
+}}
+.nav-item {{
+  position:relative;
+  font-weight:600;
+  color:{QDB_DARK_BLUE};
+  cursor:pointer;
+  border-bottom:2.5px solid transparent;
+  transition:color 0.3s, border-color 0.3s;
+}}
+.nav-item:hover {{color:#319795; border-color:#319795;}}
+.card {{
+  position:absolute; top:38px; left:50%;
+  transform:translateX(-50%);
+  width:320px;
+  background:white;
+  border-radius:12px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.1);
+  opacity:0; visibility:hidden;
+  transition:all 0.25s ease;
+  z-index:10;
+  pointer-events:none;
+}}
+.nav-item:hover .card {{
+  opacity:1; visibility:visible; transform:translate(-50%,15px); pointer-events:auto;
+}}
+.card a {{
+  display:block; padding:17px;
+  text-decoration:none; color:{QDB_DARK_BLUE};
+}}
+.card a:hover {{
+  background-color:#F0F9F8; border-radius:12px; color:#319795;
+}}
+.card h4 {{margin:0; font-size:1.05rem;}}
+.card p {{margin:6px 0 10px; font-size:0.9rem; color:#555; line-height:1.4;}}
+</style>
 
-    <div class="topnav">
-        <a href="/pages/1_Deal_Sourcing" class="topbtn teal">Deal Sourcing</a>
-        <a href="/pages/2_Due_Diligence" class="topbtn gray">Due Diligence</a>
-        <a href="/pages/3_Market_Analysis" class="topbtn teal">Market Analysis</a>
-        <a href="/pages/4_Financial_Modeling" class="topbtn gray">Financial Modeling</a>
-        <a href="/pages/5_Investment_Memo" class="topbtn teal">Investment Memo</a>
-    </div>""",
+<div class="navbar">
+  <div class="nav-item">Deal Sourcing
+    <div class="card">
+      <a href="?page=deal"><h4>Deal Sourcing</h4>
+      <p>Discover and qualify investment opportunities using AI‑based ranking.</p></a>
+    </div>
+  </div>
+  <div class="nav-item">Due Diligence
+    <div class="card">
+      <a href="?page=dd"><h4>Due Diligence</h4>
+      <p>Run comprehensive due diligence across financial, legal, and operational data.</p></a>
+    </div>
+  </div>
+  <div class="nav-item">Market Analysis
+    <div class="card">
+      <a href="?page=market"><h4>Market Analysis</h4>
+      <p>Extract actionable insights and competitive landscape summaries instantly.</p></a>
+    </div>
+  </div>
+  <div class="nav-item">Financial Modeling
+    <div class="card">
+      <a href="?page=fin"><h4>Financial Modeling</h4>
+      <p>Build predictive financial models with AI‑powered accuracy checks.</p></a>
+    </div>
+  </div>
+  <div class="nav-item">Investment Memo
+    <div class="card">
+      <a href="?page=memo"><h4>Investment Memo</h4>
+      <p>Create professional‑grade summary memos ready for executive review.</p></a>
+    </div>
+  </div>
+</div>
+""",
     unsafe_allow_html=True,
 )
 
 # ===== CHOOSE PATH SECTION =====
-st.markdown("", unsafe_allow_html=True)
-
+st.markdown("<div id='choose-path'></div>", unsafe_allow_html=True)
 qdb_section_start("light")
-
 st.markdown(
     f"""
-    <div style='text-align:center; max-width:950px; margin:0 auto 35px auto;'>
-        <h2 style='color:#1B2B4D; font-size:2rem; font-weight:700; margin-bottom:10px;'>
-            Choose Your Analysis Path
-        </h2>
-        <p style='color:#555; font-size:1.05rem;'>Start your workflow below or use the navigation above.</p>
-    </div>
-    """,
+<div style="text-align:center; max-width:950px; margin:0 auto 35px auto;">
+  <h2 style="color:{QDB_DARK_BLUE}; font-size:2rem; font-weight:700; margin-bottom:10px;">
+    Choose Your Analysis Path
+  </h2>
+  <p style="color:#555; font-size:1.05rem;">Start your workflow below or use the navigation above.</p>
+</div>
+""",
     unsafe_allow_html=True,
 )
 
+button_style = """
+  background-color:#319795;
+  color:white;
+  border:none;
+  border-radius:40px;
+  padding:12px 30px;
+  font-size:0.95rem;
+  font-weight:600;
+  box-shadow:0 3px 12px rgba(49,151,149,0.3);
+  text-decoration:none;
+  transition:all 0.25s ease;
+"""
+hover_in = "this.style.backgroundColor='#2C7A7B'"
+hover_out = "this.style.backgroundColor='#319795'"
+
 col1, col2 = st.columns(2, gap="large")
 
-# ===== LIGHT SECTION CARDS =====
 with col1:
     st.markdown(
         f"""
-        <div style="background:white; border-radius:16px; padding:35px;
-                    height:390px; box-shadow:0 5px 20px rgba(0,0,0,0.08);
-                    border-top:4px solid #2C3E5E;
+        <div style="background:white; border-radius:16px; padding:35px; height:390px;
+                    box-shadow:0 5px 20px rgba(0,0,0,0.08); border-top:4px solid #2C3E5E;
                     display:flex; flex-direction:column; justify-content:space-between;">
             <div>
-                <h3 style="color:#1B2B4D; font-size:1.6rem; font-weight:600; margin-bottom:16px;">
-                    Deal Sourcing Path
-                </h3>
+                <h3 style="color:#1B2B4D; font-size:1.6rem; font-weight:600; margin-bottom:16px;">Deal Sourcing Path</h3>
                 <ul style="margin-top:10px; line-height:1.9; color:#333;">
-                    <li>AI‑powered deal identification</li>
-                    <li>Market analysis hand‑off</li>
-                    <li>Proceed to due diligence</li>
+                    <li><a href='?page=deal' style='color:#1B2B4D; text-decoration:none;'>AI‑powered deal identification</a></li>
+                    <li><a href='?page=market' style='color:#1B2B4D; text-decoration:none;'>Market analysis handoff</a></li>
+                    <li><a href='?page=dd' style='color:#1B2B4D; text-decoration:none;'>Proceed to due diligence</a></li>
                 </ul>
             </div>
-            <div style="text-align:center;">
-                <a href='/pages/1_Deal_Sourcing' style='text-decoration:none;
-                    background:#319795; color:white; padding:10px 25px;
-                    border-radius:30px; font-weight:600; transition:background-color 0.3s ease;'>
-                    Start →
+            <div style="margin-top:auto;text-align:center;">
+                <a href="?page=deal" style="{button_style}" onmouseover="{hover_in}" onmouseout="{hover_out}">
+                  Start Deal Sourcing
                 </a>
             </div>
-        </div>""",
+        </div>
+        """,
         unsafe_allow_html=True,
     )
 
 with col2:
     st.markdown(
         f"""
-        <div style="background:#1B2B4D; border-radius:16px; padding:35px; height:390px;
+        <div style="background:white; border-radius:16px; padding:35px; height:390px;
                     box-shadow:0 5px 20px rgba(0,0,0,0.08); border-top:4px solid #2C3E5E;
                     display:flex; flex-direction:column; justify-content:space-between;">
             <div>
-                <h3 style="color:#E2E8F0; font-size:1.6rem; font-weight:600; margin-bottom:16px;">
-                    Due Diligence Path
-                </h3>
-                <ul style="margin-top:10px; line-height:1.9; color:#CBD5E0;">
-                    <li>Upload and analyze data</li>
-                    <li>Market fit comparatives</li>
-                    <li>Create investment memo</li>
+                <h3 style="color:#1B2B4D; font-size:1.6rem; font-weight:600; margin-bottom:16px;">Due Diligence Path</h3>
+                <ul style="margin-top:10px; line-height:1.9; color:#333;">
+                    <li><a href='?page=dd' style='color:#1B2B4D; text-decoration:none;'>Upload and analyze company data</a></li>
+                    <li><a href='?page=market' style='color:#1B2B4D; text-decoration:none;'>Market fit comparatives</a></li>
+                    <li><a href='?page=memo' style='color:#1B2B4D; text-decoration:none;'>Create Investment Memo</a></li>
                 </ul>
             </div>
-            <div style="text-align:center;">
-                <a href='/pages/2_Due_Diligence' style='text-decoration:none;
-                    background:#2D3748; color:white; padding:10px 25px;
-                    border-radius:30px; font-weight:600; transition:background-color 0.3s ease;'>
-                    Start →
+            <div style="margin-top:auto;text-align:center;">
+                <a href="?page=dd" style="{button_style}" onmouseover="{hover_in}" onmouseout="{hover_out}">
+                  Start Due Diligence
                 </a>
             </div>
-        </div>""",
+        </div>
+        """,
         unsafe_allow_html=True,
     )
-
 qdb_section_end()
 
-# ===== FOOTER =====
+# ===== FOOTER (Minimal Width + Branding) =====
 st.markdown(
     f"""
-    <div style='background-color:#1B2B4D; color:#E2E8F0; padding:25px 20px;
-                margin:0 auto; width:85%; border-radius:15px 15px 0 0;
-                font-size:0.94rem;'>
-        <div style='display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;'>
-            <div style='flex:3;'>
-                <ul style='list-style:none; display:flex; gap:25px; flex-wrap:wrap; padding:0; margin:0;'>
-                    <li><a href='#' style='text-decoration:none; color:#E2E8F0;'>About Regulus</a></li>
-                    <li><a href='#' style='text-decoration:none; color:#E2E8F0;'>Careers</a></li>
-                    <li><a href='#' style='text-decoration:none; color:#E2E8F0;'>Contact Us</a></li>
-                    <li><a href='#' style='text-decoration:none; color:#E2E8F0;'>Privacy Policy</a></li>
-                    <li><a href='#' style='text-decoration:none; color:#E2E8F0;'>Terms & Conditions</a></li>
-                </ul>
-            </div>
-            <div style='flex:1; text-align:right;'>
-                <p style='margin:0; color:#A0AEC0; font-size:0.9rem;'>
-                    Powered by Regulus AI
-                </p>
-                {"<img src='"+regulus_logo+"' style='max-height:55px; margin-top:6px; opacity:0.95;' alt='Regulus Logo'>" if regulus_logo else "<b>Regulus</b>"}
-            </div>
-        </div>
+<div style="
+    background-color:#1B2B4D;
+    color:#E2E8F0;
+    padding:25px 20px;
+    margin:0 auto;
+    width:85%;
+    border-radius:15px 15px 0 0;
+    font-size:0.94rem;">
+  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+    <div style="flex:3;">
+      <ul style="list-style:none; display:flex; gap:25px; flex-wrap:wrap; padding:0; margin:0;">
+        <li><a href="#" style="text-decoration:none; color:#E2E8F0;">About Regulus</a></li>
+        <li><a href="#" style="text-decoration:none; color:#E2E8F0;">Careers</a></li>
+        <li><a href="#" style="text-decoration:none; color:#E2E8F0;">Contact Us</a></li>
+        <li><a href="#" style="text-decoration:none; color:#E2E8F0;">Privacy Policy</a></li>
+        <li><a href="#" style="text-decoration:none; color:#E2E8F0;">Terms & Conditions</a></li>
+      </ul>
     </div>
-    """,
+    <div style="flex:1; text-align:right;">
+      <p style="margin:0; color:#A0AEC0; font-size:0.9rem;">Powered by Regulus AI</p>
+      {"<img src='"+regulus_logo+"' style='max-height:55px; margin-top:6px; opacity:0.95;'>" if regulus_logo else "<b>Regulus</b>"}
+    </div>
+  </div>
+</div>
+""",
     unsafe_allow_html=True,
 )
