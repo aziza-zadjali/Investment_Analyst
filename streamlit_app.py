@@ -32,27 +32,6 @@ def encode_image(path):
     return None
 
 
-def navigate_to_page(page_name):
-    """Navigate to a page if it exists"""
-    pages_dir = Path("pages")
-    
-    # Try different naming conventions
-    possible_names = [
-        f"{page_name}.py",
-        f"{page_name.replace('_', ' ').title().replace(' ', '_')}.py",
-        f"{page_name.lower()}.py",
-    ]
-    
-    for name in possible_names:
-        page_path = pages_dir / name
-        if page_path.exists():
-            st.switch_page(str(page_path))
-            return
-    
-    # If page doesn't exist, show a message
-    st.warning(f"Page '{page_name}' is under development. Coming soon!")
-
-
 qdb_logo = encode_image("QDB_Logo.png")
 regulus_logo = encode_image("regulus_logo.png")
 
@@ -108,48 +87,49 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ===== TOP NAVIGATION WITH TEAL BUTTONS =====
+# ===== TOP NAVIGATION WITH TEAL BUTTONS (SMALLER & NICER) =====
 st.markdown(
     """
 <style>
-/* Navigation buttons - Teal oval style */
-div[data-testid="column"] button[kind="secondary"] {
+/* Teal navigation buttons - smaller and nicer */
+.nav-button-container button {
   background-color: #319795 !important;
   color: white !important;
   border: none !important;
-  border-radius: 25px !important;
-  padding: 10px 24px !important;
+  border-radius: 30px !important;
+  padding: 8px 20px !important;
   font-weight: 600 !important;
-  font-size: 0.95rem !important;
+  font-size: 0.85rem !important;
   transition: all 0.3s ease !important;
-  box-shadow: 0 2px 8px rgba(49,151,149,0.3) !important;
+  box-shadow: 0 2px 6px rgba(49,151,149,0.25) !important;
+  margin: 0 5px !important;
 }
-div[data-testid="column"] button[kind="secondary"]:hover {
+.nav-button-container button:hover {
   background-color: #2C7A7B !important;
-  box-shadow: 0 4px 12px rgba(49,151,149,0.4) !important;
-  transform: translateY(-2px);
+  box-shadow: 0 3px 10px rgba(49,151,149,0.35) !important;
+  transform: translateY(-1px);
 }
-div[data-testid="column"] button[kind="secondary"]:active {
+.nav-button-container button:active {
   transform: translateY(0px);
 }
 
-/* Main action buttons - Larger teal oval style */
+/* Main action buttons - Teal oval style */
 button[key="deal_btn"],
 button[key="dd_btn"] {
   background-color: #319795 !important;
   color: white !important;
   border: none !important;
   border-radius: 40px !important;
-  padding: 14px 36px !important;
-  font-size: 1rem !important;
+  padding: 12px 32px !important;
+  font-size: 0.95rem !important;
   font-weight: 600 !important;
-  box-shadow: 0 4px 14px rgba(49,151,149,0.35) !important;
+  box-shadow: 0 4px 12px rgba(49,151,149,0.3) !important;
   transition: all 0.3s ease !important;
 }
 button[key="deal_btn"]:hover,
 button[key="dd_btn"]:hover {
   background-color: #2C7A7B !important;
-  box-shadow: 0 6px 18px rgba(49,151,149,0.45) !important;
+  box-shadow: 0 6px 16px rgba(49,151,149,0.4) !important;
   transform: translateY(-2px);
 }
 </style>
@@ -157,26 +137,63 @@ button[key="dd_btn"]:hover {
     unsafe_allow_html=True,
 )
 
-# Navigation bar
-st.markdown("<div style='background-color:#F6F5F2; margin:0 -3rem; padding:15px 0;'>", unsafe_allow_html=True)
-nav_cols = st.columns([0.5, 1, 1, 1, 1, 1, 0.5])
+# Navigation bar with smaller teal buttons
+st.markdown("<div style='background-color:#F6F5F2; margin:0 -3rem; padding:12px 0;'>", unsafe_allow_html=True)
+st.markdown("<div class='nav-button-container' style='text-align:center;'>", unsafe_allow_html=True)
+
+nav_cols = st.columns([1, 1, 1, 1, 1])
+
+with nav_cols[0]:
+    if st.button("Deal Sourcing", key="nav_deal"):
+        try:
+            st.switch_page("pages/Deal_Sourcing.py")
+        except:
+            try:
+                st.switch_page("pages/deal_sourcing.py")
+            except:
+                st.warning("Deal Sourcing page not found")
 
 with nav_cols[1]:
-    if st.button("Deal Sourcing", key="nav_deal", type="secondary"):
-        navigate_to_page("Deal_Sourcing")
-with nav_cols[2]:
-    if st.button("Due Diligence", key="nav_dd", type="secondary"):
-        navigate_to_page("Due_Diligence")
-with nav_cols[3]:
-    if st.button("Market Analysis", key="nav_market", type="secondary"):
-        navigate_to_page("Market_Analysis")
-with nav_cols[4]:
-    if st.button("Financial Modeling", key="nav_fin", type="secondary"):
-        navigate_to_page("Financial_Modeling")
-with nav_cols[5]:
-    if st.button("Investment Memo", key="nav_memo", type="secondary"):
-        navigate_to_page("Investment_Memo")
+    if st.button("Due Diligence", key="nav_dd"):
+        try:
+            st.switch_page("pages/Due_Diligence.py")
+        except:
+            try:
+                st.switch_page("pages/due_diligence.py")
+            except:
+                st.warning("Due Diligence page not found")
 
+with nav_cols[2]:
+    if st.button("Market Analysis", key="nav_market"):
+        try:
+            st.switch_page("pages/Market_Analysis.py")
+        except:
+            try:
+                st.switch_page("pages/market_analysis.py")
+            except:
+                st.warning("Market Analysis page not found")
+
+with nav_cols[3]:
+    if st.button("Financial Modeling", key="nav_fin"):
+        try:
+            st.switch_page("pages/Financial_Modeling.py")
+        except:
+            try:
+                st.switch_page("pages/financial_modeling.py")
+            except:
+                st.warning("Financial Modeling page not found")
+
+with nav_cols[4]:
+    if st.button("Investment Memo", key="nav_memo"):
+        try:
+            st.switch_page("pages/Investment_Memo.py")
+        except:
+            try:
+                st.switch_page("pages/investment_memo.py")
+            except:
+                st.warning("Investment Memo page not found")
+
+st.markdown("</div>", unsafe_allow_html=True)
 st.markdown("</div>", unsafe_allow_html=True)
 
 # ===== CHOOSE PATH SECTION =====
@@ -216,7 +233,13 @@ with col1:
     )
     st.markdown("<div style='text-align:center; margin-top:20px;'>", unsafe_allow_html=True)
     if st.button("Start Deal Sourcing", key="deal_btn", use_container_width=False):
-        navigate_to_page("Deal_Sourcing")
+        try:
+            st.switch_page("pages/Deal_Sourcing.py")
+        except:
+            try:
+                st.switch_page("pages/deal_sourcing.py")
+            except:
+                st.warning("Deal Sourcing page not found. Please create pages/Deal_Sourcing.py")
     st.markdown("</div>", unsafe_allow_html=True)
 
 with col2:
@@ -239,7 +262,13 @@ with col2:
     )
     st.markdown("<div style='text-align:center; margin-top:20px;'>", unsafe_allow_html=True)
     if st.button("Start Due Diligence", key="dd_btn", use_container_width=False):
-        navigate_to_page("Due_Diligence")
+        try:
+            st.switch_page("pages/Due_Diligence.py")
+        except:
+            try:
+                st.switch_page("pages/due_diligence.py")
+            except:
+                st.warning("Due Diligence page not found. Please create pages/Due_Diligence.py")
     st.markdown("</div>", unsafe_allow_html=True)
 
 qdb_section_end()
