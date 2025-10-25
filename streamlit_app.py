@@ -173,6 +173,8 @@ def main():
     with col4:
         st.markdown("**Web Scraper**: 🟢 Online")
     
+    # -*- coding: utf-8 -*-
+
     # Footer
     st.markdown("---")
     st.markdown("""
