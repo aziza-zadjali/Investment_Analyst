@@ -186,7 +186,6 @@ st.markdown(
   <h2 style="color:{QDB_DARK_BLUE}; font-size:2rem; font-weight:700; margin-bottom:10px;">
     Choose Your Analysis Path
   </h2>
-  <p style="color:#555; font-size:1.05rem;">Start your workflow below or use the navigation above.</p>
 </div>
 """,
     unsafe_allow_html=True,
@@ -213,6 +212,11 @@ with path_cols[1]:
         """,
         unsafe_allow_html=True,
     )
+    # Button directly below this box
+    st.markdown("<div style='text-align:center; margin-top:20px;'>", unsafe_allow_html=True)
+    if st.button("Start Deal Sourcing", key="deal_btn", type="primary"):
+        st.switch_page("pages/1_Deal_Sourcing.py")
+    st.markdown("</div>", unsafe_allow_html=True)
 
 with path_cols[2]:
     st.markdown(
@@ -232,30 +236,11 @@ with path_cols[2]:
         """,
         unsafe_allow_html=True,
     )
-
-# Centered buttons below the boxes
-st.markdown(
-    """
-    <div style="display: flex; justify-content: center; gap: 40px; margin-top: 25px;">
-    """,
-    unsafe_allow_html=True,
-)
-
-button_cols = st.columns([1, 0.01, 1])
-
-with button_cols[0]:
-    st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
-    if st.button("Start Deal Sourcing", key="deal_btn", type="primary", use_container_width=True):
-        st.switch_page("pages/1_Deal_Sourcing.py")
-    st.markdown("</div>", unsafe_allow_html=True)
-
-with button_cols[2]:
-    st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
-    if st.button("Start Due Diligence", key="dd_btn", type="primary", use_container_width=True):
+    # Button directly below this box
+    st.markdown("<div style='text-align:center; margin-top:20px;'>", unsafe_allow_html=True)
+    if st.button("Start Due Diligence", key="dd_btn", type="primary"):
         st.switch_page("pages/2_Due_Diligence_Analysis.py")
     st.markdown("</div>", unsafe_allow_html=True)
-
-st.markdown("</div>", unsafe_allow_html=True)
 
 qdb_section_end()
 
