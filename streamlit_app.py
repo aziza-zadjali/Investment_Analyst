@@ -6,6 +6,7 @@ Footer refined | Powered by Regulus AI only
 import streamlit as st
 import base64
 import os
+from pathlib import Path
 from utils.qdb_styling import (
     apply_qdb_styling,
     QDB_PURPLE,
@@ -29,6 +30,27 @@ def encode_image(path):
         with open(path, "rb") as f:
             return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
     return None
+
+
+def navigate_to_page(page_name):
+    """Navigate to a page if it exists"""
+    pages_dir = Path("pages")
+    
+    # Try different naming conventions
+    possible_names = [
+        f"{page_name}.py",
+        f"{page_name.replace('_', ' ').title().replace(' ', '_')}.py",
+        f"{page_name.lower()}.py",
+    ]
+    
+    for name in possible_names:
+        page_path = pages_dir / name
+        if page_path.exists():
+            st.switch_page(str(page_path))
+            return
+    
+    # If page doesn't exist, show a message
+    st.warning(f"Page '{page_name}' is under development. Coming soon!")
 
 
 qdb_logo = encode_image("QDB_Logo.png")
@@ -86,54 +108,76 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ===== TOP NAVIGATION WITH STREAMLIT BUTTONS =====
+# ===== TOP NAVIGATION WITH TEAL BUTTONS =====
 st.markdown(
-    f"""
+    """
 <style>
-.stButton > button {{
-  background-color: transparent !important;
+/* Navigation buttons - Teal oval style */
+div[data-testid="column"] button[kind="secondary"] {
+  background-color: #319795 !important;
+  color: white !important;
   border: none !important;
-  color: {QDB_DARK_BLUE} !important;
+  border-radius: 25px !important;
+  padding: 10px 24px !important;
   font-weight: 600 !important;
-  font-size: 1.07rem !important;
-  padding: 10px 20px !important;
-  border-bottom: 2.5px solid transparent !important;
-  transition: all 0.3s !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-}}
-.stButton > button:hover {{
-  color: #319795 !important;
-  border-bottom: 2.5px solid #319795 !important;
-  background-color: transparent !important;
-}}
-.stButton > button:focus {{
-  box-shadow: none !important;
-}}
+  font-size: 0.95rem !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 8px rgba(49,151,149,0.3) !important;
+}
+div[data-testid="column"] button[kind="secondary"]:hover {
+  background-color: #2C7A7B !important;
+  box-shadow: 0 4px 12px rgba(49,151,149,0.4) !important;
+  transform: translateY(-2px);
+}
+div[data-testid="column"] button[kind="secondary"]:active {
+  transform: translateY(0px);
+}
+
+/* Main action buttons - Larger teal oval style */
+button[key="deal_btn"],
+button[key="dd_btn"] {
+  background-color: #319795 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 40px !important;
+  padding: 14px 36px !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 14px rgba(49,151,149,0.35) !important;
+  transition: all 0.3s ease !important;
+}
+button[key="deal_btn"]:hover,
+button[key="dd_btn"]:hover {
+  background-color: #2C7A7B !important;
+  box-shadow: 0 6px 18px rgba(49,151,149,0.45) !important;
+  transform: translateY(-2px);
+}
 </style>
 """,
     unsafe_allow_html=True,
 )
 
-# Navigation buttons in columns
-nav_cols = st.columns([1, 1, 1, 1, 1, 1])
-with nav_cols[0]:
-    st.markdown("<div style='height:20px;'></div>", unsafe_allow_html=True)
+# Navigation bar
+st.markdown("<div style='background-color:#F6F5F2; margin:0 -3rem; padding:15px 0;'>", unsafe_allow_html=True)
+nav_cols = st.columns([0.5, 1, 1, 1, 1, 1, 0.5])
+
 with nav_cols[1]:
-    if st.button("Deal Sourcing", key="nav_deal"):
-        st.switch_page("pages/Deal_Sourcing.py")
+    if st.button("Deal Sourcing", key="nav_deal", type="secondary"):
+        navigate_to_page("Deal_Sourcing")
 with nav_cols[2]:
-    if st.button("Due Diligence", key="nav_dd"):
-        st.switch_page("pages/Due_Diligence.py")
+    if st.button("Due Diligence", key="nav_dd", type="secondary"):
+        navigate_to_page("Due_Diligence")
 with nav_cols[3]:
-    if st.button("Market Analysis", key="nav_market"):
-        st.switch_page("pages/Market_Analysis.py")
+    if st.button("Market Analysis", key="nav_market", type="secondary"):
+        navigate_to_page("Market_Analysis")
 with nav_cols[4]:
-    if st.button("Financial Modeling", key="nav_fin"):
-        st.switch_page("pages/Financial_Modeling.py")
+    if st.button("Financial Modeling", key="nav_fin", type="secondary"):
+        navigate_to_page("Financial_Modeling")
 with nav_cols[5]:
-    if st.button("Investment Memo", key="nav_memo"):
-        st.switch_page("pages/Investment_Memo.py")
+    if st.button("Investment Memo", key="nav_memo", type="secondary"):
+        navigate_to_page("Investment_Memo")
+
+st.markdown("</div>", unsafe_allow_html=True)
 
 # ===== CHOOSE PATH SECTION =====
 st.markdown("<div id='choose-path'></div>", unsafe_allow_html=True)
@@ -155,8 +199,8 @@ col1, col2 = st.columns(2, gap="large")
 with col1:
     st.markdown(
         f"""
-        <div style="background:white; border-radius:16px; padding:35px; height:360px;
-                    box-shadow:0 5px 20px rgba(0,0,0,0.08); border-top:4px solid #2C3E5E;
+        <div style="background:white; border-radius:16px; padding:35px; height:340px;
+                    box-shadow:0 5px 20px rgba(0,0,0,0.08); border-top:4px solid #319795;
                     display:flex; flex-direction:column; justify-content:space-between;">
             <div>
                 <h3 style="color:#1B2B4D; font-size:1.6rem; font-weight:600; margin-bottom:16px;">Deal Sourcing Path</h3>
@@ -172,14 +216,14 @@ with col1:
     )
     st.markdown("<div style='text-align:center; margin-top:20px;'>", unsafe_allow_html=True)
     if st.button("Start Deal Sourcing", key="deal_btn", use_container_width=False):
-        st.switch_page("pages/Deal_Sourcing.py")
+        navigate_to_page("Deal_Sourcing")
     st.markdown("</div>", unsafe_allow_html=True)
 
 with col2:
     st.markdown(
         f"""
-        <div style="background:white; border-radius:16px; padding:35px; height:360px;
-                    box-shadow:0 5px 20px rgba(0,0,0,0.08); border-top:4px solid #2C3E5E;
+        <div style="background:white; border-radius:16px; padding:35px; height:340px;
+                    box-shadow:0 5px 20px rgba(0,0,0,0.08); border-top:4px solid #319795;
                     display:flex; flex-direction:column; justify-content:space-between;">
             <div>
                 <h3 style="color:#1B2B4D; font-size:1.6rem; font-weight:600; margin-bottom:16px;">Due Diligence Path</h3>
@@ -195,33 +239,8 @@ with col2:
     )
     st.markdown("<div style='text-align:center; margin-top:20px;'>", unsafe_allow_html=True)
     if st.button("Start Due Diligence", key="dd_btn", use_container_width=False):
-        st.switch_page("pages/Due_Diligence.py")
+        navigate_to_page("Due_Diligence")
     st.markdown("</div>", unsafe_allow_html=True)
-
-# Style the main action buttons with teal
-st.markdown(
-    """
-<style>
-div[data-testid="column"] .stButton > button[key="deal_btn"],
-div[data-testid="column"] .stButton > button[key="dd_btn"] {
-  background-color: #319795 !important;
-  color: white !important;
-  border-radius: 40px !important;
-  padding: 12px 30px !important;
-  font-size: 0.95rem !important;
-  font-weight: 600 !important;
-  box-shadow: 0 3px 12px rgba(49,151,149,0.3) !important;
-  border: none !important;
-  transition: all 0.25s ease !important;
-}
-div[data-testid="column"] .stButton > button[key="deal_btn"]:hover,
-div[data-testid="column"] .stButton > button[key="dd_btn"]:hover {
-  background-color: #2C7A7B !important;
-}
-</style>
-""",
-    unsafe_allow_html=True,
-)
 
 qdb_section_end()
 
