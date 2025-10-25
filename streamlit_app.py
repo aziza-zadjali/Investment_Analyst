@@ -34,25 +34,59 @@ st.markdown(
     Supporting Qatar’s Economic Vision with Data‑Driven Investment Insights  
     End‑to‑End AI Platform for Deal Sourcing, Due Diligence, Market Analysis & Investment Memoranda
 
-    [ Explore Analysis Workflows ](#choose-pathnsafe_allow_html=True,
+     Explore Analysis Workflows 
+    """,
+    unsafe_allow_html=True,
 )
 
 # ===== TOP NAVIGATION =====
+st.markdown(
+    f"""
+    <div style="display: flex; gap: 16px;">
+        <div style="flex:1;">
+            <b>Deal Sourcing</b>
+            <br>
+            <small>Discover and qualify investment opportunities using AI‑based ranking.</small>
+        </div>
+        <div style="flex:1;">
+            <b>Due Diligence</b>
+            <br>
+            <small>Run comprehensive due diligence across financial, legal, and operational data.</small>
+        </div>
+        <div style="flex:1;">
+            <b>Market Analysis</b>
+            <br>
+            <small>Extract actionable insights and competitive landscape summaries instantly.</small>
+        </div>
+        <div style="flex:1;">
+            <b>Financial Modeling</b>
+            <br>
+            <small>Build predictive financial models with AI‑powered accuracy checks.</small>
+        </div>
+        <div style="flex:1;">
+            <b>Investment Memo</b>
+            <br>
+            <small>Create professional‑grade summary memos ready for executive review.</small>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 nav_cols = st.columns(5)
 with nav_cols[0]:
-    if st.button("Deal Sourcing"):
+    if st.button("Go to Deal Sourcing", key="nav_deal"):
         st.switch_page("pages/1_Deal_Sourcing.py")
 with nav_cols[1]:
-    if st.button("Due Diligence"):
+    if st.button("Go to Due Diligence", key="nav_dd"):
         st.switch_page("pages/2_Due_Diligence.py")
 with nav_cols[2]:
-    if st.button("Market Analysis"):
+    if st.button("Go to Market Analysis", key="nav_market"):
         st.switch_page("pages/3_Market_Analysis.py")
 with nav_cols[3]:
-    if st.button("Financial Modeling"):
+    if st.button("Go to Financial Modeling", key="nav_fin"):
         st.switch_page("pages/4_Financial_Modeling.py")
 with nav_cols[4]:
-    if st.button("Investment Memo"):
+    if st.button("Go to Investment Memo", key="nav_memo"):
         st.switch_page("pages/5_Investment_Memo.py")
 
 # ===== CHOOSE PATH SECTION =====
@@ -86,6 +120,24 @@ with col1:
     )
     if st.button("Start Deal Sourcing", key="start_deal"):
         st.switch_page("pages/1_Deal_Sourcing.py")
+    st.markdown(
+        f"""
+        <br>
+        <b>Market Analysis Handoff</b>
+        """,
+        unsafe_allow_html=True,
+    )
+    if st.button("Go to Market Analysis", key="deal_market"):
+        st.switch_page("pages/3_Market_Analysis.py")
+    st.markdown(
+        f"""
+        <br>
+        <b>Proceed to Due Diligence</b>
+        """,
+        unsafe_allow_html=True,
+    )
+    if st.button("Go to Due Diligence", key="deal_dd"):
+        st.switch_page("pages/2_Due_Diligence.py")
 
 with col2:
     st.markdown(
@@ -99,17 +151,34 @@ with col2:
     )
     if st.button("Start Due Diligence", key="start_dd"):
         st.switch_page("pages/2_Due_Diligence.py")
+    st.markdown(
+        f"""
+        <br>
+        <b>Market Fit Comparatives</b>
+        """,
+        unsafe_allow_html=True,
+    )
+    if st.button("Go to Market Analysis (from DD)", key="dd_market"):
+        st.switch_page("pages/3_Market_Analysis.py")
+    st.markdown(
+        f"""
+        <br>
+        <b>Create Investment Memo</b>
+        """,
+        unsafe_allow_html=True,
+    )
+    if st.button("Go to Investment Memo", key="dd_memo"):
+        st.switch_page("pages/5_Investment_Memo.py")
 
 qdb_section_end()
 
 # ===== FOOTER (Minimal Width + Branding) =====
 st.markdown(
     f"""
-    - [About Regulus](# - Careers
-    - [ContactUs
-    - Privacy Policy
-    - Terms & Conditions
-    <br>
+    - About Regulus
+    - Careers
+    - [Contact Us](# - Privacy Policy
+    - [Terms & Conditions    <br>
     Powered by Regulus AI
     {'<img src="'+regulus_logo+'" height="32" style="margin-left:8px;" />' if regulus_logo else "<b>Regulus</b>"}
     """,
