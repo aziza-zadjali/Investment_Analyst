@@ -1,204 +1,211 @@
 """
-Deal Discovery & Sourcing – Regulus Edition
-Integrated with WebScraper, LLMHandler, TemplateGenerator
- 🟢 Live scraping, 🟡 industry filtering, 🔵 visual badges & sorting
+Unified Web Scraping & Data Extraction System – Regulus Edition
+Performs: Deal sourcing, IR data extraction, governance, ESG, and company intelligence.
+Integrated with LLMHandler & TemplateGenerator for AI summarization in Deal Sourcing.
 """
 
-import streamlit as st
-import pandas as pd
+import requests
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin, urlparse
+from typing import List, Dict, Any
+import re
+import PyPDF2
+from io import BytesIO
+import time
 from datetime import datetime
-from utils.llm_handler import LLMHandler
-from utils.template_generator import TemplateGenerator
-from utils.qdb_styling import apply_qdb_styling
-import base64
-import os
+from config.constants import REQUEST_TIMEOUT, MAX_RETRIES, USER_AGENT
 
-# --- Streamlit Config ---
-st.set_page_config(page_title="Deal Discovery - Regulus", layout="wide", initial_sidebar_state="collapsed")
-apply_qdb_styling()
 
-# --- Helper for logos ---
-def encode_image(path):
-    if os.path.exists(path):
-        with open(path, "rb") as f:
-            return f"data:image/png;base64," + base64.b64encode(f.read()).decode()
-    return ""
+class WebScraper:
+    """Unified scraping for IR pages, startup deals, and corporate intelligence."""
 
-qdb_logo = encode_image("QDB_Logo.png")
+    def __init__(self):
+        self.session = requests.Session()
+        self.session.headers.update({'User-Agent': USER_AGENT})
 
-# --- Module initialization ---
-@st.cache_resource
-def init_modules():
-    return WebScraper(), LLMHandler(), TemplateGenerator()
+        self.ir_keywords = [
+            'investor', 'financial', 'annual-report', 'governance',
+            'sustainability', 'esg', 'shareholder', 'report'
+        ]
 
-scraper, llm, template_gen = init_modules()
+        self.report_categories = {
+            'financial_statements': ['financial-statement', 'quarterly-result', 'earnings'],
+            'annual_reports': ['annual-report', 'yearly-report'],
+            'governance': ['corporate-governance', 'board', 'governance-report'],
+            'sustainability': ['sustainability', 'esg-report', 'csr'],
+            'presentations': ['investor-presentation', 'company-presentation'],
+            'fact_sheet': ['fact-sheet', 'company-profile'],
+        }
 
-if "discovered_deals" not in st.session_state:
-    st.session_state.discovered_deals = []
+    # ==========================
+    # GENERIC SCRAPER
+    # ==========================
+    def scrape_url(self, url: str, extract_links: bool = True) -> Dict[str, Any]:
+        """Scrape HTML content safely with retry"""
+        for attempt in range(MAX_RETRIES):
+            try:
+                res = self.session.get(url, timeout=REQUEST_TIMEOUT)
+                res.raise_for_status()
+                soup = BeautifulSoup(res.text, 'html.parser')
 
-# --- HEADER ---
-st.markdown(
-    f"""
-<div style="background:linear-gradient(135deg,#1B2B4D,#2C3E5E);color:white;text-align:center;margin:0 -3rem;padding:60px 20px;position:relative;">
- <div style="position:absolute;top:20px;left:35px;">
-  {"<img src='"+qdb_logo+"' style='max-height:60px;'>" if qdb_logo else "<b>QDB</b>"}
- </div>
- <h1 style="font-size:2.2rem;font-weight:700;margin-bottom:10px;">Deal Discovery & Sourcing</h1>
- <p style="color:#CBD5E0;font-size:0.95rem;">AI-powered discovery, qualification, and industry compliance with QDB priorities</p>
-</div>
-""",
-    unsafe_allow_html=True,
-)
+                for t in soup(['script', 'style', 'nav', 'footer', 'header']): 
+                    t.decompose()
+                text = soup.get_text(separator='\n', strip=True)
+                data = {'url': url, 'text': text, 'success': True, 'status': res.status_code}
+                if extract_links:
+                    data['links'] = [a.get('href') for a in soup.find_all('a', href=True)]
+                return data
+            except Exception as e:
+                if attempt == MAX_RETRIES - 1:
+                    return {'url': url, 'success': False, 'error': str(e)}
+                time.sleep(2 ** attempt)
+        return {'url': url, 'success': False}
 
-# --- VISUAL STEP TRACKER ---
-st.markdown(
-    """
-<style>
-.track {background:#F6F5F2;margin:0 -3rem;padding:18px 40px;display:flex;justify-content:space-between;align-items:center;}
-.steps{display:flex;align-items:center;gap:12px;justify-content:center;}
-.step{display:flex;flex-direction:column;align-items:center;}
-.circle{width:42px;height:42px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-weight:700;}
-.circle.active{background:#138074;color:white;box-shadow:0 3px 10px rgba(19,128,116,0.4);}
-.circle.inactive{background:#D1D5DB;color:#9CA3AF;}
-.label{font-size:0.8rem;font-weight:600;margin-top:4px;}
-.label.active{color:#138074;}
-.label.inactive{color:#9CA3AF;}
-.line{height:2px;width:50px;background:#D1D5DB;}
-.link{color:#138074;text-decoration:none;font-weight:600;}
-.link:hover{color:#0e5f55;}
-</style>
-<div class="track">
-  <a href="streamlit_app.py" class="link">Back to Home</a>
-  <div class="steps">
-    <div class="step"><div class="circle active">1</div><div class="label active">Deal Sourcing</div></div>
-    <div class="line"></div>
-    <div class="step"><div class="circle inactive">2</div><div class="label inactive">Due Diligence</div></div>
-    <div class="line"></div>
-    <div class="step"><div class="circle inactive">3</div><div class="label inactive">Market</div></div>
-    <div class="line"></div>
-    <div class="step"><div class="circle inactive">4</div><div class="label inactive">Financials</div></div>
-    <div class="line"></div>
-    <div class="step"><div class="circle inactive">5</div><div class="label inactive">Memo</div></div>
-  </div>
-  <span style="color:#999;">Regulus AI</span>
-</div>
-""",
-    unsafe_allow_html=True,
-)
+    # ==========================
+    # INVESTOR RELATIONS DISCOVERY
+    # ==========================
+    def discover_investor_relations(self, base_url: str) -> Dict[str, List[str]]:
+        """Find investor relations pages categorized by content type"""
+        found = {cat: [] for cat in self.report_categories.keys()}
+        found['home'] = []
+        if not base_url.startswith('http'):
+            base_url = 'https://' + base_url
 
-# ======================================================
-# FILTERS SECTION
-# ======================================================
-st.markdown("### Define Sourcing Parameters")
-st.caption("Configure deal discovery filters for AI-driven sourcing and QDB-aligned screening.")
+        try:
+            site = self.session.get(base_url, timeout=REQUEST_TIMEOUT)
+            soup = BeautifulSoup(site.text, 'html.parser')
+            links = [a.get('href') for a in soup.find_all('a', href=True)]
 
-col1, col2, col3, col4 = st.columns(4)
-with col1:
-    industries = st.multiselect("Target Industries",
-        ["Technology", "Healthcare", "CleanTech", "Finance", "Retail", "Manufacturing"],
-        default=["Technology"])
-with col2:
-    sectors = st.multiselect("Target Sectors",
-        ["AI", "FinTech", "HealthTech", "ClimateTech", "SaaS"],
-        default=["FinTech"])
-with col3:
-    stage = st.multiselect("Funding Stage",
-        ["Pre-Seed", "Seed", "Series A", "Series B", "Growth"],
-        default=["Seed"])
-with col4:
-    geography = st.multiselect("Regions",
-        ["MENA", "Europe", "North America"],
-        default=["MENA"])
+            for href in links:
+                full = urljoin(base_url, href)
+                if urlparse(full).netloc != urlparse(base_url).netloc: 
+                    continue
+                lower = href.lower()
+                for cat, kws in self.report_categories.items():
+                    if any(k in lower for k in kws):
+                        found[cat].append(full)
+                if any(k in lower for k in self.ir_keywords):
+                    found['home'].append(full)
+        except Exception as e:
+            print(f"IR discovery failed for {base_url}: {e}")
 
-col5, col6 = st.columns(2)
-with col5:
-    deal_count = st.number_input("Number of Deals to Source", 5, 50, 10, 5)
-with col6:
-    unattractive_filter = st.checkbox("Exclude Unattractive Industries (QDB Filter)", True)
+        return found
 
-st.divider()
-colX, colY, colZ = st.columns([1, 0.8, 1])
-with colY:
-    discover_pressed = st.button("Discover Deals", type="primary", use_container_width=True)
+    # ==========================
+    # COMPANY IR DATA EXTRACTION
+    # ==========================
+    def extract_company_data(self, base_url: str, name: str) -> Dict[str, str]:
+        """Extract textual information across IR categories"""
+        all_data = {}
+        discovered = self.discover_investor_relations(base_url)
+        for category, urls in discovered.items():
+            texts = []
+            for u in urls[:2]:
+                try:
+                    if u.endswith(".pdf"):
+                        txt = self._extract_pdf_from_url(u)
+                    else:
+                        result = self.scrape_url(u, extract_links=False)
+                        txt = result.get("text", "")
+                    if txt and len(txt) > 40:
+                        texts.append(txt[:4000])
+                except Exception as e:
+                    print(f"Error extracting {u}: {e}")
+            if texts:
+                all_data[category] = "\n\n".join(texts)
+        return all_data
 
-st.markdown("""
-<style>
-div.stButton>button:first-child{
- background:linear-gradient(135deg,#138074,#0e5f55)!important;color:white!important;
- border:none!important;border-radius:40px!important;padding:12px 32px!important;
- font-weight:700!important;font-size:0.95rem!important;
- box-shadow:0 4px 10px rgba(19,128,116,0.3)!important;transition:all 0.2s ease;
-}
-div.stButton>button:first-child:hover{
- background:linear-gradient(135deg,#0e5f55,#138074)!important;
- transform:translateY(-2px)!important;
-}
-</style>
-""", unsafe_allow_html=True)
+    # ==========================
+    # PDF EXTRACTION UTILITIES
+    # ==========================
+    def _extract_pdf_from_url(self, pdf_url: str, max_pages: int = 10) -> str:
+        """Extract text from PDF link"""
+        try:
+            resp = self.session.get(pdf_url, timeout=30)
+            if resp.status_code != 200: 
+                return ""
+            pdf = BytesIO(resp.content)
+            reader = PyPDF2.PdfReader(pdf)
+            text = ""
+            for p in reader.pages[:max_pages]:
+                text += p.extract_text() or ""
+            return self._clean_text(text)
+        except Exception as e:
+            print(f"PDF extract error for {pdf_url}: {e}")
+            return ""
 
-# ======================================================
-# DEAL DISCOVERY EXECUTION
-# ======================================================
-if discover_pressed:
-    try:
-        with st.spinner("Fetching and qualifying deals across multiple validated data sources..."):
-            data = scraper.scrape_startup_data(platform="demo")
-            df = pd.DataFrame(data)
+    def _clean_text(self, txt: str) -> str:
+        txt = re.sub(r'\n+', '\n', txt)
+        txt = re.sub(r' +', ' ', txt)
+        return txt[:6000]
 
-            # Auto integrate QDB unattractive filter simulation
-            df["qdb_priority"] = ["Excluded" if unattractive_filter and i % 4 == 0 else "Preferred" for i in range(len(df))]
+    # ==========================
+    # DEAL SOURCING (MULTI-PLATFORM)
+    # ==========================
+    def scrape_startup_data(self, platform: str = "demo") -> List[Dict[str, Any]]:
+        """
+        Fetch startup deal metadata from global sources.
+        In production: integrate with Crunchbase, AngelList, PitchBook APIs.
+        """
+        if platform == "demo":
+            return [
+                {
+                    "name": "FinStream AI",
+                    "industry": "FinTech",
+                    "stage": "Series A",
+                    "funding": "$10M",
+                    "location": "New York, USA",
+                    "description": "AI‑driven fintech platform specializing in credit scoring.",
+                    "website": "finstream.ai",
+                    "founded": "2021"
+                },
+                {
+                    "name": "GreenPower Tech",
+                    "industry": "CleanTech",
+                    "stage": "Seed",
+                    "funding": "$4M",
+                    "location": "Berlin, Germany",
+                    "description": "Smart systems for re‑energy optimization.",
+                    "website": "greenpower.tech",
+                    "founded": "2022"
+                },
+                {
+                    "name": "MediAI Diagnostics",
+                    "industry": "HealthTech",
+                    "stage": "Series B",
+                    "funding": "$22M",
+                    "location": "Boston, USA",
+                    "description": "AI‑powered diagnostics improving clinical performance.",
+                    "website": "mediaidiagnostics.com",
+                    "founded": "2020"
+                },
+                {
+                    "name": "EcoSmart Materials",
+                    "industry": "Manufacturing",
+                    "stage": "Growth",
+                    "funding": "$15M",
+                    "location": "Dubai, UAE",
+                    "description": "Next‑gen sustainable material manufacturing.",
+                    "website": "ecosmartmaterials.com",
+                    "founded": "2019"
+                }
+            ]
+        else:
+            # Placeholder for future integration with APIs
+            return []
 
-            # Compute ticket numerical values for sorting
-            df["ticket_value"] = df["funding"].str.replace("$", "").str.replace("M", "").astype(float, errors='ignore')
-
-            st.session_state.discovered_deals = df.to_dict("records")
-            st.success(f"✅ {len(df)} deals sourced and enriched successfully.")
-    except Exception as e:
-        st.error(f"Deal discovery failed: {e}")
-
-# ======================================================
-# DISPLAY OUTPUT WITH VISUAL STATUS BADGES
-# ======================================================
-if st.session_state.discovered_deals:
-    df = pd.DataFrame(st.session_state.discovered_deals)
-
-    st.subheader("Discovered Deals")
-    sort_by = st.radio("Sort results by:", ["Industry", "Funding Stage", "Ticket Size"], horizontal=True)
-
-    # Sorting logic
-    if sort_by == "Funding Stage":
-        stage_order = {"Pre-Seed": 1, "Seed": 2, "Series A": 3, "Series B": 4, "Growth": 5}
-        df["stage_order"] = df["stage"].map(stage_order)
-        df = df.sort_values(["stage_order", "industry"]).drop(columns=["stage_order"], errors="ignore")
-    elif sort_by == "Industry":
-        df = df.sort_values("industry")
-    elif sort_by == "Ticket Size":
-        df = df.sort_values("ticket_value", ascending=False)
-
-    # Add visual badge column
-    df["QDB Status"] = df["qdb_priority"].apply(lambda x: "🟢 Attractive" if "Pref" in str(x) else "🔴 Excluded Sector")
-
-    # Display explanation
-    st.caption("🟢 Attractive = aligned with QDB priorities | 🔴 Excluded = flagged non-priority sector.")
-    st.dataframe(df[["QDB Status", "name", "industry", "stage", "funding", "description", "location", "website"]], use_container_width=True)
-
-    # Optional export
-    csv = df.to_csv(index=False)
-    st.download_button("Download Results (CSV)", data=csv, file_name=f"Deals_{datetime.now().strftime('%Y%m%d')}.csv", mime="text/csv")
-
-# ======================================================
-# FOOTER
-# ======================================================
-st.markdown("""
-<div style="background:#1B2B4D;color:#E2E8F0;padding:30px 40px;margin:40px -3rem 0 -3rem;">
- <div style="display:flex;justify-content:space-between;align-items:center;max-width:1400px;margin:0 auto;">
-  <ul style="list-style:none;display:flex;gap:30px;flex-wrap:wrap;padding:0;margin:0;">
-   <li><a href="#" style="color:#E2E8F0;text-decoration:none;">About Regulus</a></li>
-   <li><a href="#" style="color:#E2E8F0;text-decoration:none;">Careers</a></li>
-   <li><a href="#" style="color:#E2E8F0;text-decoration:none;">Contact Us</a></li>
-   <li><a href="#" style="color:#E2E8F0;text-decoration:none;">Privacy Policy</a></li>
-  </ul>
-  <p style="margin:0;color:#A0AEC0;font-size:0.9rem;">Powered by Regulus AI</p>
- </div>
-</div>
-""", unsafe_allow_html=True)
+    # ==========================
+    # MARKET RESEARCH (Basic Demo)
+    # ==========================
+    def search_market_data(self, query: str) -> Dict[str, Any]:
+        keywords = ["size", "growth", "investment", "trends"]
+        results = [
+            {
+                "topic": f"{query} {k}",
+                "summary": f"Market research on {k} aspects of {query}, showing consistent upward demand.",
+                "confidence": 0.9,
+                "timestamp": datetime.now().isoformat()
+            }
+            for k in keywords
+        ]
+        return {"query": query, "results": results, "count": len(results)}
