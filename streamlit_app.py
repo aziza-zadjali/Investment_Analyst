@@ -31,6 +31,15 @@ def encode_image(path):
     return None
 
 
+def safe_switch_page(page_name):
+    """Safely switch page with error handling"""
+    try:
+        st.switch_page(page_name)
+    except Exception as e:
+        st.error(f"Page '{page_name}' not found. Please create the page file.")
+        st.info(f"Create a file at: {page_name}")
+
+
 qdb_logo = encode_image("QDB_Logo.png")
 regulus_logo = encode_image("regulus_logo.png")
 
@@ -86,69 +95,77 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ===== TOP NAVIGATION WITH TEAL BUTTONS =====
+# ===== FORCE TEAL COLOR OVERRIDE =====
 st.markdown(
     """
 <style>
-.nav-button-container {
-  background-color: #F6F5F2;
-  margin: 0 -3rem;
-  padding: 16px 20px;
-  text-align: center;
+/* Force teal color on ALL buttons */
+.stButton > button {
+    background-color: #09AE98 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 32px !important;
+    padding: 10px 24px !important;
+    font-weight: 700 !important;
+    font-size: 0.95rem !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 3px 14px rgba(9,174,152,0.25) !important;
+    letter-spacing: 0.02em !important;
+    line-height: 1.3 !important;
 }
 
-.nav-button-container button {
-  background-color: #09AE98 !important;
-  color: white !important;
-  border: none !important;
-  border-radius: 32px !important;
-  padding: 10px 24px !important;
-  font-weight: 700 !important;
-  font-size: 0.95rem !important;
-  transition: all 0.3s ease !important;
-  box-shadow: 0 3px 14px rgba(9,174,152,0.25) !important;
-  margin: 0 6px !important;
-  letter-spacing: 0.02em !important;
-  line-height: 1.3 !important;
+.stButton > button:hover {
+    background-color: #077e70 !important;
+    box-shadow: 0 6px 18px rgba(9,174,152,0.35) !important;
+    transform: translateY(-2px) !important;
 }
 
-.nav-button-container button:hover {
-  background-color: #077e70 !important;
-  box-shadow: 0 6px 18px rgba(9,174,152,0.35) !important;
-  transform: translateY(-2px) !important;
+.stButton > button:active {
+    transform: translateY(0px) !important;
 }
 
-.nav-button-container button:active {
-  transform: translateY(0px) !important;
+.stButton > button:focus {
+    background-color: #09AE98 !important;
+    color: white !important;
+    box-shadow: 0 3px 14px rgba(9,174,152,0.25) !important;
+}
+
+/* Navigation container */
+.nav-container {
+    background-color: #F6F5F2;
+    margin: 0 -3rem;
+    padding: 16px 20px;
+    text-align: center;
 }
 </style>
-
-<div class="nav-button-container">
 """,
     unsafe_allow_html=True,
 )
 
+# ===== TOP NAVIGATION =====
+st.markdown('<div class="nav-container">', unsafe_allow_html=True)
+
 nav_cols = st.columns(5, gap="small")
 
 with nav_cols[0]:
-    if st.button("Deal\nSourcing", key="nav_deal", use_container_width=True):
-        st.switch_page("pages/Deal_Sourcing.py")
+    if st.button("Deal\nSourcing", key="nav_deal"):
+        safe_switch_page("pages/Deal_Sourcing.py")
 
 with nav_cols[1]:
-    if st.button("Due\nDiligence", key="nav_dd", use_container_width=True):
-        st.switch_page("pages/Due_Diligence.py")
+    if st.button("Due\nDiligence", key="nav_dd"):
+        safe_switch_page("pages/Due_Diligence.py")
 
 with nav_cols[2]:
-    if st.button("Market\nAnalysis", key="nav_market", use_container_width=True):
-        st.switch_page("pages/Market_Analysis.py")
+    if st.button("Market\nAnalysis", key="nav_market"):
+        safe_switch_page("pages/Market_Analysis.py")
 
 with nav_cols[3]:
-    if st.button("Financial\nModeling", key="nav_fin", use_container_width=True):
-        st.switch_page("pages/Financial_Modeling.py")
+    if st.button("Financial\nModeling", key="nav_fin"):
+        safe_switch_page("pages/Financial_Modeling.py")
 
 with nav_cols[4]:
-    if st.button("Investment\nMemo", key="nav_memo", use_container_width=True):
-        st.switch_page("pages/Investment_Memo.py")
+    if st.button("Investment\nMemo", key="nav_memo"):
+        safe_switch_page("pages/Investment_Memo.py")
 
 st.markdown("</div>", unsafe_allow_html=True)
 
@@ -189,7 +206,7 @@ with col1:
     )
     st.markdown("<div style='text-align:center; margin-top:20px;'>", unsafe_allow_html=True)
     if st.button("Start Deal Sourcing", key="deal_btn"):
-        st.switch_page("pages/Deal_Sourcing.py")
+        safe_switch_page("pages/Deal_Sourcing.py")
     st.markdown("</div>", unsafe_allow_html=True)
 
 with col2:
@@ -212,36 +229,8 @@ with col2:
     )
     st.markdown("<div style='text-align:center; margin-top:20px;'>", unsafe_allow_html=True)
     if st.button("Start Due Diligence", key="dd_btn"):
-        st.switch_page("pages/Due_Diligence.py")
+        safe_switch_page("pages/Due_Diligence.py")
     st.markdown("</div>", unsafe_allow_html=True)
-
-# ===== STYLE MAIN ACTION BUTTONS =====
-st.markdown(
-    """
-<style>
-button[key="deal_btn"],
-button[key="dd_btn"] {
-  background-color: #09AE98 !important;
-  color: white !important;
-  border: none !important;
-  border-radius: 40px !important;
-  padding: 12px 36px !important;
-  font-size: 1rem !important;
-  font-weight: 600 !important;
-  box-shadow: 0 4px 14px rgba(9,174,152,0.3) !important;
-  transition: all 0.3s ease !important;
-}
-
-button[key="deal_btn"]:hover,
-button[key="dd_btn"]:hover {
-  background-color: #077e70 !important;
-  box-shadow: 0 6px 18px rgba(9,174,152,0.4) !important;
-  transform: translateY(-2px) !important;
-}
-</style>
-""",
-    unsafe_allow_html=True,
-)
 
 qdb_section_end()
 
