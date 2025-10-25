@@ -1,503 +1,267 @@
 """
-Template Generator for Investment Reports
-Professional branded documents with QDB and Regulus logos
+Template Generator - QDB / Regulus Branded Professional Reports
+Handles Markdown and DOCX generation with logos, layout, and formatting
 """
 
+import markdown
 from docx import Document
-from docx.shared import Inches, Pt, RGBColor
-from docx.enum.text import WD_ALIGN_PARAGRAPH
-from typing import Dict, Any
+from docx.shared import Pt, Inches, RGBColor
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 import os
+from io import BytesIO
+
 
 class TemplateGenerator:
-    """Generate professional investment reports with logos"""
-    
     def __init__(self):
         self.qdb_logo_path = "QDB_Logo.png"
         self.regulus_logo_path = "regulus_logo.png"
-    
-    def add_report_header(self, doc_title="Investment Analysis Report"):
-        """Generate markdown report header with logos"""
-        
-        # Check if logos exist
-        qdb_logo = f"![QDB Logo]({self.qdb_logo_path})" if os.path.exists(self.qdb_logo_path) else "**Qatar Development Bank**"
-        regulus_logo = f"![Regulus Logo]({self.regulus_logo_path})" if os.path.exists(self.regulus_logo_path) else "**Powered by Regulus**"
-        
-        header = f"""
----
 
-<div style='display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 3px solid #A6D8FF; margin-bottom: 30px;'>
-    <div style='flex: 1;'>
-        {qdb_logo}
-    </div>
-    <div style='flex: 2; text-align: center;'>
-        <h1 style='margin: 0; color: #333;'>{doc_title}</h1>
-        <p style='margin: 5px 0 0 0; color: #666; font-size: 0.9rem;'>Prepared by Regulus AI</p>
-    </div>
-    <div style='flex: 1; text-align: right;'>
-        {regulus_logo}
-    </div>
-</div>
+    # ---------------------------
+    # MAIN GENERATION METHODS
+    # ---------------------------
 
----
-"""
-        return header
-    
-    def justify_text(self, text):
-        """Add justify alignment to paragraph text"""
-        if not text or len(text.split()) < 10:  # Don't justify short text
-            return text
-        return f'<p style="text-align: justify;">{text}</p>'
-    
-    # ==================== DUE DILIGENCE REPORT ====================
-    
-    def generate_due_diligence_report(self, data: Dict[str, Any]) -> str:
-        """Generate comprehensive due diligence report with logos"""
-        
-        report = self.add_report_header("Due Diligence Analysis Report")
-        
-        report += f"""
-# DUE DILIGENCE ANALYSIS REPORT
+    def generate_due_diligence_report(self, data):
+        """Generate Markdown report text for Due Diligence"""
+        report = f"""# 🌍 DUE DILIGENCE REPORT
+### {data['company_name']}
 
-**Company:** {data.get('company_name', 'N/A')}  
-**Analysis Date:** {data.get('analysis_date', 'N/A')}  
+**Industry:** {data.get('industry', 'N/A')}  
 **Analyst:** {data.get('analyst_name', 'Regulus AI')}  
-**Company Website:** {data.get('company_website', 'N/A')}
+**Date:** {data.get('analysis_date', 'N/A')}  
 
 ---
 
-## EXECUTIVE SUMMARY
-
-{self.justify_text(data.get('executive_summary', 'Comprehensive due diligence analysis conducted on the target company covering financial, legal, operational, and compliance aspects.'))}
-
----
-
-## 1. FINANCIAL ANALYSIS
-
-{self.justify_text(data.get('financial_analysis', 'Financial analysis pending.'))}
+## 1. EXECUTIVE SUMMARY
+{data.get('executive_summary', 'No summary available.')}
 
 ---
 
-## 2. LEGAL & COMPLIANCE REVIEW
-
-{self.justify_text(data.get('legal_analysis', 'Legal review pending.'))}
-
----
-
-## 3. OPERATIONAL ASSESSMENT
-
-{self.justify_text(data.get('operational_analysis', 'Operational assessment pending.'))}
+## 2. FINANCIAL ANALYSIS
+{data.get('financial_analysis', 'Not provided.')}
 
 ---
 
-## 4. RISK ASSESSMENT
-
-{self.justify_text(data.get('risk_assessment', 'Risk assessment pending.'))}
+## 3. LEGAL AND COMPLIANCE
+{data.get('legal_analysis', 'N/A')}
 
 ---
 
-## 5. AML/KYC COMPLIANCE SCREENING
+## 4. OPERATIONAL EVALUATION
+{data.get('operational_analysis', 'N/A')}
 
-### 5.1 Sanctions Screening
+---
 
-{self.justify_text(data.get('sanctions_screening', 'Sanctions screening pending.'))}
-
-### 5.2 PEP (Politically Exposed Persons) Screening
-
-{self.justify_text(data.get('pep_screening', 'PEP screening pending.'))}
-
-### 5.3 FATCA Compliance
-
-{self.justify_text(data.get('fatca_compliance', 'FATCA review pending.'))}
-
-### 5.4 Adverse Media Check
-
-{self.justify_text(data.get('adverse_media', 'Adverse media screening pending.'))}
+## 5. RISK ASSESSMENT
+{data.get('risk_assessment', 'N/A')}
 
 ---
 
 ## 6. RECOMMENDATIONS
-
-{self.justify_text(data.get('recommendations', 'Recommendations to be finalized.'))}
-
----
-
-## DATA SOURCES
-
-{', '.join(data.get('data_sources', ['Internal documents', 'Public records']))}
+{data.get('recommendations', 'N/A')}
 
 ---
 
-**CONFIDENTIAL** - This report is prepared for Qatar Development Bank internal use only.
-
-*Generated by Regulus AI Investment Analyst Platform*
+### 📑 SCREENING RESULTS
+- **Sanctions List:** {data.get('sanctions_screening', 'N/A')}
+- **PEP Check:** {data.get('pep_screening', 'N/A')}
+- **Adverse Media:** {data.get('adverse_media', 'N/A')}
+- **FATCA Compliance:** {data.get('fatca_compliance', 'N/A')}
 
 ---
+
+### 📊 SOURCES
+{", ".join(data.get('data_sources', [])) if data.get('data_sources') else 'Documents and public records'}
+
+---
+
+**Prepared by Regulus AI | Qatar Development Bank (QDB)**  
 """
         return report
-    
-    # ==================== MARKET ANALYSIS REPORT ====================
-    
-    def generate_market_analysis_report(self, data: Dict[str, Any]) -> str:
-        """Generate market analysis report with logos"""
-        
-        report = self.add_report_header("Market Analysis Report")
-        
-        report += f"""
-# MARKET ANALYSIS REPORT
 
-**Company:** {data.get('company_name', 'N/A')}  
-**Industry:** {data.get('industry', 'N/A')}  
-**Analysis Date:** {data.get('analysis_date', 'N/A')}  
-**Analyst:** {data.get('analyst_name', 'Regulus AI')}
+    def generate_market_analysis_report(self, data):
+        """Generate Markdown for Market Analysis"""
+        report = f"""# 📈 MARKET ANALYSIS REPORT
+### {data['company_name']}
 
----
-
-## EXECUTIVE SUMMARY
-
-{self.justify_text(data.get('executive_summary', 'Market analysis summary.'))}
-
----
-
-## 1. MARKET OVERVIEW
-
-{self.justify_text(data.get('market_overview', 'Market overview pending.'))}
-
----
-
-## 2. MARKET SIZE & GROWTH
-
-{self.justify_text(data.get('market_size', 'Market sizing analysis pending.'))}
-
----
-
-## 3. COMPETITIVE LANDSCAPE
-
-{self.justify_text(data.get('competitive_analysis', 'Competitive analysis pending.'))}
-
----
-
-## 4. REGULATORY ENVIRONMENT
-
-{self.justify_text(data.get('regulatory_environment', 'Regulatory analysis pending.'))}
-
----
-
-## 5. KEY TRENDS & DRIVERS
-
-{self.justify_text(data.get('trends', 'Market trends analysis pending.'))}
-
----
-
-## 6. SWOT ANALYSIS
-
-{data.get('swot_analysis', 'SWOT analysis pending.')}
-
----
-
-## 7. RECOMMENDATIONS
-
-{self.justify_text(data.get('recommendations', 'Recommendations pending.'))}
-
----
-
-*Generated by Regulus AI Investment Analyst Platform*
-
----
-"""
-        return report
-    
-    # ==================== DEAL SOURCING REPORT ====================
-    
-    def generate_deal_sourcing_report(self, data: Dict[str, Any]) -> str:
-        """Generate deal sourcing report"""
-        
-        report = self.add_report_header("Deal Sourcing Report")
-        
-        report += f"""
-# DEAL SOURCING REPORT
-
-**Report Date:** {data.get('analysis_date', 'N/A')}  
-**Analyst:** {data.get('analyst_name', 'Regulus AI')}  
-**Total Deals Discovered:** {data.get('total_deals', 0)}  
-**Attractive Deals:** {data.get('attractive_deals', 0)}  
-**Tagged Unattractive:** {data.get('unattractive_deals', 0)}
-
----
-
-## SEARCH CRITERIA
-
-**Target Industries:** {data.get('industries', 'N/A')}  
-**Target Sectors:** {data.get('sectors', 'N/A')}  
-**Funding Stages:** {data.get('stages', 'N/A')}  
-**Regions:** {data.get('regions', 'N/A')}  
-**Investment Ticket Size:** {data.get('ticket_size', 'Not specified')}
-
----
-
-## DISCOVERED DEALS
-
-"""
-        
-        for idx, deal in enumerate(data.get('deals', [])[:20], 1):  # Limit to 20 deals
-            flag = "⚠️ UNATTRACTIVE" if deal.get('unattractive_flag') else "✅ ATTRACTIVE"
-            
-            report += f"""
-### {idx}. {deal.get('company', 'N/A')} - {flag}
-
-**Industry:** {deal.get('industry', 'N/A')}  
-**Sector:** {deal.get('sector', 'N/A')}  
-**Stage:** {deal.get('stage', 'N/A')}  
-**Region:** {deal.get('region', 'N/A')}  
-**Revenue:** {deal.get('revenue', 'N/A')}  
-**Ticket Size:** {deal.get('ticket_size', 'N/A')}  
-**Founded:** {deal.get('founded', 'N/A')}  
-**Source:** {deal.get('source', 'N/A')}
-
-**Description:** {deal.get('description', 'N/A')}
-
-"""
-            if deal.get('unattractive_flag'):
-                report += f"**Industry Flag:** {deal.get('unattractive_reason', 'N/A')}\n\n"
-            
-            report += "---\n\n"
-        
-        report += """
-## SUMMARY
-
-This deal sourcing report presents potential investment opportunities filtered according to Qatar Development Bank's investment criteria and industry preferences.
-
----
-
-*Generated by Regulus AI Investment Analyst Platform*
-
----
-"""
-        return report
-    
-    # ==================== INVESTMENT MEMO ====================
-    
-    def generate_complete_memo(self, data: Dict[str, Any]) -> str:
-        """Generate complete investment memo"""
-        
-        memo = self.add_report_header("Investment Memorandum")
-        
-        memo += f"""
-# INVESTMENT MEMORANDUM
-## {data.get('company_name', 'Company Name')}
-
-**{data.get('stage', 'Investment Stage')} Stage Investment Opportunity**
-
----
-
-**Prepared by:** {data.get('analyst_name', 'Regulus AI')}  
+**Industry:** {data['industry']} | **Sector:** {data['sector']}  
 **Date:** {data.get('analysis_date', 'N/A')}  
-**Investment Amount:** {data.get('investment_size', 'N/A')}  
-**Valuation:** {data.get('valuation', 'N/A')} (Pre-Money)  
-**Ownership:** {data.get('ownership', 'N/A')}
 
 ---
 
-## EXECUTIVE SUMMARY
-
-### Investment Recommendation: **{data.get('recommendation', 'N/A')}**
-
-{self.justify_text(data.get('investment_thesis', 'Investment thesis to be developed.'))}
-
-### Key Investment Highlights
-
-{data.get('key_highlights', 'Key highlights to be documented.')}
+## 1. EXECUTIVE SUMMARY
+{data.get('executive_summary', 'Overview not provided.')}
 
 ---
 
-## 1. COMPANY OVERVIEW
+## 2. MARKET OVERVIEW
+{data.get('market_overview', '')}
 
-### Background
+---
 
-- **Founded:** {data.get('founded', 'N/A')}
-- **Location:** {data.get('location', 'N/A')}
-- **Industry:** {data.get('industry', 'N/A')}
-- **Stage:** {data.get('stage', 'N/A')}
+## 3. MARKET SIZE AND OPPORTUNITY
+{data.get('market_size', '')}
+
+---
+
+## 4. COMPETITIVE ANALYSIS
+{data.get('competitive_analysis', '')}
+
+---
+
+## 5. REGULATORY ENVIRONMENT
+{data.get('regulatory_environment', '')}
+
+---
+
+## 6. TRENDS AND DRIVERS
+{data.get('trends', '')}
+
+---
+
+## 7. SWOT ANALYSIS
+{data.get('swot_analysis', '')}
+
+---
+
+## 8. RECOMMENDATIONS
+{data.get('recommendations', 'Further investigation recommended.')}
+
+---
+
+**Prepared by Regulus AI | Qatar Development Bank (QDB)**  
+"""
+        return report
+
+    def generate_investment_memo(self, data):
+        """Generate Markdown for Investment Memo with optional scoring framework"""
+        base = f"""# 📝 INVESTMENT MEMORANDUM
+### {data['company_name']}
+
+**Stage:** {data['stage']}  
+**Analysis Date:** {data['analysis_date']}  
+**Investment Amount:** {data['investment_size']} | **Valuation:** {data['valuation']} | **Ownership:** {data['ownership']}  
+**Recommendation:** **{data['recommendation']}**
+
+---
+
+## 1. EXECUTIVE SUMMARY
+{data.get('investment_thesis', '')}
+
+---
+
+## 2. KEY HIGHLIGHTS
+{data.get('key_highlights', '')}
+
+---
+
+## 3. BUSINESS OVERVIEW
+### Model
+{data.get('business_model', '')}
 
 ### Products & Services
-
-{self.justify_text(data.get('products_services', 'Products and services to be documented.'))}
-
-### Business Model
-
-{self.justify_text(data.get('business_model', 'Business model to be documented.'))}
+{data.get('products_services', '')}
 
 ---
 
-## 2. MARKET OPPORTUNITY
-
-### Market Size
-
-- **Total Addressable Market (TAM):** {data.get('tam', 'N/A')}
-- **Serviceable Addressable Market (SAM):** {data.get('sam', 'N/A')}
-- **Serviceable Obtainable Market (SOM):** {data.get('som', 'N/A')}
-
-### Market Trends & Drivers
-
-{self.justify_text(data.get('market_trends', 'Market trends to be analyzed.'))}
+## 4. MARKET ANALYSIS
+### TAM / SAM / SOM
+- **TAM:** {data.get('tam', 'N/A')}
+- **SAM:** {data.get('sam', 'N/A')}
+- **SOM:** {data.get('som', 'N/A')}
 
 ### Competitive Landscape
-
-{self.justify_text(data.get('competitive_landscape', 'Competitive landscape to be researched.'))}
+{data.get('competitive_landscape', '')}
 
 ---
 
-## 3. FINANCIAL PERFORMANCE
-
-### Current Metrics
-
-- **Current Revenue (ARR):** {data.get('current_revenue', 'N/A')}
-- **Revenue Growth:** {data.get('revenue_growth', 'N/A')}
+## 5. FINANCIAL OVERVIEW
+- **Annual Revenue (ARR):** {data.get('current_revenue', 'N/A')}
+- **Growth Rate:** {data.get('revenue_growth', 'N/A')}
 - **Gross Margin:** {data.get('gross_margin', 'N/A')}
-- **Monthly Burn Rate:** {data.get('burn_rate', 'N/A')}
 - **Runway:** {data.get('runway', 'N/A')}
-- **Unit Economics (LTV/CAC):** {data.get('unit_economics', 'N/A')}
+- **LTV/CAC:** {data.get('unit_economics', 'N/A')}
 
 ---
 
-## 4. MANAGEMENT TEAM
-
-{self.justify_text(data.get('team_info', 'Management team information to be documented.'))}
-
----
-
-## 5. INVESTMENT TERMS
-
-### Proposed Structure
-
-- **Investment Amount:** {data.get('investment_size', 'N/A')}
-- **Pre-Money Valuation:** {data.get('valuation', 'N/A')}
-- **Ownership:** {data.get('ownership', 'N/A')}
+## 6. TEAM OVERVIEW
+{data.get('team_info', '')}
 
 ---
 
-## 6. RISK ANALYSIS
-
-### Key Risks
-
-{self.justify_text(data.get('business_risks', 'Key risks to be identified.'))}
-
-### Risk Mitigation Strategies
-
-{self.justify_text(data.get('risk_mitigation', 'Risk mitigation strategies to be developed.'))}
+## 7. RISKS & MITIGATION
+- **Risks:** {data.get('business_risks', '')}  
+- **Mitigation:** {data.get('risk_mitigation', '')}
 
 ---
 """
-        
-        # Add scoring if provided
-        if data.get('scoring'):
-            scores = data['scoring']
-            memo += f"""
-## 7. STRATEGIC ASSESSMENT FRAMEWORK
 
+        # Include scoring if available
+        if data.get('scoring'):
+            s = data['scoring']
+            base += f"""## 8. STRATEGIC ASSESSMENT
 ### Gulf Resonance Scoring
 
 | Dimension | Score | Description |
-|-----------|-------|-------------|
-| **Strategic Clarity** | {scores['strategic_clarity']}/10 | Clear vision, mission, and strategic roadmap |
-| **Symbolic Fluency** | {scores['symbolic_fluency']}/10 | Brand positioning and market narrative |
-| **Execution Discipline** | {scores['execution_discipline']}/10 | Track record of delivering on commitments |
-| **Archetypal Fit** | {scores['archetypal_fit']}/10 | Alignment with portfolio strategy |
-| **Gulf Resonance** | {scores['gulf_resonance']}/10 | Regional market fit and cultural alignment |
+|------------|--------|-------------|
+| Strategic Clarity | {s['strategic_clarity']}/10 | Vision and mission clarity |
+| Symbolic Fluency | {s['symbolic_fluency']}/10 | Communication & branding |
+| Execution Discipline | {s['execution_discipline']}/10 | Team consistency |
+| Archetypal Fit | {s['archetypal_fit']}/10 | Alignment with QDB strategy |
+| Gulf Resonance | {s['gulf_resonance']}/10 | Regional cultural fit |
 
-**Composite Score: {scores['composite_score']:.1f}/10**
-
----
-"""
-        
-        memo += f"""
-## 8. RECOMMENDATION & NEXT STEPS
-
-### Investment Recommendation: **{data.get('recommendation', 'N/A')}**
-
-{self.justify_text(f"Based on comprehensive analysis, we recommend {data.get('recommendation', 'N/A')} for this investment opportunity.")}
-
----
-
-**CONFIDENTIAL** - For Qatar Development Bank Internal Use Only
-
-*Generated by Regulus AI Investment Analyst Platform*
+**Composite Score:** {s['composite_score']:.1f}/10
 
 ---
 """
-        return memo
-    
-    # ==================== MARKDOWN TO DOCX CONVERTER ====================
-    
-    def markdown_to_docx(self, markdown_text: str) -> Document:
-        """Convert markdown report to professional DOCX with logos"""
-        
-        doc = Document()
-        
-        # Add logos to header (if they exist)
+        base += "\n**Prepared by Regulus AI | Qatar Development Bank (QDB)**"
+        return base
+
+    # ---------------------------
+    # MARKDOWN TO DOCX CONVERTER
+    # ---------------------------
+
+    def markdown_to_docx(self, markdown_text):
+        """Convert markdown text to styled DOCX with logos and brand formatting"""
+        html = markdown.markdown(markdown_text)
+        document = Document()
+
+        # Insert header with logos
+        header = document.sections[0].header
+        header_para = header.paragraphs[0]
+        header_para.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         if os.path.exists(self.qdb_logo_path) and os.path.exists(self.regulus_logo_path):
-            header_table = doc.add_table(rows=1, cols=3)
-            header_table.autofit = False
-            header_table.allow_autofit = False
-            
-            # QDB Logo (left)
-            left_cell = header_table.rows[0].cells[0]
-            left_paragraph = left_cell.paragraphs[0]
-            left_run = left_paragraph.add_run()
-            try:
-                left_run.add_picture(self.qdb_logo_path, width=Inches(1.5))
-            except:
-                left_paragraph.add_run("Qatar Development Bank")
-            
-            # Title (center)
-            center_cell = header_table.rows[0].cells[1]
-            center_paragraph = center_cell.paragraphs[0]
-            center_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            title_run = center_paragraph.add_run("Investment Analysis Report\n")
-            title_run.font.size = Pt(16)
-            title_run.font.bold = True
-            subtitle_run = center_paragraph.add_run("Prepared by Regulus AI")
-            subtitle_run.font.size = Pt(10)
-            subtitle_run.font.color.rgb = RGBColor(102, 102, 102)
-            
-            # Regulus Logo (right)
-            right_cell = header_table.rows[0].cells[2]
-            right_paragraph = right_cell.paragraphs[0]
-            right_paragraph.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-            right_run = right_paragraph.add_run()
-            try:
-                right_run.add_picture(self.regulus_logo_path, width=Inches(1.5))
-            except:
-                right_paragraph.add_run("Regulus")
-            
-            doc.add_paragraph()  # Spacing
-        
-        # Parse markdown and add to document
-        lines = markdown_text.split('\n')
-        
-        for line in lines:
-            line = line.strip()
-            
-            # Skip HTML/markdown artifacts
-            if line.startswith('<') or line.startswith('![') or line == '---':
-                continue
-            
-            # Headers
-            if line.startswith('# '):
-                p = doc.add_heading(line[2:], level=1)
-            elif line.startswith('## '):
-                p = doc.add_heading(line[3:], level=2)
-            elif line.startswith('### '):
-                p = doc.add_heading(line[4:], level=3)
-            elif line.startswith('#### '):
-                p = doc.add_heading(line[5:], level=4)
-            # Bold
-            elif line.startswith('**') and line.endswith('**'):
-                p = doc.add_paragraph()
-                p.add_run(line[2:-2]).bold = True
-            # Regular paragraph
-            elif line:
-                p = doc.add_paragraph(line)
-                p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY  # Justify text
-        
-        return doc
+            run = header_para.add_run()
+            run.add_picture(self.qdb_logo_path, width=Inches(1.2))
+            run.add_text("  " * 5)
+            run.add_picture(self.regulus_logo_path, width=Inches(1.2))
+        else:
+            header_para.add_run("Qatar Development Bank | Regulus AI")
+
+        document.add_paragraph()
+
+        # Add HTML text
+        paragraphs = html.split("\n")
+        for p in paragraphs:
+            if p.strip():
+                para = document.add_paragraph()
+                run = para.add_run(p)
+                para_format = para.paragraph_format
+                para_format.space_after = Pt(6)
+                font = run.font
+                font.name = "Calibri"
+                font.size = Pt(11)
+                if p.startswith("#"):
+                    para.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                    font.size = Pt(14)
+                    font.bold = True
+
+        # Footer
+        section = document.sections[0]
+        footer = section.footer
+        footer_para = footer.paragraphs[0]
+        footer_para.text = "CONFIDENTIAL | Qatar Development Bank (QDB) | Regulus AI"
+        footer_para.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        footer_para.runs[0].font.size = Pt(9)
+        footer_para.runs[0].font.color.rgb = RGBColor(100, 100, 100)
+
+        return document
