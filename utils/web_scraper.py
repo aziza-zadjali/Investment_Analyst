@@ -7,7 +7,6 @@ Integrated with WebScraper, LLMHandler, TemplateGenerator
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-from utils.web_scraper import WebScraper
 from utils.llm_handler import LLMHandler
 from utils.template_generator import TemplateGenerator
 from utils.qdb_styling import apply_qdb_styling
