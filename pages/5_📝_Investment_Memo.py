@@ -7,19 +7,15 @@ from datetime import datetime
 from io import BytesIO
 from utils.template_generator import TemplateGenerator
 from utils.llm_handler import LLMHandler
-from utils.financial_analyzer import FinancialAnalyzer
 
 st.set_page_config(page_title="Investment Memo", page_icon="📝", layout="wide")
 
 # Initialize handlers
 @st.cache_resource
 def init_handlers():
-    try:
-        return TemplateGenerator(), LLMHandler(), FinancialAnalyzer()
-    except:
-        return TemplateGenerator(), LLMHandler(), None
+    return TemplateGenerator(), LLMHandler()
 
-template_gen, llm, fin_analyzer = init_handlers()
+template_gen, llm = init_handlers()
 
 # Session state
 if 'memo_complete' not in st.session_state:
@@ -44,57 +40,27 @@ st.subheader("🏢 Company & Deal Information")
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    company_name = st.text_input(
-        "Company Name *",
-        placeholder="e.g., GreenTech Solutions"
-    )
-    
-    founded_year = st.text_input(
-        "Founded",
-        placeholder="e.g., 2020"
-    )
+    company_name = st.text_input("Company Name *", placeholder="e.g., GreenTech Solutions")
+    founded_year = st.text_input("Founded", placeholder="e.g., 2020")
 
 with col2:
-    industry = st.text_input(
-        "Industry/Sector *",
-        placeholder="e.g., Renewable Energy"
-    )
-    
-    location = st.text_input(
-        "Location",
-        placeholder="e.g., San Francisco, CA"
-    )
+    industry = st.text_input("Industry/Sector *", placeholder="e.g., Renewable Energy")
+    location = st.text_input("Location", placeholder="e.g., San Francisco, CA")
 
 with col3:
-    stage = st.selectbox(
-        "Investment Stage *",
-        ["Seed", "Series A", "Series B", "Series C", "Growth", "Pre-IPO"]
-    )
-    
-    deal_size = st.text_input(
-        "Investment Amount *",
-        placeholder="e.g., $5M"
-    )
+    stage = st.selectbox("Investment Stage *", ["Seed", "Series A", "Series B", "Series C", "Growth", "Pre-IPO"])
+    deal_size = st.text_input("Investment Amount *", placeholder="e.g., $5M")
 
 col4, col5, col6 = st.columns(3)
 
 with col4:
-    valuation = st.text_input(
-        "Pre-Money Valuation *",
-        placeholder="e.g., $50M"
-    )
+    valuation = st.text_input("Pre-Money Valuation *", placeholder="e.g., $50M")
 
 with col5:
-    ownership = st.text_input(
-        "Ownership %",
-        placeholder="e.g., 10%"
-    )
+    ownership = st.text_input("Ownership %", placeholder="e.g., 10%")
 
 with col6:
-    recommendation = st.selectbox(
-        "Recommendation *",
-        ["STRONG BUY", "BUY", "HOLD", "PASS"]
-    )
+    recommendation = st.selectbox("Recommendation *", ["STRONG BUY", "BUY", "HOLD", "PASS"])
 
 st.divider()
 
@@ -104,30 +70,12 @@ st.subheader("📊 Business Overview")
 col_bus1, col_bus2 = st.columns(2)
 
 with col_bus1:
-    business_model = st.text_area(
-        "Business Model",
-        height=100,
-        placeholder="Describe the company's business model..."
-    )
-    
-    products_services = st.text_area(
-        "Products/Services",
-        height=100,
-        placeholder="Describe key products and services..."
-    )
+    business_model = st.text_area("Business Model", height=100, placeholder="Describe the company's business model...")
+    products_services = st.text_area("Products/Services", height=100, placeholder="Describe key products and services...")
 
 with col_bus2:
-    investment_thesis = st.text_area(
-        "Investment Thesis",
-        height=100,
-        placeholder="Why is this a compelling investment?"
-    )
-    
-    key_highlights = st.text_area(
-        "Key Highlights",
-        height=100,
-        placeholder="List key achievements and strengths..."
-    )
+    investment_thesis = st.text_area("Investment Thesis", height=100, placeholder="Why is this a compelling investment?")
+    key_highlights = st.text_area("Key Highlights", height=100, placeholder="List key achievements and strengths...")
 
 st.divider()
 
@@ -137,34 +85,16 @@ st.subheader("🌐 Market Analysis")
 col_mkt1, col_mkt2, col_mkt3 = st.columns(3)
 
 with col_mkt1:
-    tam = st.text_input(
-        "TAM (Total Addressable Market)",
-        placeholder="e.g., $50B"
-    )
+    tam = st.text_input("TAM (Total Addressable Market)", placeholder="e.g., $50B")
 
 with col_mkt2:
-    sam = st.text_input(
-        "SAM (Serviceable Addressable Market)",
-        placeholder="e.g., $5B"
-    )
+    sam = st.text_input("SAM (Serviceable Addressable Market)", placeholder="e.g., $5B")
 
 with col_mkt3:
-    som = st.text_input(
-        "SOM (Serviceable Obtainable Market)",
-        placeholder="e.g., $500M"
-    )
+    som = st.text_input("SOM (Serviceable Obtainable Market)", placeholder="e.g., $500M")
 
-market_trends = st.text_area(
-    "Market Trends & Drivers",
-    height=80,
-    placeholder="Describe market dynamics, growth drivers, and trends..."
-)
-
-competitive_landscape = st.text_area(
-    "Competitive Landscape",
-    height=80,
-    placeholder="Describe competitors and competitive positioning..."
-)
+market_trends = st.text_area("Market Trends & Drivers", height=80, placeholder="Describe market dynamics, growth drivers, and trends...")
+competitive_landscape = st.text_area("Competitive Landscape", height=80, placeholder="Describe competitors and competitive positioning...")
 
 st.divider()
 
@@ -174,116 +104,60 @@ st.subheader("💰 Financial Performance")
 col_fin1, col_fin2, col_fin3 = st.columns(3)
 
 with col_fin1:
-    current_revenue = st.text_input(
-        "Current Revenue (ARR)",
-        placeholder="e.g., $10M"
-    )
+    current_revenue = st.text_input("Current Revenue (ARR)", placeholder="e.g., $10M")
 
 with col_fin2:
-    revenue_growth = st.text_input(
-        "Revenue Growth Rate",
-        placeholder="e.g., 150% YoY"
-    )
+    revenue_growth = st.text_input("Revenue Growth Rate", placeholder="e.g., 150% YoY")
 
 with col_fin3:
-    gross_margin = st.text_input(
-        "Gross Margin",
-        placeholder="e.g., 75%"
-    )
+    gross_margin = st.text_input("Gross Margin", placeholder="e.g., 75%")
 
 col_fin4, col_fin5, col_fin6 = st.columns(3)
 
 with col_fin4:
-    burn_rate = st.text_input(
-        "Monthly Burn Rate",
-        placeholder="e.g., $500K"
-    )
+    burn_rate = st.text_input("Monthly Burn Rate", placeholder="e.g., $500K")
 
 with col_fin5:
-    runway = st.text_input(
-        "Runway (Months)",
-        placeholder="e.g., 18 months"
-    )
+    runway = st.text_input("Runway (Months)", placeholder="e.g., 18 months")
 
 with col_fin6:
-    unit_economics = st.text_input(
-        "LTV/CAC Ratio",
-        placeholder="e.g., 3.5x"
-    )
+    unit_economics = st.text_input("LTV/CAC Ratio", placeholder="e.g., 3.5x")
 
 st.divider()
 
+# Initialize scoring variables with defaults
+strategic_clarity = 7
+symbolic_fluency = 6
+execution_discipline = 6
+archetypal_fit = 7
+gulf_resonance = 6
+composite_score = 6.4
+enable_scoring = False
+
 # Gulf Resonance Scoring Framework (Optional)
 with st.expander("📊 **Optional:** Gulf Resonance Scoring Framework", expanded=False):
-    st.info("""
-**Strategic Investment Scoring Framework:**
-Rate each dimension from 1-10 based on comprehensive analysis.
-    """)
+    st.info("**Strategic Investment Scoring Framework:** Rate each dimension from 1-10 based on comprehensive analysis.")
     
     col_s1, col_s2 = st.columns(2)
     
     with col_s1:
-        strategic_clarity = st.slider(
-            "Strategic Clarity",
-            min_value=1,
-            max_value=10,
-            value=7,
-            help="Clear vision, mission, and strategic roadmap"
-        )
-        
-        symbolic_fluency = st.slider(
-            "Symbolic Fluency",
-            min_value=1,
-            max_value=10,
-            value=6,
-            help="Brand positioning and market narrative"
-        )
-        
-        execution_discipline = st.slider(
-            "Execution Discipline",
-            min_value=1,
-            max_value=10,
-            value=6,
-            help="Track record of delivering on commitments"
-        )
+        strategic_clarity = st.slider("Strategic Clarity", min_value=1, max_value=10, value=7, help="Clear vision, mission, and strategic roadmap")
+        symbolic_fluency = st.slider("Symbolic Fluency", min_value=1, max_value=10, value=6, help="Brand positioning and market narrative")
+        execution_discipline = st.slider("Execution Discipline", min_value=1, max_value=10, value=6, help="Track record of delivering on commitments")
     
     with col_s2:
-        archetypal_fit = st.slider(
-            "Archetypal Fit",
-            min_value=1,
-            max_value=10,
-            value=7,
-            help="Alignment with portfolio strategy and thesis"
-        )
-        
-        gulf_resonance = st.slider(
-            "Gulf Resonance",
-            min_value=1,
-            max_value=10,
-            value=6,
-            help="Regional market fit and cultural alignment"
-        )
+        archetypal_fit = st.slider("Archetypal Fit", min_value=1, max_value=10, value=7, help="Alignment with portfolio strategy and thesis")
+        gulf_resonance = st.slider("Gulf Resonance", min_value=1, max_value=10, value=6, help="Regional market fit and cultural alignment")
     
-    # Calculate composite score
     composite_score = (strategic_clarity + symbolic_fluency + execution_discipline + archetypal_fit + gulf_resonance) / 5
-    
     st.metric("Composite Score", f"{composite_score:.1f}/10")
-    
     enable_scoring = st.checkbox("Include scoring framework in memo", value=False)
-
-else:
-    enable_scoring = False
 
 st.divider()
 
 # Team Information
 st.subheader("👥 Team & Leadership")
-
-team_info = st.text_area(
-    "Management Team",
-    height=100,
-    placeholder="Describe key team members, their backgrounds, and relevant experience..."
-)
+team_info = st.text_area("Management Team", height=100, placeholder="Describe key team members, their backgrounds, and relevant experience...")
 
 st.divider()
 
@@ -293,32 +167,22 @@ st.subheader("⚠️ Risks & Mitigation")
 col_risk1, col_risk2 = st.columns(2)
 
 with col_risk1:
-    risks = st.text_area(
-        "Key Risks",
-        height=150,
-        placeholder="Identify market, execution, financial, and regulatory risks..."
-    )
+    risks = st.text_area("Key Risks", height=150, placeholder="Identify market, execution, financial, and regulatory risks...")
 
 with col_risk2:
-    mitigation = st.text_area(
-        "Mitigation Strategies",
-        height=150,
-        placeholder="Describe strategies to address identified risks..."
-    )
+    mitigation = st.text_area("Mitigation Strategies", height=150, placeholder="Describe strategies to address identified risks...")
 
 st.divider()
 
 # Generate Button
 if st.button("🚀 Generate Investment Memo", type="primary", use_container_width=True):
     
-    # Validation
     if not company_name or not industry or not stage or not deal_size or not valuation:
         st.error("⚠️ Please fill in all required fields (*)")
         st.stop()
     
     with st.spinner("🤖 Generating professional investment memo..."):
         
-        # Prepare comprehensive memo data
         memo_data = {
             'company_name': company_name,
             'analyst_name': 'Regulus AI Investment Team',
@@ -351,7 +215,6 @@ if st.button("🚀 Generate Investment Memo", type="primary", use_container_widt
             'risk_mitigation': mitigation if mitigation else 'To be developed'
         }
         
-        # Add scoring if enabled
         if enable_scoring:
             memo_data['scoring'] = {
                 'strategic_clarity': strategic_clarity,
@@ -364,32 +227,17 @@ if st.button("🚀 Generate Investment Memo", type="primary", use_container_widt
         else:
             memo_data['scoring'] = None
         
-        # Use LLM to enhance content if basic info provided
         if not investment_thesis or investment_thesis == "":
             st.info("💡 Generating investment thesis with AI...")
             try:
-                thesis_prompt = f"""
-                Generate a compelling investment thesis for {company_name}, a {stage} stage company in the {industry} industry.
-                
-                Context:
-                - Business Model: {business_model[:500] if business_model else 'Not provided'}
-                - Market: TAM {tam}, SAM {sam}
-                - Current Revenue: {current_revenue}
-                - Growth: {revenue_growth}
-                
-                Provide a concise 2-3 paragraph investment thesis highlighting why this is an attractive investment opportunity.
-                """
-                
-                generated_thesis = llm.generate(thesis_prompt)
-                memo_data['investment_thesis'] = generated_thesis
+                thesis_prompt = f"Generate a compelling investment thesis for {company_name}, a {stage} stage company in the {industry} industry. Context: Business Model: {business_model[:500] if business_model else 'Not provided'}, Market: TAM {tam}, SAM {sam}, Current Revenue: {current_revenue}, Growth: {revenue_growth}. Provide a concise 2-3 paragraph investment thesis highlighting why this is an attractive investment opportunity."
+                memo_data['investment_thesis'] = llm.generate(thesis_prompt)
             except Exception as e:
                 st.warning(f"Could not generate thesis: {e}")
         
-        # Generate the comprehensive memo
         st.info("📝 Generating comprehensive investment memo...")
         memo_content = generate_investment_memo(memo_data)
         
-        # Store in session state
         st.session_state.memo_complete = True
         st.session_state.memo_content = memo_content
         st.session_state.memo_data = memo_data
@@ -414,10 +262,8 @@ if st.session_state.memo_complete:
         )
     
     with col_dl2:
-        # Generate DOCX
         try:
             docx_doc = template_gen.markdown_to_docx(st.session_state.memo_content)
-            
             docx_buffer = BytesIO()
             docx_doc.save(docx_buffer)
             docx_buffer.seek(0)
@@ -433,13 +279,12 @@ if st.session_state.memo_complete:
     
     st.divider()
     
-    # Preview
     with st.expander("📄 Preview Investment Memo", expanded=True):
         st.markdown(st.session_state.memo_content)
 
 
-def generate_investment_memo(data: dict) -> str:
-    """Generate comprehensive investment memo in markdown format"""
+def generate_investment_memo(data):
+    """Generate comprehensive investment memo"""
     
     memo = f"""# INVESTMENT MEMORANDUM
 ## {data['company_name']}
@@ -516,10 +361,6 @@ def generate_investment_memo(data: dict) -> str:
 - **Runway:** {data['runway']}
 - **Unit Economics (LTV/CAC):** {data['unit_economics']}
 
-### Financial Highlights
-
-The company demonstrates strong financial fundamentals with {data['revenue_growth']} revenue growth and {data['gross_margin']} gross margin, indicating solid unit economics and path to profitability.
-
 ---
 
 ## 4. MANAGEMENT TEAM
@@ -535,9 +376,6 @@ The company demonstrates strong financial fundamentals with {data['revenue_growt
 - **Investment Amount:** {data['investment_size']}
 - **Pre-Money Valuation:** {data['valuation']}
 - **Ownership:** {data['ownership']}
-- **Investment Type:** Equity (Preferred Stock)
-- **Board Seat:** To be negotiated
-- **Pro-rata Rights:** Standard
 
 ---
 
@@ -554,7 +392,6 @@ The company demonstrates strong financial fundamentals with {data['revenue_growt
 ---
 """
 
-    # Add scoring framework if provided
     if data.get('scoring'):
         scores = data['scoring']
         memo += f"""
@@ -572,10 +409,6 @@ The company demonstrates strong financial fundamentals with {data['revenue_growt
 
 **Composite Score: {scores['composite_score']:.1f}/10**
 
-### Assessment Summary
-
-Based on the Gulf Resonance framework, this investment opportunity scores {scores['composite_score']:.1f}/10, indicating a {'strong' if scores['composite_score'] >= 7 else 'moderate' if scores['composite_score'] >= 5 else 'developing'} strategic fit with our investment thesis and portfolio objectives.
-
 ---
 """
 
@@ -584,38 +417,11 @@ Based on the Gulf Resonance framework, this investment opportunity scores {score
 
 ### Investment Recommendation: **{data['recommendation']}**
 
-### Rationale
-
-Based on comprehensive analysis of market opportunity, financial performance, team capabilities, and risk assessment, we recommend **{data['recommendation']}** for this investment opportunity.
-
-### Proposed Next Steps
-
-1. Schedule management presentation and Q&A session
-2. Conduct detailed financial due diligence
-3. Perform technical/product deep dive
-4. Reference calls with customers and partners
-5. Legal and compliance review
-6. Finalize term sheet and investment documents
-
----
-
-## APPENDIX
-
-### Data Sources
-
-- Company pitch deck and financial statements
-- Market research reports
-- Competitive intelligence
-- Management interviews
-- Customer references
+Based on comprehensive analysis, we recommend **{data['recommendation']}** for this investment opportunity.
 
 ---
 
 **CONFIDENTIAL - For Internal Use Only**
-
-*This investment memorandum contains proprietary and confidential information. Distribution is restricted to authorized investment committee members only.*
-
----
 
 **Prepared by:** {data['analyst_name']}  
 **Date:** {data['analysis_date']}
