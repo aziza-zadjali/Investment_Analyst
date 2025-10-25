@@ -1,6 +1,6 @@
 """
 QDB Global Styling Module
-Import this in every page to apply consistent branding and full-width layout
+Import this in every page to apply consistent branding with alternating section backgrounds
 """
 
 import streamlit as st
@@ -11,6 +11,8 @@ QDB_GOLD = "#C69C6D"
 QDB_DARK_BLUE = "#1B2B4D"
 QDB_LIGHT_GRAY = "#F5F5F5"
 QDB_WHITE = "#FFFFFF"
+QDB_CREAM = "#F5EFE6"  # Beige/cream from QDB website
+QDB_NAVY = "#1B2B4D"   # Dark blue section background
 
 
 def apply_qdb_styling():
@@ -126,6 +128,32 @@ def apply_qdb_styling():
     }}
     
     /* ========================================
+       QDB SECTION BACKGROUNDS (alternating)
+       ======================================== */
+    
+    .qdb-section-light {{
+        background-color: {QDB_CREAM};
+        padding: 50px 20px;
+        margin: 0 -3rem;
+        margin-bottom: 0;
+    }}
+    
+    .qdb-section-dark {{
+        background-color: {QDB_NAVY};
+        color: white;
+        padding: 50px 20px;
+        margin: 0 -3rem;
+        margin-bottom: 0;
+    }}
+    
+    .qdb-section-dark h1,
+    .qdb-section-dark h2,
+    .qdb-section-dark h3,
+    .qdb-section-dark p {{
+        color: white !important;
+    }}
+    
+    /* ========================================
        QDB FOOTER & DIVIDERS
        ======================================== */
     
@@ -164,3 +192,14 @@ def qdb_header(title, subtitle=""):
         <p style='color:#666;font-size:1.15rem;'>{subtitle}</p>
     </div>
     """, unsafe_allow_html=True)
+
+
+def qdb_section_start(background="light"):
+    """Start a QDB section with alternating background (call before content)"""
+    section_class = "qdb-section-light" if background == "light" else "qdb-section-dark"
+    st.markdown(f"<div class='{section_class}'><div style='max-width:1400px;margin:0 auto;'>", unsafe_allow_html=True)
+
+
+def qdb_section_end():
+    """End a QDB section (call after content)"""
+    st.markdown("</div></div>", unsafe_allow_html=True)
