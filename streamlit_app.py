@@ -94,7 +94,7 @@ with st.container():
     
     # Overview sections
   with st.container():
-    st.markdown(
+      st.markdown(
         """
         <div style='
             background: linear-gradient(90deg, #A6D8FF, #D5B8FF);
