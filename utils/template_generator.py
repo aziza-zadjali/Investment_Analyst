@@ -3,7 +3,7 @@ Unified Template & Report Generator
 Generates investment memos, due diligence reports, market analysis, and DOCX exports
 ALL content dynamically generated - NO hardcoded placeholders
 """
-
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 from datetime import datetime
 from typing import Dict, List, Any
 from io import BytesIO
