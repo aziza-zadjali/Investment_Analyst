@@ -31,15 +31,6 @@ def encode_image(path):
     return None
 
 
-def safe_switch_page(page_name):
-    """Safely switch page with error handling"""
-    try:
-        st.switch_page(page_name)
-    except Exception as e:
-        st.error(f"Page '{page_name}' not found. Please create the page file.")
-        st.info(f"Create a file at: {page_name}")
-
-
 qdb_logo = encode_image("QDB_Logo.png")
 regulus_logo = encode_image("regulus_logo.png")
 
@@ -149,23 +140,23 @@ nav_cols = st.columns(5, gap="small")
 
 with nav_cols[0]:
     if st.button("Deal\nSourcing", key="nav_deal"):
-        safe_switch_page("pages/Deal_Sourcing.py")
+        st.switch_page("pages/1_Deal_Sourcing.py")
 
 with nav_cols[1]:
     if st.button("Due\nDiligence", key="nav_dd"):
-        safe_switch_page("pages/Due_Diligence.py")
+        st.switch_page("pages/2_Due_Diligence_Analysis.py")
 
 with nav_cols[2]:
     if st.button("Market\nAnalysis", key="nav_market"):
-        safe_switch_page("pages/Market_Analysis.py")
+        st.switch_page("pages/3_Market_Analysis.py")
 
 with nav_cols[3]:
     if st.button("Financial\nModeling", key="nav_fin"):
-        safe_switch_page("pages/Financial_Modeling.py")
+        st.switch_page("pages/4_Financial_Modeling.py")
 
 with nav_cols[4]:
     if st.button("Investment\nMemo", key="nav_memo"):
-        safe_switch_page("pages/Investment_Memo.py")
+        st.switch_page("pages/5_Investment_Memo.py")
 
 st.markdown("</div>", unsafe_allow_html=True)
 
@@ -206,7 +197,7 @@ with col1:
     )
     st.markdown("<div style='text-align:center; margin-top:20px;'>", unsafe_allow_html=True)
     if st.button("Start Deal Sourcing", key="deal_btn"):
-        safe_switch_page("pages/Deal_Sourcing.py")
+        st.switch_page("pages/1_Deal_Sourcing.py")
     st.markdown("</div>", unsafe_allow_html=True)
 
 with col2:
@@ -229,7 +220,7 @@ with col2:
     )
     st.markdown("<div style='text-align:center; margin-top:20px;'>", unsafe_allow_html=True)
     if st.button("Start Due Diligence", key="dd_btn"):
-        safe_switch_page("pages/Due_Diligence.py")
+        st.switch_page("pages/2_Due_Diligence_Analysis.py")
     st.markdown("</div>", unsafe_allow_html=True)
 
 qdb_section_end()
