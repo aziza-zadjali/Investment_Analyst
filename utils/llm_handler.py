@@ -6,18 +6,18 @@ Handles all AI/LLM interactions using LangChain
 import os
 from typing import Optional
 from langchain_openai import ChatOpenAI
-from langchain.schema import HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage
 
 
 class LLMHandler:
     """Handle LLM interactions for investment analysis"""
     
-    def __init__(self, model: str = "gpt-4", temperature: float = 0.7):
+    def __init__(self, model: str = "gpt-4o-mini", temperature: float = 0.7):
         """
         Initialize LLM handler
         
         Args:
-            model: OpenAI model to use
+            model: OpenAI model to use (default: gpt-4o-mini for cost efficiency)
             temperature: Temperature for generation (0.0 - 1.0)
         """
         self.model = model
