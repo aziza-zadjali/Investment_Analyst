@@ -45,8 +45,16 @@ def main():
         st.info("**Tip:** Use multi-page navigation to access different features")
         
     # Main content
-    with st.container():
-        st.title("🚀 Welcome to Investment Analyst AI")
+    # Container for your header
+with st.container():
+    st.markdown(
+        """
+        <h1 style='text-align: center; color: #1F77B4;'>
+            🚀 Welcome to Investment Analyst AI
+        </h1>
+        """,
+        unsafe_allow_html=True
+    )
     
     st.markdown("### Accelerate Your Investment Analysis with AI")
     
