@@ -57,22 +57,25 @@ with st.container():
     st.markdown(
         """
         <div style='
-            background: linear-gradient(90deg, #1F77B4, #8A2BE2);
+            background: linear-gradient(90deg, #A6D8FF, #D5B8FF);
             border: none;
             border-radius: 12px;
             padding: 25px;
             text-align: center;
             color: white;
-            box-shadow: 2px 4px 12px rgba(0, 0, 0, 0.25);
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         '>
-            <h1 style='margin: 0; text-shadow: 1px 1px 5px rgba(0,0,0,0.3);'>
+            <h1 style='
+                margin: 0;
+                text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+            '>
                 🚀 Welcome to Investment Analyst AI
             </h1>
         </div>
         """,
         unsafe_allow_html=True
     )
-
 
 
     
@@ -92,7 +95,7 @@ with st.container():
     # Overview sections
     st.header("📋 Platform Overview")
     
-    tab1, tab2, tab3 = st.tabs(["🎯 Purpose", "🛠️ Features", "📖 Quick Start"])
+    tab1, tab2, tab3 = st.tabs([" Purpose", " Features", " Quick Start"])
     
     with tab1:
         st.markdown("""
