@@ -184,8 +184,7 @@ with st.container():
     
     st.markdown("---")
     
-  import streamlit as st
-
+ 
 # ✅ Define the function first
 def check_api_connection():
     """Check if OpenAI API is configured"""
