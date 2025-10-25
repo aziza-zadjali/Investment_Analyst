@@ -37,44 +37,35 @@ st.markdown(f"""
       <div style="flex:1; text-align:center;">
         {"<img src='"+qdb_logo+"' style='max-height:75px; opacity:0.95;'>" if qdb_logo else "<strong>QDB</strong>"}
       </div>
-      <div style="max-width: 1100px; margin: 0 auto; position: relative;">
-  <!-- Top Logos -->
-  <div style="position:absolute; top:25px; left:25px;">
-    {"<img src='"+qdb_logo+"' style='max-height:65px; opacity:0.95;'>" if qdb_logo else "<strong>QDB</strong>"}
+      <div style="flex:2; text-align:center;">
+        <h1 style="font-size:2.5rem; font-weight:700; letter-spacing:-0.3px;">Investment Analyst AI</h1>
+        <p style="color:#E2E8F0; font-size:1.05rem; max-width:700px; margin:10px auto;">
+          Supporting Qatar’s Economic Vision with Data‑Driven Investment Insights
+        </p>
+        <p style="color:#CBD5E0; font-size:0.95rem; line-height:1.6; max-width:700px; margin:6px auto 30px auto;">
+          End‑to‑End AI Platform for Deal Sourcing, Due Diligence, Market Analysis & Investment Memoranda
+        </p>
+        <a href="#choose-path" style="
+            background-color: #CBD5E0;
+            color: #1B2B4D;
+            border-radius: 40px;
+            padding: 12px 36px;
+            font-weight:600;
+            font-size:0.95rem;
+            text-decoration:none;
+            display:inline-block;
+            box-shadow:0 4px 14px rgba(203,213,224,0.3);
+            transition: all 0.3s ease;
+        " onmouseover="this.style.backgroundColor='#E2E8F0';" 
+          onmouseout="this.style.backgroundColor='#CBD5E0';">
+          Explore Analysis Workflows
+        </a>
+      </div>
+      <div style="flex:1; text-align:center;">
+        {"<img src='"+regulus_logo+"' style='max-height:75px; opacity:0.95;'>" if regulus_logo else "<strong>Regulus</strong>"}
+      </div>
+    </div>
   </div>
-  <div style="position:absolute; top:20px; right:25px; text-align:right;">
-    <p style="margin:0; font-size:0.9rem; color:#E2E8F0;">Powered by Regulus AI</p>
-    {"<img src='"+regulus_logo+"' style='max-height:60px; opacity:0.95; margin-top:5px;'>" if regulus_logo else "<strong>Regulus</strong>"}
-  </div>
-
-  <!-- Center Content -->
-  <div style="text-align:center; padding-top:110px;">
-    <h1 style="font-size:2.5rem; font-weight:700; letter-spacing:-0.3px;">Investment Analyst AI</h1>
-    <p style="color:#E2E8F0; font-size:1.05rem; max-width:700px; margin:10px auto;">
-      Supporting Qatar’s Economic Vision with Data‑Driven Investment Insights
-    </p>
-    <p style="color:#CBD5E0; font-size:0.95rem; line-height:1.6; max-width:700px; margin:6px auto 30px auto;">
-      End‑to‑End AI Platform for Deal Sourcing, Due Diligence, Market Analysis & Investment Memoranda
-    </p>
-    <a href="#choose-path" style="
-        background-color:#CBD5E0;
-        color:#1B2B4D;
-        border-radius:40px;
-        padding:12px 36px;
-        font-weight:600;
-        font-size:0.95rem;
-        text-decoration:none;
-        display:inline-block;
-        box-shadow:0 4px 14px rgba(203,213,224,0.3);
-        transition:all 0.3s ease;
-    " onmouseover="this.style.backgroundColor='#E2E8F0';" 
-       onmouseout="this.style.backgroundColor='#CBD5E0';">
-       Explore Analysis Workflows
-    </a>
-  </div>
-</div>
-
-
 
   <!-- SVG Wave Separator -->
   <svg viewBox="0 0 1440 150" xmlns="http://www.w3.org/2000/svg" style="position:absolute;bottom:-1px;left:0;width:100%;">
