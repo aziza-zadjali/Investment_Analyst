@@ -123,7 +123,8 @@ def main():
         
         if st.button("Start Deal Sourcing", type="primary", use_container_width=True, key="btn_deal"):
             st.session_state.workflow_path = "Deal Sourcing"
-            st.switch_page("pages/1_🔍_Deal_Sourcing.py")
+            # Correct path without emojis
+            st.switch_page("pages/1_Deal_Sourcing.py")
     
     # PATH 2: Due Diligence
     with col2:
@@ -159,7 +160,8 @@ def main():
         
         if st.button("Start Due Diligence", type="primary", use_container_width=True, key="btn_dd"):
             st.session_state.workflow_path = "Due Diligence"
-            st.switch_page("pages/2_📄_Due_Diligence_Analysis.py")
+            # Correct path without emojis
+            st.switch_page("pages/2_Due_Diligence_Analysis.py")
     
     st.markdown("<br><br>", unsafe_allow_html=True)
     
@@ -171,15 +173,15 @@ def main():
         
         with col_tool1:
             if st.button("Market Analysis", use_container_width=True):
-                st.switch_page("pages/3_🌐_Market_Analysis.py")
+                st.switch_page("pages/3_Market_Analysis.py")
         
         with col_tool2:
             if st.button("Financial Modeling", use_container_width=True):
-                st.switch_page("pages/4_📊_Financial_Modeling.py")
+                st.switch_page("pages/4_Financial_Modeling.py")
         
         with col_tool3:
             if st.button("Investment Memo", use_container_width=True):
-                st.switch_page("pages/5_📝_Investment_Memo.py")
+                st.switch_page("pages/5_Investment_Memo.py")
     
     st.markdown("---")
     
