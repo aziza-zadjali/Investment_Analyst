@@ -8,8 +8,10 @@ from datetime import datetime
 from io import BytesIO
 from utils.template_generator import TemplateGenerator
 from utils.llm_handler import LLMHandler
+from utils.qdb_styling import apply_qdb_styling
 
-st.set_page_config(page_title="Investment Memo", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Deal Sourcing", layout="wide")
+apply_qdb_styling()  # ✅ Global styling applied
 
 # Hide sidebar
 st.markdown("""
