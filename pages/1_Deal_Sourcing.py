@@ -1,6 +1,6 @@
 """
 Deal Discovery & Sourcing Page
-With deal selection and workflow handoff
+QDB-branded with full workflow integration
 """
 
 import streamlit as st
@@ -9,22 +9,11 @@ from utils.llm_handler import LLMHandler
 from utils.template_generator import TemplateGenerator
 import pandas as pd
 from datetime import datetime
-from utils.qdb_styling import apply_qdb_styling
+from utils.qdb_styling import apply_qdb_styling, QDB_PURPLE, QDB_GOLD, QDB_DARK_BLUE, qdb_header, qdb_divider
 
-st.set_page_config(page_title="Deal Sourcing", layout="wide")
-apply_qdb_styling()  # ✅ Global styling applied
+st.set_page_config(page_title="Deal Sourcing - QDB", layout="wide", initial_sidebar_state="collapsed")
+apply_qdb_styling()  # ✅ Apply QDB branding
 
-
-# Hide sidebar
-st.markdown("""
-<style>
-    [data-testid="stSidebar"] {display: none;}
-    .main > div {padding-top: 2rem;}
-</style>
-""", unsafe_allow_html=True)
-
-def gradient_box(text, gradient="linear-gradient(90deg, #A6D8FF, #D5B8FF)"):
-    return f"""<div style="background: {gradient}; padding: 15px 20px; border-radius: 12px; color: white; font-weight: 600; font-size: 1.5rem; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);">{text}</div>"""
 
 UNATTRACTIVE_INDUSTRIES = {
     "Food & Beverage Manufacturing": ["Industrial Bakery", "Bread and Bakery Products", "Short-Life Juice", "Fresh Milk", "Processed Milk", "Powder Milk", "Pasta", "Potato Chips", "Water Bottling", "Bottled Water"],
@@ -46,23 +35,24 @@ if 'discovered_deals' not in st.session_state:
 if 'selected_deal' not in st.session_state:
     st.session_state.selected_deal = None
 
+
 # Top Navigation
 col_nav1, col_nav2, col_nav3 = st.columns([1, 2, 1])
 with col_nav1:
     if st.button("← Back to Home"):
-        st.switch_page("streamlit_app.py")
+        st.switch_page("Main_Page.py")
 with col_nav2:
-    st.markdown("<p style='text-align: center; color: #666; font-weight: 600;'>Step 1 of 5: Deal Sourcing</p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='text-align: center; color:{QDB_DARK_BLUE}; font-weight: 600;'>Step 1 of 5: Deal Sourcing</p>", unsafe_allow_html=True)
 with col_nav3:
     st.markdown("<p style='text-align: right; color: #999;'>QDB Analyst</p>", unsafe_allow_html=True)
 
-st.markdown("<div style='background: linear-gradient(90deg, #A6D8FF, #D5B8FF); height: 4px; border-radius: 2px; margin-bottom: 30px;'></div>", unsafe_allow_html=True)
+qdb_divider()
 
 # HEADER
-st.markdown(gradient_box("Deal Discovery & Sourcing"), unsafe_allow_html=True)
+qdb_header("Deal Discovery & Sourcing", "AI-powered investment opportunity discovery and filtering")
 
 # Define Criteria (condensed version)
-with st.expander("⚙️ Define Investment Criteria", expanded=False):
+with st.expander("⚙️ Define Investment Criteria", expanded=True):
     col_filter1, col_filter2 = st.columns([3, 1])
     with col_filter1:
         st.markdown("**Unattractive Industries Screening**")
@@ -101,7 +91,7 @@ if st.button("🚀 Discover Deals", type="primary", use_container_width=True):
                 "unattractive_flag": False
             }
             
-            if enable_industry_filter and i % 4 == 0:  # Tag every 4th as unattractive for demo
+            if enable_industry_filter and i % 4 == 0:
                 deal['unattractive_flag'] = True
                 deal['unattractive_reason'] = "Food & Beverage: Dairy Farming"
             
@@ -113,15 +103,15 @@ if st.button("🚀 Discover Deals", type="primary", use_container_width=True):
 
 # Display Deals with Selection
 if st.session_state.discovered_deals:
-    st.markdown("<div style='background: linear-gradient(90deg, #A6D8FF, #D5B8FF); height: 4px; border-radius: 2px; margin: 30px 0;'></div>", unsafe_allow_html=True)
-    st.markdown(gradient_box("Discovered Deals - Select One to Analyze"), unsafe_allow_html=True)
+    qdb_divider()
+    qdb_header("Discovered Deals", "Select one deal to begin detailed analysis")
     
     total_deals = len(st.session_state.discovered_deals)
     unattractive = sum(1 for d in st.session_state.discovered_deals if d['unattractive_flag'])
     
     col_stat1, col_stat2, col_stat3 = st.columns(3)
     with col_stat1:
-        st.metric("Total", total_deals)
+        st.metric("Total Discovered", total_deals)
     with col_stat2:
         st.metric("Attractive", total_deals - unattractive)
     with col_stat3:
@@ -154,10 +144,10 @@ if st.session_state.discovered_deals:
                 st.markdown(f"**Stage:** {deal['stage']}")
                 st.markdown(f"**Ticket:** {deal['ticket_size']}")
             
-            st.markdown("<div style='height: 1px; background: #ddd; margin: 15px 0;'></div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='height: 1px; background: {QDB_PURPLE}; opacity: 0.2; margin: 15px 0;'></div>", unsafe_allow_html=True)
     
     # Export
-    st.markdown("<div style='background: linear-gradient(90deg, #A6D8FF, #D5B8FF); height: 4px; border-radius: 2px; margin: 30px 0;'></div>", unsafe_allow_html=True)
+    qdb_divider()
     
     col_export1, col_export2 = st.columns(2)
     with col_export1:
@@ -173,9 +163,9 @@ if st.session_state.discovered_deals:
     # WORKFLOW NAVIGATION
     st.markdown("<br><br>", unsafe_allow_html=True)
     st.markdown(
-        """
+        f"""
         <div style='
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, {QDB_PURPLE} 0%, {QDB_DARK_BLUE} 100%);
             border-radius: 12px;
             padding: 25px;
             color: white;
