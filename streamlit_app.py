@@ -1,4 +1,4 @@
-"""Investment Analyst AI – Regulus Edition | Enhanced Page Navigation"""
+"""Investment Analyst AI – Regulus Edition | Fixed & Enhanced Navigation"""
 import streamlit as st
 import base64
 import os
@@ -8,28 +8,27 @@ from utils.qdb_styling import (
     qdb_section_end,
 )
 
-# --- Page configuration
+# ---------------- PAGE CONFIGURATION ----------------
 st.set_page_config(
     page_title="Investment Analyst AI - Regulus",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
-
 apply_qdb_styling()
 
-# === Helper: Encode image for logos ===
+# ---------------- UTILITIES ----------------
 def encode_image(path):
+    """Safely embed logos into HTML"""
     if os.path.exists(path):
         with open(path, "rb") as f:
             return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
     return None
 
-
-# === Logos
+# ---------------- LOGOS ----------------
 qdb_logo = encode_image("QDB_Logo.png")
 regulus_logo = encode_image("regulus_logo.png")
 
-# ===== HERO =====
+# ---------------- HERO SECTION ----------------
 st.markdown(
     f"""
     <div style="
@@ -45,14 +44,16 @@ st.markdown(
         </div>
         <div style='max-width:950px; margin:0 auto;'>
             <h1 style='font-size:2.6rem;font-weight:700;margin-bottom:0.3rem;'>Investment Analyst AI</h1>
-            <p style='color:#CBD5E0;font-size:1.05rem;max-width:700px;margin:auto;'>Supporting Qatar’s economic vision with data‑driven investment insights.</p>
+            <p style='color:#CBD5E0;font-size:1.05rem;max-width:700px;margin:auto;'>
+                Supporting Qatar’s economic vision with data‑driven investment insights.
+            </p>
         </div>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
-# ===== TOP NAVIGATION =====
+# ---------------- TOP NAVIGATION ----------------
 st.markdown(
     """
     <style>
@@ -84,21 +85,23 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-nav_cols = st.columns(5)
 nav_links = [
-    ("Deal Sourcing", "pages/1_Deal_Sourcing.py"),
-    ("Due Diligence", "pages/2_Due_Diligence.py"),
-    ("Market Analysis", "pages/3_Market_Analysis.py"),
-    ("Financial Modeling", "pages/4_Financial_Modeling.py"),
-    ("Investment Memo", "pages/5_Investment_Memo.py"),
+    ("Deal Sourcing", "1_Deal_Sourcing"),
+    ("Due Diligence", "2_Due_Diligence"),
+    ("Market Analysis", "3_Market_Analysis"),
+    ("Financial Modeling", "4_Financial_Modeling"),
+    ("Investment Memo", "5_Investment_Memo"),
 ]
 
-for idx, (title, path) in enumerate(nav_links):
-    with nav_cols[idx]:
-        st.page_link(path, label=title, icon="🌐")
+cols = st.columns(len(nav_links))
+for i, (label, page) in enumerate(nav_links):
+    with cols[i]:
+        # No icon used
+        st.page_link(page=page, label=label)
 
-# ===== LIGHT SECTION =====
+# ---------------- MAIN SECTION ----------------
 qdb_section_start("light")
+
 st.markdown(
     """
     <div style='text-align:center; max-width:900px; margin:0 auto 35px auto;'>
@@ -111,69 +114,79 @@ st.markdown(
 
 col1, col2, col3 = st.columns([1, 1, 1])
 
-# === Path Cards ===
-def nav_card(title, desc, features, page, color):
+# ---------------- CARD TEMPLATE ----------------
+def nav_card(title, features, page, color):
+    card_bg = "#ffffff" if color == "light" else "#1B2B4D"
+    text_color = "#1B2B4D" if color == "light" else "#E2E8F0"
+    btn_bg = "#319795" if color == "light" else "#2D3748"
+    btn_hover = "#2C7A7B" if color == "light" else "#4A5568"
+
     st.markdown(
         f"""
-        <div style="background:{'#ffffff' if color=='teal' else '#1B2B4D'};
-                    color:{'#1B2B4D' if color=='teal' else '#E2E8F0'};
-                    border-radius:14px;
-                    padding:28px 25px;
-                    box-shadow:0 5px 14px rgba(0,0,0,0.08);
-                    text-align:left;
+        <div style="background:{card_bg};
+                    color:{text_color};
+                    border-radius:15px;
+                    padding:30px;
+                    box-shadow:0 5px 15px rgba(0,0,0,0.08);
                     transition:transform 0.25s ease; height:100%;">
-            <h3 style="margin-bottom:12px;">{title}</h3>
-            <ul style="padding-left:18px; line-height:1.7;">
-                {''.join(f'<li>{f}</li>' for f in features)}
+            <h3 style="margin-bottom:10px;">{title}</h3>
+            <ul style="padding-left:18px; line-height:1.7; margin-bottom:25px;">
+                {''.join(f'<li>{item}</li>' for item in features)}
             </ul>
-            <br>
             <a href='/{page}' target='_self'
-               style='text-decoration:none; background-color:{'#319795' if color=='teal' else '#2D3748'};
-                      color:white; padding:10px 25px; border-radius:30px;
-                      font-weight:600; font-size:0.95rem;
+               style='text-decoration:none;
+                      background-color:{btn_bg};
+                      color:white;
+                      padding:10px 25px;
+                      border-radius:30px;
+                      font-weight:600;
+                      font-size:0.95rem;
                       transition:background-color 0.3s ease;'>
-               Start {title.split()[0]} →
+               Start →
             </a>
         </div>
+        <style>
+        a[href='/{page}']:hover {{
+            background-color:{btn_hover} !important;
+        }}
+        </style>
         """,
         unsafe_allow_html=True,
     )
 
+# ---------------- PATH CARDS ----------------
 with col1:
     nav_card(
         "Deal Sourcing",
-        "AI‑driven lead generation and intelligence.",
-        ["Identify high‑potential startups", "Filter by sector and stage", "Export to Due Diligence"],
-        "pages/1_Deal_Sourcing.py",
-        "teal",
+        ["Identify potential startups", "Filter by stage/sector", "Export prospects to Due Diligence"],
+        "1_Deal_Sourcing",
+        "light",
     )
 
 with col2:
     nav_card(
         "Due Diligence",
-        "Systematic evaluation of company readiness.",
-        ["Upload reports", "Score financial health", "Identify red flags"],
-        "pages/2_Due_Diligence.py",
-        "gray",
+        ["Upload or analyze reports", "Review key risk metrics", "Generate summaries"],
+        "2_Due_Diligence",
+        "dark",
     )
 
 with col3:
     nav_card(
         "Market Analysis",
-        "Assess trends and competitive dynamics.",
-        ["Review industry data", "Map competitors", "Generate insights for memo"],
-        "pages/3_Market_Analysis.py",
-        "teal",
+        ["Analyze market trends", "Compare competitors", "Integrate results in memo"],
+        "3_Market_Analysis",
+        "light",
     )
 
 qdb_section_end()
 
-# ===== FOOTER =====
+# ---------------- FOOTER ----------------
 st.markdown(
     f"""
     <div style='background:#1B2B4D; color:#A0AEC0; padding:25px 30px; margin-top:50px;
-                border-radius:10px 10px 0 0; text-align:center;'>
-        Powered by Regulus AI
+                border-radius:10px 10px 0 0; text-align:center; font-size:0.9rem;'>
+        Powered by Regulus AI
         {'<img src="'+regulus_logo+'" style="max-height:40px; vertical-align:middle; margin-left:10px;">' if regulus_logo else ''}
     </div>
     """,
