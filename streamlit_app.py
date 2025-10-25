@@ -6,11 +6,10 @@ Full-width layout with no sidebar (complete screen utilization)
 import streamlit as st
 import base64
 import os
-from utils.qdb_styling import apply_qdb_styling
+from utils.qdb_styling import apply_qdb_styling, QDB_PURPLE, QDB_GOLD, QDB_DARK_BLUE, QDB_LIGHT_GRAY
 
-st.set_page_config(page_title="Investment Analyst AI", layout="wide")
-apply_qdb_styling()  # ✅ This applies all styling
-
+st.set_page_config(page_title="Investment Analyst AI - QDB", layout="wide", initial_sidebar_state="collapsed")
+apply_qdb_styling()  # ✅ This applies all global styling
 
 
 def encode_image(path):
@@ -25,45 +24,9 @@ qdb_logo = encode_image("QDB_Logo.png")
 regulus_logo = encode_image("regulus_logo.png")
 
 
-# --- FULL-WIDTH STYLING (NO SIDEBAR SPACE) ---
+# --- ADDITIONAL PAGE-SPECIFIC STYLING ---
 st.markdown(f"""
 <style>
-/* COMPLETELY HIDE SIDEBAR */
-[data-testid="stSidebar"] {{
-    display: none !important;
-}}
-
-/* REMOVE ALL SIDEBAR SPACING */
-.main {{
-    margin-left: 0 !important;
-    padding-left: 0 !important;
-}}
-
-/* FULL WIDTH CONTAINER */
-.main > div {{
-    max-width: 100% !important;
-    padding: 1.5rem 3rem !important;
-}}
-
-/* QDB Button Styling */
-.stButton > button {{
-    background: linear-gradient(135deg, {QDB_PURPLE} 0%, {QDB_DARK_BLUE} 100%);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 14px 32px;
-    font-size: 1.05rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    box-shadow: 0 4px 12px rgba(94, 42, 132, 0.3);
-    transition: all 0.3s ease;
-}}
-.stButton > button:hover {{
-    background: linear-gradient(135deg, {QDB_DARK_BLUE} 0%, {QDB_PURPLE} 100%);
-    box-shadow: 0 6px 16px rgba(94, 42, 132, 0.45);
-    transform: translateY(-2px);
-}}
-
 /* Header Grid */
 .qdb-header {{
     display: grid;
@@ -129,21 +92,12 @@ st.markdown(f"""
     font-weight: 600;
 }}
 
-/* Content Centering */
-.content-wrapper {{
-    max-width: 1400px;
-    margin: 0 auto;
-}}
-
 @media (max-width: 900px) {{
     .qdb-header {{grid-template-columns: 1fr;}}
 }}
 </style>
 """, unsafe_allow_html=True)
 
-
-# --- CENTERED CONTENT WRAPPER ---
-st.markdown("<div class='content-wrapper'>", unsafe_allow_html=True)
 
 # --- HEADER ---
 st.markdown("<div class='qdb-header'>", unsafe_allow_html=True)
@@ -253,6 +207,3 @@ with col_f2:
     st.markdown("<p style='text-align:center;color:#999;'><strong>Investment Analyst AI</strong> | Version 1.0.0</p>", unsafe_allow_html=True)
 with col_f3:
     st.markdown(f"<p style='text-align:right;color:{QDB_GOLD};font-weight:500;'>Powered by Regulus</p>", unsafe_allow_html=True)
-
-# Close content wrapper
-st.markdown("</div>", unsafe_allow_html=True)
