@@ -51,19 +51,23 @@ import streamlit as st
 
 import streamlit as st
 
+import streamlit as st
+
 with st.container():
     st.markdown(
         """
         <div style='
-            background: linear-gradient(90deg, #FF9CEE, #A6B0FF);
-            border: 3px solid #1F77B4;
+            background: linear-gradient(90deg, #1F77B4, #8A2BE2);
+            border: none;
             border-radius: 12px;
             padding: 25px;
             text-align: center;
-            color: #1F77B4;
-            box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.2);
+            color: white;
+            box-shadow: 2px 4px 12px rgba(0, 0, 0, 0.25);
         '>
-            <h1 style='margin: 0;'> Welcome to Investment Analyst AI</h1>
+            <h1 style='margin: 0; text-shadow: 1px 1px 5px rgba(0,0,0,0.3);'>
+                🚀 Welcome to Investment Analyst AI
+            </h1>
         </div>
         """,
         unsafe_allow_html=True
