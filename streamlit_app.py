@@ -93,7 +93,30 @@ with st.container():
     st.markdown("---")
     
     # Overview sections
-    st.header(" Platform Overview")
+    with st.container():
+    st.markdown(
+        """
+        <div style='
+            background: linear-gradient(90deg, #A6D8FF, #D5B8FF);
+            border: none;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        '>
+            <h1 style='
+                margin: 0;
+                text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+            '>
+                Plstform overview
+            </h1>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
     
     tab1, tab2, tab3 = st.tabs([" Purpose", " Features", " Quick Start"])
     
