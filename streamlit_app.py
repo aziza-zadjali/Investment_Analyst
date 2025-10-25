@@ -33,12 +33,12 @@ def main():
         st.markdown("---")
         
         st.markdown("""
-        ### 🎯 Features
-        - 🔍 Deal Sourcing
-        - 📄 Document Analysis
-        - 🌐 Market Research
-        - 📊 Financial Modeling
-        - 📝 Investment Memos
+        ###  Features
+        -  Deal Sourcing
+        -  Document Analysis
+        -  Market Research
+        -  Financial Modeling
+        -  Investment Memos
         """)
         
         st.markdown("---")
@@ -70,7 +70,7 @@ with st.container():
                 margin: 0;
                 text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
             '>
-                🚀 Welcome to Investment Analyst AI
+                 Welcome to Investment Analyst AI
             </h1>
         </div>
         """,
@@ -93,7 +93,7 @@ with st.container():
     st.markdown("---")
     
     # Overview sections
-    st.header("📋 Platform Overview")
+    st.header(" Platform Overview")
     
     tab1, tab2, tab3 = st.tabs([" Purpose", " Features", " Quick Start"])
     
@@ -119,12 +119,12 @@ with st.container():
         
         with col1:
             st.markdown("""
-            #### 🔍 Deal Sourcing
+            ####  Deal Sourcing
             - Scrape accelerators & funding platforms
             - Daily qualified deal lists
             - Custom filtering criteria
             
-            #### 📄 Document Analysis
+            ####  Document Analysis
             - Ingest PDF, DOCX, XLSX files
             - Extract key data automatically
             - Highlight red flags
@@ -137,17 +137,17 @@ with st.container():
         
         with col2:
             st.markdown("""
-            #### 📊 Financial Modeling
+            ####  Financial Modeling
             - Generate projection models
             - Run what-if scenarios
             - Sensitivity analysis
             
-            #### 📝 Investment Memos
+            ####  Investment Memos
             - Auto-draft memo sections
             - Consistent formatting
             - Export to PDF/DOCX
             
-            #### 🤖 AI-Powered
+            ####  AI-Powered
             - Natural language queries
             - Intelligent summarization
             - Contextual recommendations
@@ -155,7 +155,7 @@ with st.container():
     
     with tab3:
         st.markdown("""
-        ### 🚀 Getting Started
+        ###  Getting Started
         
         1. **Configure API Keys**
            - Go to `.streamlit/secrets.toml`
