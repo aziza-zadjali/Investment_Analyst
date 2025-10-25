@@ -86,12 +86,25 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ===== FORCE TEAL COLOR OVERRIDE =====
+# ===== OVERRIDE WITH TEAL COLOR (MUST COME AFTER apply_qdb_styling) =====
 st.markdown(
     """
 <style>
-/* Force teal color on ALL buttons */
-.stButton > button {
+/* Navigation container */
+.nav-container {
+    background-color: #F6F5F2;
+    margin: 0 -3rem;
+    padding: 16px 20px;
+    text-align: center;
+}
+
+/* FORCE TEAL COLOR - Override QDB purple styling with higher specificity */
+div[data-testid="column"] > div > div > div > div > button,
+div[data-testid="column"] button,
+.stButton > button,
+button[kind="secondary"],
+button[kind="primary"] {
+    background: linear-gradient(135deg, #09AE98 0%, #0BC5AB 100%) !important;
     background-color: #09AE98 !important;
     color: white !important;
     border: none !important;
@@ -100,33 +113,43 @@ st.markdown(
     font-weight: 700 !important;
     font-size: 0.95rem !important;
     transition: all 0.3s ease !important;
-    box-shadow: 0 3px 14px rgba(9,174,152,0.25) !important;
+    box-shadow: 0 3px 14px rgba(9,174,152,0.3) !important;
     letter-spacing: 0.02em !important;
     line-height: 1.3 !important;
+    text-transform: none !important;
 }
 
-.stButton > button:hover {
+div[data-testid="column"] > div > div > div > div > button:hover,
+div[data-testid="column"] button:hover,
+.stButton > button:hover,
+button[kind="secondary"]:hover,
+button[kind="primary"]:hover {
+    background: linear-gradient(135deg, #077e70 0%, #099984 100%) !important;
     background-color: #077e70 !important;
-    box-shadow: 0 6px 18px rgba(9,174,152,0.35) !important;
+    box-shadow: 0 6px 18px rgba(9,174,152,0.45) !important;
     transform: translateY(-2px) !important;
 }
 
+div[data-testid="column"] > div > div > div > div > button:active,
+div[data-testid="column"] button:active,
 .stButton > button:active {
     transform: translateY(0px) !important;
 }
 
+div[data-testid="column"] > div > div > div > div > button:focus,
+div[data-testid="column"] button:focus,
 .stButton > button:focus {
     background-color: #09AE98 !important;
     color: white !important;
-    box-shadow: 0 3px 14px rgba(9,174,152,0.25) !important;
+    box-shadow: 0 3px 14px rgba(9,174,152,0.3) !important;
 }
 
-/* Navigation container */
-.nav-container {
-    background-color: #F6F5F2;
-    margin: 0 -3rem;
-    padding: 16px 20px;
-    text-align: center;
+/* Remove any purple color references */
+button[style*="purple"],
+button[style*="Purple"],
+button[class*="purple"],
+button[class*="Purple"] {
+    background-color: #09AE98 !important;
 }
 </style>
 """,
@@ -139,23 +162,23 @@ st.markdown('<div class="nav-container">', unsafe_allow_html=True)
 nav_cols = st.columns(5, gap="small")
 
 with nav_cols[0]:
-    if st.button("Deal\nSourcing", key="nav_deal"):
+    if st.button("Deal\nSourcing", key="nav_deal", type="primary"):
         st.switch_page("pages/1_Deal_Sourcing.py")
 
 with nav_cols[1]:
-    if st.button("Due\nDiligence", key="nav_dd"):
+    if st.button("Due\nDiligence", key="nav_dd", type="primary"):
         st.switch_page("pages/2_Due_Diligence_Analysis.py")
 
 with nav_cols[2]:
-    if st.button("Market\nAnalysis", key="nav_market"):
+    if st.button("Market\nAnalysis", key="nav_market", type="primary"):
         st.switch_page("pages/3_Market_Analysis.py")
 
 with nav_cols[3]:
-    if st.button("Financial\nModeling", key="nav_fin"):
+    if st.button("Financial\nModeling", key="nav_fin", type="primary"):
         st.switch_page("pages/4_Financial_Modeling.py")
 
 with nav_cols[4]:
-    if st.button("Investment\nMemo", key="nav_memo"):
+    if st.button("Investment\nMemo", key="nav_memo", type="primary"):
         st.switch_page("pages/5_Investment_Memo.py")
 
 st.markdown("</div>", unsafe_allow_html=True)
@@ -196,7 +219,7 @@ with col1:
         unsafe_allow_html=True,
     )
     st.markdown("<div style='text-align:center; margin-top:20px;'>", unsafe_allow_html=True)
-    if st.button("Start Deal Sourcing", key="deal_btn"):
+    if st.button("Start Deal Sourcing", key="deal_btn", type="primary"):
         st.switch_page("pages/1_Deal_Sourcing.py")
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -219,7 +242,7 @@ with col2:
         unsafe_allow_html=True,
     )
     st.markdown("<div style='text-align:center; margin-top:20px;'>", unsafe_allow_html=True)
-    if st.button("Start Due Diligence", key="dd_btn"):
+    if st.button("Start Due Diligence", key="dd_btn", type="primary"):
         st.switch_page("pages/2_Due_Diligence_Analysis.py")
     st.markdown("</div>", unsafe_allow_html=True)
 
