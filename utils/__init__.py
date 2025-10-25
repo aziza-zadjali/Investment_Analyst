@@ -6,6 +6,7 @@ from .vector_store import VectorStoreManager
 from .web_scraper import WebScraper
 from .financial_analyzer import FinancialAnalyzer
 from .template_generator import TemplateGenerator
+from .qdb_styling import apply_qdb_styling
 
 __all__ = [
     'FileProcessor',
@@ -13,5 +14,6 @@ __all__ = [
     'VectorStoreManager',
     'WebScraper',
     'FinancialAnalyzer',
-    'TemplateGenerator'
+    'TemplateGenerator',
+    'apply_qdb_styling'
 ]
