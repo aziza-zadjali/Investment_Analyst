@@ -179,7 +179,7 @@ Provide concise extraction in this format:
         
         report_data = {
             "company_name": company_name,
-            "analyst_name": "AI Due Diligence Team",
+            "analyst_name": "Regulus AI",
             "review_dates": datetime.now().strftime("%B %d, %Y"),
             "financial_scope": f"Analyzed {len([d for d in docs if 'financial' in d.get('name','').lower()])} financial documents",
             "legal_scope": f"Reviewed {len([d for d in docs if 'legal' in d.get('name','').lower()])} legal documents",
