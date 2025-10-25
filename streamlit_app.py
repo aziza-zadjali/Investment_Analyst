@@ -45,11 +45,8 @@ def main():
         st.info("**Tip:** Use multi-page navigation to access different features")
         
     # Main content
-    with st.container():
-    st.markdown(
-        f"""
-        <h1 style='text-align: center; color: {PrimaryColor};'>
-            🚀 Welcome to Investment Analyst AI
+    st.title("🚀 Welcome to Investment Analyst AI")
+    
     st.markdown("### Accelerate Your Investment Analysis with AI")
     
     col1, col2, col3 = st.columns(3)
