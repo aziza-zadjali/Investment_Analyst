@@ -1,3 +1,110 @@
+"""
+Enhanced Due Diligence Analysis with AML/Compliance and Web Data Extraction
+"""
+
+import streamlit as st
+from datetime import datetime
+import PyPDF2
+import docx
+from utils.llm_handler import LLMHandler
+from utils.template_generator import TemplateGenerator
+from utils.web_scraper import WebScraper
+
+st.set_page_config(page_title="DD Analysis", page_icon="📄", layout="wide")
+
+# Initialize handlers
+@st.cache_resource
+def init_handlers():
+    return LLMHandler(), TemplateGenerator(), WebScraper()
+
+llm, template_gen, web_scraper = init_handlers()
+
+# Session state
+if 'dd_complete' not in st.session_state:
+    st.session_state.dd_complete = False
+if 'dd_report' not in st.session_state:
+    st.session_state.dd_report = ""
+if 'dd_data' not in st.session_state:
+    st.session_state.dd_data = {}
+
+st.markdown("""
+<div style="padding: 1.5rem 0; border-bottom: 2px solid #f0f0f0;">
+    <h1 style="margin: 0; font-size: 2.5rem;">📄 Enhanced Due Diligence Analysis</h1>
+    <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 1.1rem;">
+        AI-powered comprehensive analysis with AML/Compliance screening and automatic web data extraction
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# Company Information
+st.subheader("🏢 Company Information")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    company_name = st.text_input(
+        "Company Name *",
+        placeholder="e.g., Baladna Q.P.S.C.",
+        help="Enter the full company name"
+    )
+
+with col2:
+    company_website = st.text_input(
+        "Company Website",
+        placeholder="e.g., baladna.com or https://www.baladna.com",
+        help="Enter company website for automatic data extraction (optional)"
+    )
+
+st.divider()
+
+# Web Data Extraction Options
+st.subheader("🌐 Automatic Web Data Extraction")
+
+st.info("""
+**🚀 Smart Web Extraction:** The system will automatically:
+- Discover investor relations pages
+- Extract financial statements, annual reports, governance docs
+- Pull sustainability/ESG reports
+- Gather fact sheets and company profiles
+- Extract share/stock information
+
+This enriches your DD report with the latest public information!
+""")
+
+col_web1, col_web2 = st.columns(2)
+
+with col_web1:
+    enable_web_extraction = st.checkbox(
+        "Enable Automatic Web Data Extraction",
+        value=False,
+        help="Automatically fetch public company data from website"
+    )
+
+with col_web2:
+    if enable_web_extraction:
+        st.info("✓ Web extraction enabled - will fetch data from company website")
+    else:
+        st.caption("Web extraction disabled - only uploaded documents will be analyzed")
+
+st.divider()
+
+# Document Upload
+st.subheader("📤 Upload Documents")
+
+uploaded_files = st.file_uploader(
+    "Upload financial documents, legal files, contracts (PDF, DOCX, XLSX)",
+    type=['pdf', 'docx', 'xlsx'],
+    accept_multiple_files=True,
+    help="Upload any existing documents you have for analysis (optional if web extraction is enabled)"
+)
+
+if uploaded_files:
+    st.success(f"✅ {len(uploaded_files)} file(s) uploaded")
+
+st.divider()
+
 # Analysis Button
 if st.button("🔍 Run Enhanced Due Diligence Analysis", type="primary", use_container_width=True):
     
@@ -32,13 +139,9 @@ if st.button("🔍 Run Enhanced Due Diligence Analysis", type="primary", use_con
                                 combined_text += text + "\n"
                     
                     elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-                        # DOCX handling
-                        import docx
                         doc = docx.Document(uploaded_file)
                         for para in doc.paragraphs:
                             combined_text += para.text + "\n"
-                    
-                    # Add other file types as needed
                     
                 except Exception as e:
                     st.warning(f"⚠️ Could not process {uploaded_file.name}: {e}")
@@ -46,7 +149,7 @@ if st.button("🔍 Run Enhanced Due Diligence Analysis", type="primary", use_con
             if combined_text:
                 st.success(f"✅ Processed {len(uploaded_files)} documents ({len(combined_text)} characters)")
         
-        # STEP 2: NEW - Extract from company website
+        # STEP 2: Extract from company website
         web_data = {}
         web_extraction_success = False
         
@@ -57,7 +160,6 @@ if st.button("🔍 Run Enhanced Due Diligence Analysis", type="primary", use_con
             status_text = st.empty()
             
             try:
-                # Discover and extract
                 status_text.text("🔍 Discovering investor relations pages...")
                 progress_bar.progress(20)
                 
@@ -67,7 +169,6 @@ if st.button("🔍 Run Enhanced Due Diligence Analysis", type="primary", use_con
                 status_text.text("📊 Extracting financial data...")
                 
                 if web_data and any(web_data.values()):
-                    # Format for analysis
                     web_formatted = web_scraper.format_for_analysis(web_data, company_name)
                     combined_text += "\n\n" + web_formatted
                     web_extraction_success = True
@@ -76,7 +177,6 @@ if st.button("🔍 Run Enhanced Due Diligence Analysis", type="primary", use_con
                     status_text.empty()
                     progress_bar.empty()
                     
-                    # Show what was extracted
                     st.success(f"✅ Extracted {len(web_data)} data categories from website:")
                     
                     cols = st.columns(min(4, len(web_data)))
@@ -94,7 +194,7 @@ if st.button("🔍 Run Enhanced Due Diligence Analysis", type="primary", use_con
                 st.error(f"❌ Web extraction failed: {str(e)}")
                 st.info("💡 Try uploading documents manually or check if the website is accessible")
         
-        # STEP 3: Validation - Ensure we have some data
+        # STEP 3: Validation
         if not combined_text or len(combined_text) < 100:
             st.error("⚠️ Insufficient data for analysis.")
             st.info("""
@@ -105,7 +205,7 @@ if st.button("🔍 Run Enhanced Due Diligence Analysis", type="primary", use_con
             """)
             st.stop()
         
-        # STEP 4: Perform AI Analysis (ONLY if we have data)
+        # STEP 4: AI Analysis
         st.info("🤖 Analyzing with AI...")
         
         analysis_results = {
@@ -116,7 +216,6 @@ if st.button("🔍 Run Enhanced Due Diligence Analysis", type="primary", use_con
             'data_sources': []
         }
         
-        # Track data sources
         if uploaded_files:
             analysis_results['data_sources'].append(f"{len(uploaded_files)} uploaded documents")
         if web_extraction_success:
@@ -124,33 +223,30 @@ if st.button("🔍 Run Enhanced Due Diligence Analysis", type="primary", use_con
         
         # Financial Analysis
         st.info("📊 Analyzing financials...")
-        
         financial_prompt = f"""
-        Analyze the financial health and performance of {company_name} based on the following documents:
+        Analyze the financial health and performance of {company_name}:
         
         {combined_text[:8000]}
         
         Provide detailed analysis covering:
         1. Revenue trends and growth
-        2. Profitability metrics
-        3. Cash flow and liquidity
-        4. Asset quality and leverage
-        5. Key financial ratios
+        2. Profitability metrics (margins, EBITDA)
+        3. Cash flow and liquidity position
+        4. Asset quality and leverage ratios
+        5. Key financial ratios (ROE, ROA, debt-to-equity)
         6. Red flags or concerns
         
-        Be specific with numbers and dates where available.
+        Be specific with numbers and dates.
         """
         
         try:
-            financial_analysis = llm.generate(financial_prompt)
-            analysis_results['financial_analysis'] = financial_analysis
+            analysis_results['financial_analysis'] = llm.generate(financial_prompt)
         except Exception as e:
-            st.error(f"Error in financial analysis: {e}")
+            st.warning(f"Financial analysis error: {e}")
             analysis_results['financial_analysis'] = "Analysis unavailable due to error"
         
         # Legal Analysis
         st.info("⚖️ Reviewing legal & compliance...")
-        
         legal_prompt = f"""
         Review legal and compliance aspects for {company_name}:
         
@@ -166,14 +262,12 @@ if st.button("🔍 Run Enhanced Due Diligence Analysis", type="primary", use_con
         """
         
         try:
-            legal_analysis = llm.generate(legal_prompt)
-            analysis_results['legal_analysis'] = legal_analysis
+            analysis_results['legal_analysis'] = llm.generate(legal_prompt)
         except Exception as e:
-            analysis_results['legal_analysis'] = "Analysis unavailable due to error"
+            analysis_results['legal_analysis'] = "Analysis unavailable"
         
         # Operational Analysis
         st.info("🏭 Assessing operations...")
-        
         operational_prompt = f"""
         Assess operational capabilities of {company_name}:
         
@@ -185,18 +279,16 @@ if st.button("🔍 Run Enhanced Due Diligence Analysis", type="primary", use_con
         3. Technology and systems
         4. Human resources and management
         5. Operational efficiency
-        6. Scalability
+        6. Scalability potential
         """
         
         try:
-            operational_analysis = llm.generate(operational_prompt)
-            analysis_results['operational_analysis'] = operational_analysis
+            analysis_results['operational_analysis'] = llm.generate(operational_prompt)
         except Exception as e:
-            analysis_results['operational_analysis'] = "Analysis unavailable due to error"
+            analysis_results['operational_analysis'] = "Analysis unavailable"
         
         # Risk Assessment
         st.info("⚠️ Evaluating risks...")
-        
         risk_prompt = f"""
         Comprehensive risk assessment for {company_name}:
         
@@ -212,99 +304,89 @@ if st.button("🔍 Run Enhanced Due Diligence Analysis", type="primary", use_con
         """
         
         try:
-            risk_assessment = llm.generate(risk_prompt)
-            analysis_results['risk_assessment'] = risk_assessment
+            analysis_results['risk_assessment'] = llm.generate(risk_prompt)
         except Exception as e:
-            analysis_results['risk_assessment'] = "Assessment unavailable due to error"
+            analysis_results['risk_assessment'] = "Assessment unavailable"
         
-        # AML/Compliance (if web data available)
-        if web_extraction_success or combined_text:
-            st.info("🔒 Performing AML/KYC screening...")
-            
-            # Sanctions screening
-            sanctions_prompt = f"""
-            Conduct sanctions screening for {company_name}:
-            
-            {combined_text[:4000]}
-            
-            Check for:
-            - OFAC SDN list concerns
-            - EU/UN sanctions exposure
-            - High-risk jurisdiction connections
-            - Sanctioned activities or parties
-            
-            Provide screening status and recommendations.
-            """
-            
-            try:
-                sanctions_analysis = llm.generate(sanctions_prompt)
-                analysis_results['sanctions_screening'] = sanctions_analysis
-            except:
-                analysis_results['sanctions_screening'] = "Screening pending - insufficient data"
-            
-            # PEP screening
-            pep_prompt = f"""
-            PEP (Politically Exposed Persons) screening for {company_name}:
-            
-            {combined_text[:4000]}
-            
-            Identify:
-            - Key individuals and their roles
-            - PEP connections or indicators
-            - Enhanced due diligence requirements
-            - Risk classification
-            """
-            
-            try:
-                pep_analysis = llm.generate(pep_prompt)
-                analysis_results['pep_screening'] = pep_analysis
-            except:
-                analysis_results['pep_screening'] = "Screening pending"
-            
-            # FATCA compliance
-            fatca_prompt = f"""
-            FATCA compliance assessment for {company_name}:
-            
-            {combined_text[:4000]}
-            
-            Review:
-            - Entity classification
-            - GIIN status
-            - US person indicators
-            - Compliance requirements
-            """
-            
-            try:
-                fatca_analysis = llm.generate(fatca_prompt)
-                analysis_results['fatca_compliance'] = fatca_analysis
-            except:
-                analysis_results['fatca_compliance'] = "Review pending"
-            
-            # Adverse media
-            adverse_prompt = f"""
-            Adverse media screening for {company_name}:
-            
-            {combined_text[:4000]}
-            
-            Check for:
-            - Financial crime indicators
-            - Regulatory actions
-            - Negative press
-            - Reputational risks
-            """
-            
-            try:
-                adverse_analysis = llm.generate(adverse_prompt)
-                analysis_results['adverse_media'] = adverse_analysis
-            except:
-                analysis_results['adverse_media'] = "Screening pending"
-            
-            # AML risk rating
-            analysis_results['aml_risk_rating'] = "To be assessed based on findings"
+        # AML/Compliance Screening
+        st.info("🔒 Performing AML/KYC screening...")
+        
+        # Sanctions
+        sanctions_prompt = f"""
+        Conduct sanctions screening for {company_name}:
+        
+        {combined_text[:4000]}
+        
+        Check for:
+        - OFAC SDN list concerns
+        - EU/UN sanctions exposure
+        - High-risk jurisdiction connections
+        - Sanctioned activities or parties
+        
+        Provide screening status.
+        """
+        
+        try:
+            analysis_results['sanctions_screening'] = llm.generate(sanctions_prompt)
+        except:
+            analysis_results['sanctions_screening'] = "Screening pending"
+        
+        # PEP
+        pep_prompt = f"""
+        PEP (Politically Exposed Persons) screening for {company_name}:
+        
+        {combined_text[:4000]}
+        
+        Identify:
+        - Key individuals and roles
+        - PEP connections
+        - Enhanced due diligence requirements
+        - Risk classification
+        """
+        
+        try:
+            analysis_results['pep_screening'] = llm.generate(pep_prompt)
+        except:
+            analysis_results['pep_screening'] = "Screening pending"
+        
+        # FATCA
+        fatca_prompt = f"""
+        FATCA compliance assessment for {company_name}:
+        
+        {combined_text[:4000]}
+        
+        Review:
+        - Entity classification
+        - GIIN status
+        - US person indicators
+        - Compliance requirements
+        """
+        
+        try:
+            analysis_results['fatca_compliance'] = llm.generate(fatca_prompt)
+        except:
+            analysis_results['fatca_compliance'] = "Review pending"
+        
+        # Adverse Media
+        adverse_prompt = f"""
+        Adverse media screening for {company_name}:
+        
+        {combined_text[:4000]}
+        
+        Check for:
+        - Financial crime indicators
+        - Regulatory actions
+        - Negative press
+        - Reputational risks
+        """
+        
+        try:
+            analysis_results['adverse_media'] = llm.generate(adverse_prompt)
+        except:
+            analysis_results['adverse_media'] = "Screening pending"
         
         # Recommendations
         st.info("💡 Generating recommendations...")
-        
         rec_prompt = f"""
         Based on all analysis for {company_name}, provide:
         
@@ -318,14 +400,12 @@ if st.button("🔍 Run Enhanced Due Diligence Analysis", type="primary", use_con
         """
         
         try:
-            recommendations = llm.generate(rec_prompt)
-            analysis_results['recommendations'] = recommendations
+            analysis_results['recommendations'] = llm.generate(rec_prompt)
         except:
             analysis_results['recommendations'] = "Recommendations pending"
         
         # Generate Report
         st.info("📝 Generating comprehensive report...")
-        
         markdown_report = template_gen.generate_due_diligence_report(analysis_results)
         
         # Store in session state
@@ -335,3 +415,64 @@ if st.button("🔍 Run Enhanced Due Diligence Analysis", type="primary", use_con
         
         st.success("✅ Due Diligence Analysis Complete!")
         st.balloons()
+
+# Display Results
+if st.session_state.dd_complete:
+    
+    st.divider()
+    st.subheader("📥 Download Reports")
+    
+    data = st.session_state.dd_data
+    
+    col_dl1, col_dl2 = st.columns(2)
+    
+    with col_dl1:
+        st.download_button(
+            label="⬇️ Download Markdown Report",
+            data=st.session_state.dd_report,
+            file_name=f"{data['company_name']}_DD_Report_{datetime.now().strftime('%Y%m%d')}.md",
+            mime="text/markdown"
+        )
+    
+    with col_dl2:
+        # Generate DOCX
+        docx_file = template_gen.generate_due_diligence_docx(data)
+        
+        st.download_button(
+            label="⬇️ Download DOCX Report",
+            data=docx_file,
+            file_name=f"{data['company_name']}_DD_Report_{datetime.now().strftime('%Y%m%d')}.docx",
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )
+    
+    st.divider()
+    
+    # Preview
+    with st.expander("📄 Preview Report", expanded=False):
+        st.markdown(st.session_state.dd_report)
+
+# Sidebar
+with st.sidebar:
+    st.markdown("### 💡 DD Analysis Features")
+    st.markdown("""
+✓ **Financial Analysis**
+✓ **Legal & Compliance Review**
+✓ **Operational Assessment**
+✓ **Risk Evaluation**
+✓ **AML/KYC Screening**
+  - Sanctions Lists
+  - PEP Screening
+  - FATCA Compliance
+  - Adverse Media
+✓ **Web Data Extraction**
+✓ **Professional Reports (MD & DOCX)**
+""")
+    
+    if st.session_state.dd_complete:
+        st.divider()
+        st.markdown("### 📋 Analysis Summary")
+        st.caption(f"**Company:** {st.session_state.dd_data.get('company_name', 'N/A')}")
+        st.caption(f"**Date:** {st.session_state.dd_data.get('analysis_date', 'N/A')}")
+        sources = st.session_state.dd_data.get('data_sources', [])
+        if sources:
+            st.caption(f"**Sources:** {', '.join(sources)}")
