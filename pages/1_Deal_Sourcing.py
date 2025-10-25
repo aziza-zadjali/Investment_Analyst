@@ -47,7 +47,7 @@ if 'selected_deal' not in st.session_state:
 col_nav1, col_nav2, col_nav3 = st.columns([1, 2, 1])
 with col_nav1:
     if st.button("← Back to Home"):
-        st.switch_page("Main_Page.py")
+        st.switch_page("streamlit_app.py")
 with col_nav2:
     st.markdown("<p style='text-align: center; color: #666; font-weight: 600;'>Step 1 of 5: Deal Sourcing</p>", unsafe_allow_html=True)
 with col_nav3:
