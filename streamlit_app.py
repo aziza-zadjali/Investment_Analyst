@@ -98,14 +98,11 @@ st.markdown(
     text-align: center;
 }
 
-/* Center navigation columns */
-.nav-row {
+/* Center columns container */
+div[data-testid="column"] {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 15px;
-    max-width: 1200px;
-    margin: 0 auto;
 }
 
 /* FORCE TEAL COLOR - Override QDB purple styling */
@@ -139,51 +136,38 @@ button[kind="primary"]:hover {
     box-shadow: 0 6px 18px rgba(9,174,152,0.45) !important;
     transform: translateY(-2px) !important;
 }
-
-div[data-testid="column"] > div > div > div > div > button:active,
-div[data-testid="column"] button:active,
-.stButton > button:active {
-    transform: translateY(0px) !important;
-}
-
-div[data-testid="column"] > div > div > div > div > button:focus,
-div[data-testid="column"] button:focus,
-.stButton > button:focus {
-    background-color: #09AE98 !important;
-    color: white !important;
-    box-shadow: 0 3px 14px rgba(9,174,152,0.3) !important;
-}
 </style>
 """,
     unsafe_allow_html=True,
 )
 
 # ===== TOP NAVIGATION - CENTERED =====
-st.markdown('<div class="nav-container"><div class="nav-row">', unsafe_allow_html=True)
+st.markdown('<div class="nav-container">', unsafe_allow_html=True)
 
-nav_cols = st.columns([1, 1, 1, 1, 1])
+# Add empty columns for centering
+nav_cols = st.columns([0.5, 1, 1, 1, 1, 1, 0.5])
 
-with nav_cols[0]:
+with nav_cols[1]:
     if st.button("Deal\nSourcing", key="nav_deal", type="primary"):
         st.switch_page("pages/1_Deal_Sourcing.py")
 
-with nav_cols[1]:
+with nav_cols[2]:
     if st.button("Due\nDiligence", key="nav_dd", type="primary"):
         st.switch_page("pages/2_Due_Diligence_Analysis.py")
 
-with nav_cols[2]:
+with nav_cols[3]:
     if st.button("Market\nAnalysis", key="nav_market", type="primary"):
         st.switch_page("pages/3_Market_Analysis.py")
 
-with nav_cols[3]:
+with nav_cols[4]:
     if st.button("Financial\nModeling", key="nav_fin", type="primary"):
         st.switch_page("pages/4_Financial_Modeling.py")
 
-with nav_cols[4]:
+with nav_cols[5]:
     if st.button("Investment\nMemo", key="nav_memo", type="primary"):
         st.switch_page("pages/5_Investment_Memo.py")
 
-st.markdown("</div></div>", unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
 
 # ===== CHOOSE PATH SECTION =====
 st.markdown("<div id='choose-path'></div>", unsafe_allow_html=True)
@@ -200,17 +184,18 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-col1, col2 = st.columns(2, gap="large")
+# Add empty columns to center the two path boxes
+path_cols = st.columns([0.5, 2, 2, 0.5])
 
-with col1:
+with path_cols[1]:
     st.markdown(
         f"""
-        <div style="background:white; border-radius:16px; padding:35px; height:360px;
+        <div style="background:white; border-radius:16px; padding:30px; height:280px;
                     box-shadow:0 5px 20px rgba(0,0,0,0.08); border-top:4px solid #09AE98;
                     display:flex; flex-direction:column; justify-content:space-between;">
             <div>
-                <h3 style="color:#1B2B4D; font-size:1.6rem; font-weight:600; margin-bottom:16px;">Deal Sourcing Path</h3>
-                <ul style="margin-top:10px; line-height:1.9; color:#333;">
+                <h3 style="color:#1B2B4D; font-size:1.4rem; font-weight:600; margin-bottom:14px;">Deal Sourcing Path</h3>
+                <ul style="margin-top:8px; line-height:1.7; color:#333; font-size:0.95rem;">
                     <li>AI‑powered deal identification</li>
                     <li>Market analysis handoff</li>
                     <li>Proceed to due diligence</li>
@@ -220,20 +205,20 @@ with col1:
         """,
         unsafe_allow_html=True,
     )
-    st.markdown("<div style='text-align:center; margin-top:20px;'>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align:center; margin-top:18px;'>", unsafe_allow_html=True)
     if st.button("Start Deal Sourcing", key="deal_btn", type="primary"):
         st.switch_page("pages/1_Deal_Sourcing.py")
     st.markdown("</div>", unsafe_allow_html=True)
 
-with col2:
+with path_cols[2]:
     st.markdown(
         f"""
-        <div style="background:white; border-radius:16px; padding:35px; height:360px;
+        <div style="background:white; border-radius:16px; padding:30px; height:280px;
                     box-shadow:0 5px 20px rgba(0,0,0,0.08); border-top:4px solid #09AE98;
                     display:flex; flex-direction:column; justify-content:space-between;">
             <div>
-                <h3 style="color:#1B2B4D; font-size:1.6rem; font-weight:600; margin-bottom:16px;">Due Diligence Path</h3>
-                <ul style="margin-top:10px; line-height:1.9; color:#333;">
+                <h3 style="color:#1B2B4D; font-size:1.4rem; font-weight:600; margin-bottom:14px;">Due Diligence Path</h3>
+                <ul style="margin-top:8px; line-height:1.7; color:#333; font-size:0.95rem;">
                     <li>Upload and analyze company data</li>
                     <li>Market fit comparatives</li>
                     <li>Create Investment Memo</li>
@@ -243,7 +228,7 @@ with col2:
         """,
         unsafe_allow_html=True,
     )
-    st.markdown("<div style='text-align:center; margin-top:20px;'>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align:center; margin-top:18px;'>", unsafe_allow_html=True)
     if st.button("Start Due Diligence", key="dd_btn", type="primary"):
         st.switch_page("pages/2_Due_Diligence_Analysis.py")
     st.markdown("</div>", unsafe_allow_html=True)
