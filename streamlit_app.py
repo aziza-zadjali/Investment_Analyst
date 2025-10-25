@@ -280,7 +280,7 @@ st.markdown(f"""
   <div style="max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;">
     <div style="flex:3;">
       <ul style="list-style:none;display:flex;gap:25px;flex-wrap:wrap;padding:0;margin:0;color:#E2E8F0;">
-        <li><a href="#" style="text-decoration:none;color:#E2E8F0;">About QDB</a></li>
+        <li><a href="#" style="text-decoration:none;color:#E2E8F0;">About Regulus AI</a></li>
         <li><a href="#" style="text-decoration:none;color:#E2E8F0;">Careers</a></li>
         <li><a href="#" style="text-decoration:none;color:#E2E8F0;">Contact Us</a></li>
         <li><a href="#" style="text-decoration:none;color:#E2E8F0;">Privacy Policy</a></li>
