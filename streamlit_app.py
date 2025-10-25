@@ -86,7 +86,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ===== OVERRIDE WITH TEAL COLOR (MUST COME AFTER apply_qdb_styling) =====
+# ===== OVERRIDE WITH TEAL COLOR =====
 st.markdown(
     """
 <style>
@@ -94,11 +94,21 @@ st.markdown(
 .nav-container {
     background-color: #F6F5F2;
     margin: 0 -3rem;
-    padding: 16px 20px;
+    padding: 20px 0;
     text-align: center;
 }
 
-/* FORCE TEAL COLOR - Override QDB purple styling with higher specificity */
+/* Center navigation columns */
+.nav-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* FORCE TEAL COLOR - Override QDB purple styling */
 div[data-testid="column"] > div > div > div > div > button,
 div[data-testid="column"] button,
 .stButton > button,
@@ -143,23 +153,15 @@ div[data-testid="column"] button:focus,
     color: white !important;
     box-shadow: 0 3px 14px rgba(9,174,152,0.3) !important;
 }
-
-/* Remove any purple color references */
-button[style*="purple"],
-button[style*="Purple"],
-button[class*="purple"],
-button[class*="Purple"] {
-    background-color: #09AE98 !important;
-}
 </style>
 """,
     unsafe_allow_html=True,
 )
 
-# ===== TOP NAVIGATION =====
-st.markdown('<div class="nav-container">', unsafe_allow_html=True)
+# ===== TOP NAVIGATION - CENTERED =====
+st.markdown('<div class="nav-container"><div class="nav-row">', unsafe_allow_html=True)
 
-nav_cols = st.columns(5, gap="small")
+nav_cols = st.columns([1, 1, 1, 1, 1])
 
 with nav_cols[0]:
     if st.button("Deal\nSourcing", key="nav_deal", type="primary"):
@@ -181,7 +183,7 @@ with nav_cols[4]:
     if st.button("Investment\nMemo", key="nav_memo", type="primary"):
         st.switch_page("pages/5_Investment_Memo.py")
 
-st.markdown("</div>", unsafe_allow_html=True)
+st.markdown("</div></div>", unsafe_allow_html=True)
 
 # ===== CHOOSE PATH SECTION =====
 st.markdown("<div id='choose-path'></div>", unsafe_allow_html=True)
@@ -248,30 +250,28 @@ with col2:
 
 qdb_section_end()
 
-# ===== FOOTER (Minimal Width + Branding) =====
+# ===== FOOTER (FULL PAGE WIDTH) =====
 st.markdown(
     f"""
 <div style="
     background-color:#1B2B4D;
     color:#E2E8F0;
-    padding:25px 20px;
-    margin:0 auto;
-    width:85%;
-    border-radius:15px 15px 0 0;
+    padding:30px 40px;
+    margin:40px -3rem 0 -3rem;
     font-size:0.94rem;">
-  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
-    <div style="flex:3;">
-      <ul style="list-style:none; display:flex; gap:25px; flex-wrap:wrap; padding:0; margin:0;">
-        <li><a href="#" style="text-decoration:none; color:#E2E8F0;">About Regulus</a></li>
-        <li><a href="#" style="text-decoration:none; color:#E2E8F0;">Careers</a></li>
-        <li><a href="#" style="text-decoration:none; color:#E2E8F0;">Contact Us</a></li>
-        <li><a href="#" style="text-decoration:none; color:#E2E8F0;">Privacy Policy</a></li>
-        <li><a href="#" style="text-decoration:none; color:#E2E8F0;">Terms & Conditions</a></li>
+  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; max-width:1400px; margin:0 auto;">
+    <div style="flex:2;">
+      <ul style="list-style:none; display:flex; gap:30px; flex-wrap:wrap; padding:0; margin:0;">
+        <li><a href="#" style="text-decoration:none; color:#E2E8F0; transition:color 0.3s;">About Regulus</a></li>
+        <li><a href="#" style="text-decoration:none; color:#E2E8F0; transition:color 0.3s;">Careers</a></li>
+        <li><a href="#" style="text-decoration:none; color:#E2E8F0; transition:color 0.3s;">Contact Us</a></li>
+        <li><a href="#" style="text-decoration:none; color:#E2E8F0; transition:color 0.3s;">Privacy Policy</a></li>
+        <li><a href="#" style="text-decoration:none; color:#E2E8F0; transition:color 0.3s;">Terms & Conditions</a></li>
       </ul>
     </div>
-    <div style="flex:1; text-align:right;">
+    <div style="flex:1; text-align:right; display:flex; align-items:center; justify-content:flex-end; gap:12px;">
       <p style="margin:0; color:#A0AEC0; font-size:0.9rem;">Powered by Regulus AI</p>
-      {"<img src='"+regulus_logo+"' style='max-height:55px; margin-top:6px; opacity:0.95;'>" if regulus_logo else "<b>Regulus</b>"}
+      {"<img src='"+regulus_logo+"' style='max-height:45px; opacity:0.95;'>" if regulus_logo else ""}
     </div>
   </div>
 </div>
