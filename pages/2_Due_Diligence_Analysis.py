@@ -1,6 +1,6 @@
 """
 Due Diligence Analysis Page
-Auto-filled from Deal Sourcing selection with guided workflow
+QDB-branded with auto-fill from Deal Sourcing selection
 """
 
 import streamlit as st
@@ -12,22 +12,10 @@ from utils.template_generator import TemplateGenerator
 from utils.web_scraper import WebScraper
 from docx import Document
 import io
-from utils.qdb_styling import apply_qdb_styling
+from utils.qdb_styling import apply_qdb_styling, QDB_PURPLE, QDB_GOLD, QDB_DARK_BLUE, qdb_header, qdb_divider
 
-st.set_page_config(page_title="Deal Sourcing", layout="wide")
-apply_qdb_styling()  # ✅ Global styling applied
-
-
-# Hide sidebar
-st.markdown("""
-<style>
-    [data-testid="stSidebar"] {display: none;}
-    .main > div {padding-top: 2rem;}
-</style>
-""", unsafe_allow_html=True)
-
-def gradient_box(text, gradient="linear-gradient(90deg, #A6D8FF, #D5B8FF)"):
-    return f"""<div style="background: {gradient}; padding: 15px 20px; border-radius: 12px; color: white; font-weight: 600; font-size: 1.5rem; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);">{text}</div>"""
+st.set_page_config(page_title="Due Diligence - QDB", layout="wide", initial_sidebar_state="collapsed")
+apply_qdb_styling()  # ✅ QDB styling
 
 @st.cache_resource
 def init_handlers():
@@ -44,14 +32,14 @@ with col_nav1:
     if st.button("← Back to Deals"):
         st.switch_page("pages/1_Deal_Sourcing.py")
 with col_nav2:
-    st.markdown("<p style='text-align: center; color: #666; font-weight: 600;'>Step 2 of 5: Due Diligence</p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='text-align: center; color:{QDB_DARK_BLUE}; font-weight: 600;'>Step 2 of 5: Due Diligence</p>", unsafe_allow_html=True)
 with col_nav3:
     st.markdown("<p style='text-align: right; color: #999;'>QDB Analyst</p>", unsafe_allow_html=True)
 
-st.markdown("<div style='background: linear-gradient(90deg, #A6D8FF, #D5B8FF); height: 4px; border-radius: 2px; margin-bottom: 30px;'></div>", unsafe_allow_html=True)
+qdb_divider()
 
 # HEADER
-st.markdown(gradient_box("Due Diligence Analysis"), unsafe_allow_html=True)
+qdb_header("Due Diligence Analysis", "Comprehensive assessment of investment opportunity")
 
 # Auto-fill from selected deal
 selected_deal = st.session_state.get('selected_deal')
@@ -73,10 +61,10 @@ else:
     sector = st.text_input("Sector", value="")
     stage = st.text_input("Funding Stage", value="")
 
-st.markdown("<div style='background: linear-gradient(90deg, #A6D8FF, #D5B8FF); height: 4px; border-radius: 2px; margin: 30px 0;'></div>", unsafe_allow_html=True)
+qdb_divider()
 
 # Data Collection
-st.markdown(gradient_box("Data Collection"), unsafe_allow_html=True)
+qdb_header("Data Collection", "Upload documents and configure data sources")
 
 col_opt1, col_opt2 = st.columns(2)
 
@@ -89,10 +77,10 @@ with col_opt2:
     company_website = st.text_input("Company Website (optional)", placeholder="https://example.com")
     fetch_public_data = st.checkbox("Fetch public data from web", value=False)
 
-st.markdown("<div style='background: linear-gradient(90deg, #A6D8FF, #D5B8FF); height: 4px; border-radius: 2px; margin: 30px 0;'></div>", unsafe_allow_html=True)
+qdb_divider()
 
 # Analysis Configuration
-st.markdown(gradient_box("Analysis Configuration"), unsafe_allow_html=True)
+qdb_header("Analysis Configuration", "Customize depth and scope of analysis")
 
 col_config1, col_config2 = st.columns(2)
 
@@ -164,10 +152,8 @@ if st.button("🚀 Run Due Diligence Analysis", type="primary", use_container_wi
             """
             
             try:
-                # Use the correct LLM method - generate() instead of chat_completion()
                 analysis_result = llm.generate(analysis_prompt)
                 
-                # Generate report
                 report_data = {
                     'company_name': company_name,
                     'industry': industry,
@@ -192,12 +178,10 @@ if st.button("🚀 Run Due Diligence Analysis", type="primary", use_container_wi
                     })
                 
                 st.session_state.dd_report = template_gen.generate_due_diligence_report(report_data)
-                
                 st.success("✅ Due diligence analysis completed!")
                 
             except Exception as e:
                 st.error(f"Analysis error: {str(e)}")
-                # Generate basic report even if AI fails
                 report_data = {
                     'company_name': company_name,
                     'industry': industry,
@@ -216,8 +200,8 @@ if st.button("🚀 Run Due Diligence Analysis", type="primary", use_container_wi
 
 # Display Results
 if st.session_state.dd_report:
-    st.markdown("<div style='background: linear-gradient(90deg, #A6D8FF, #D5B8FF); height: 4px; border-radius: 2px; margin: 30px 0;'></div>", unsafe_allow_html=True)
-    st.markdown(gradient_box("Analysis Results"), unsafe_allow_html=True)
+    qdb_divider()
+    qdb_header("Analysis Results", "Review and download comprehensive due diligence report")
     
     with st.expander("📄 View Report Preview", expanded=True):
         st.markdown(st.session_state.dd_report[:2000] + "...")
@@ -251,9 +235,9 @@ if st.session_state.dd_report:
     # WORKFLOW NAVIGATION
     st.markdown("<br><br>", unsafe_allow_html=True)
     st.markdown(
-        """
+        f"""
         <div style='
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, {QDB_PURPLE} 0%, {QDB_DARK_BLUE} 100%);
             border-radius: 12px;
             padding: 25px;
             color: white;
@@ -283,4 +267,4 @@ if st.session_state.dd_report:
             st.switch_page("pages/4_Financial_Modeling.py")
 
 st.markdown("<br><br>", unsafe_allow_html=True)
-st.markdown("<div style='text-align: center; color: #999; font-size: 0.9rem;'>Due Diligence Analysis | Powered by Regulus AI</div>", unsafe_allow_html=True)
+st.markdown(f"<div style='text-align: center; color:{QDB_GOLD}; font-size: 0.9rem;'>Due Diligence Analysis | Powered by Regulus AI</div>", unsafe_allow_html=True)
