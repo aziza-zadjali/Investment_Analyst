@@ -1,6 +1,6 @@
 """
 Investment Analyst AI – Regulus Edition
-Footer refined | Powered by Regulus AI only
+Same Design | Functional Page Switching via st.switch_page()
 """
 
 import streamlit as st
@@ -51,7 +51,7 @@ st.markdown(
     {"<img src='"+qdb_logo+"' style='max-height:70px;'>" if qdb_logo else "<b>QDB</b>"}
   </div>
 
-  <!-- Central Content -->
+  <!-- Central Hero Text -->
   <div style="max-width:950px; margin:0 auto;">
     <h1 style="font-size:2.5rem; font-weight:700; letter-spacing:-0.3px;">
       Investment Analyst AI
@@ -62,22 +62,9 @@ st.markdown(
     <p style="color:#CBD5E0; font-size:0.95rem; line-height:1.6; max-width:720px; margin:0 auto 30px;">
       End‑to‑End AI Platform for Deal Sourcing, Due Diligence, Market Analysis & Investment Memoranda
     </p>
-    <a href="#choose-path" style="
-        background-color:#CBD5E0;
-        color:#1B2B4D;
-        border-radius:40px;
-        padding:12px 34px;
-        font-weight:600;
-        font-size:0.95rem;
-        text-decoration:none;
-        display:inline-block;
-        box-shadow:0 4px 14px rgba(203,213,224,0.3);
-        transition:all 0.3s ease;">
-        Explore Analysis Workflows
-    </a>
   </div>
 
-  <!-- Wave Divider -->
+  <!-- Decorative Wave Divider -->
   <svg viewBox="0 0 1440 140" xmlns="http://www.w3.org/2000/svg" style="position:absolute; bottom:-1px; left:0; width:100%;">
     <path fill="#F6F5F2" d="M0,32L80,42.7C160,53,320,75,480,80C640,85,800,75,960,69.3C1120,64,1280,75,1360,80L1440,85L1440,140L0,140Z"></path>
   </svg>
@@ -86,7 +73,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ===== TOP NAVIGATION =====
+# ===== NAVIGATION BAR =====
 st.markdown(
     f"""
 <style>
@@ -99,79 +86,42 @@ st.markdown(
   margin:-10px -3rem 4px -3rem;
   font-size:1.07rem;
 }}
-.nav-item {{
-  position:relative;
-  font-weight:600;
+.nav-button {{
+  background: none;
+  border: none;
+  font-weight: 600;
   color:{QDB_DARK_BLUE};
-  cursor:pointer;
-  border-bottom:2.5px solid transparent;
-  transition:color 0.3s, border-color 0.3s;
+  font-size:1rem;
+  cursor: pointer;
+  border-bottom: 2.5px solid transparent;
+  transition: color 0.3s, border-color 0.3s;
 }}
-.nav-item:hover {{color:#319795; border-color:#319795;}}
-.card {{
-  position:absolute; top:38px; left:50%;
-  transform:translateX(-50%);
-  width:320px;
-  background:white;
-  border-radius:12px;
-  box-shadow:0 8px 32px rgba(0,0,0,0.1);
-  opacity:0; visibility:hidden;
-  transition:all 0.25s ease;
-  z-index:10;
-  pointer-events:none;
+.nav-button:hover {{
+  color:#319795;
+  border-color:#319795;
 }}
-.nav-item:hover .card {{
-  opacity:1; visibility:visible; transform:translate(-50%,15px); pointer-events:auto;
-}}
-.card a {{
-  display:block; padding:17px;
-  text-decoration:none; color:{QDB_DARK_BLUE};
-}}
-.card a:hover {{
-  background-color:#F0F9F8; border-radius:12px; color:#319795;
-}}
-.card h4 {{margin:0; font-size:1.05rem;}}
-.card p {{margin:6px 0 10px; font-size:0.9rem; color:#555; line-height:1.4;}}
 </style>
-
-<div class="navbar">
-  <div class="nav-item">Deal Sourcing
-    <div class="card">
-      <a href="?page=deal"><h4>Deal Sourcing</h4>
-      <p>Discover and qualify investment opportunities using AI‑based ranking.</p></a>
-    </div>
-  </div>
-  <div class="nav-item">Due Diligence
-    <div class="card">
-      <a href="?page=dd"><h4>Due Diligence</h4>
-      <p>Run comprehensive due diligence across financial, legal, and operational data.</p></a>
-    </div>
-  </div>
-  <div class="nav-item">Market Analysis
-    <div class="card">
-      <a href="?page=market"><h4>Market Analysis</h4>
-      <p>Extract actionable insights and competitive landscape summaries instantly.</p></a>
-    </div>
-  </div>
-  <div class="nav-item">Financial Modeling
-    <div class="card">
-      <a href="?page=fin"><h4>Financial Modeling</h4>
-      <p>Build predictive financial models with AI‑powered accuracy checks.</p></a>
-    </div>
-  </div>
-  <div class="nav-item">Investment Memo
-    <div class="card">
-      <a href="?page=memo"><h4>Investment Memo</h4>
-      <p>Create professional‑grade summary memos ready for executive review.</p></a>
-    </div>
-  </div>
-</div>
 """,
     unsafe_allow_html=True,
 )
 
+st.markdown('<div class="navbar">', unsafe_allow_html=True)
+
+nav_cols = st.columns(5)
+if nav_cols[0].button("Deal Sourcing"):
+    st.switch_page("pages/1_Deal_Sourcing.py")
+if nav_cols[1].button("Due Diligence"):
+    st.switch_page("pages/2_Due_Diligence.py")
+if nav_cols[2].button("Market Analysis"):
+    st.switch_page("pages/3_Market_Analysis.py")
+if nav_cols[3].button("Financial Modeling"):
+    st.switch_page("pages/4_Financial_Modeling.py")
+if nav_cols[4].button("Investment Memo"):
+    st.switch_page("pages/5_Investment_Memo.py")
+
+st.markdown("</div>", unsafe_allow_html=True)
+
 # ===== CHOOSE PATH SECTION =====
-st.markdown("<div id='choose-path'></div>", unsafe_allow_html=True)
 qdb_section_start("light")
 st.markdown(
     f"""
@@ -185,84 +135,68 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-button_style = """
-  background-color:#319795;
-  color:white;
-  border:none;
-  border-radius:40px;
-  padding:12px 30px;
-  font-size:0.95rem;
-  font-weight:600;
-  box-shadow:0 3px 12px rgba(49,151,149,0.3);
-  text-decoration:none;
-  transition:all 0.25s ease;
-"""
-hover_in = "this.style.backgroundColor='#2C7A7B'"
-hover_out = "this.style.backgroundColor='#319795'"
-
 col1, col2 = st.columns(2, gap="large")
+button_css = """
+    border:none;
+    border-radius:40px;
+    font-weight:600;
+    padding:12px 30px;
+    font-size:0.95rem;
+    color:white;
+    background-color:#319795;
+    box-shadow:0px 3px 12px rgba(49,151,149,0.3);
+"""
 
+# --- Left Card (Deal Sourcing)
 with col1:
     st.markdown(
-        f"""
+        """
         <div style="background:white; border-radius:16px; padding:35px; height:390px;
-                    box-shadow:0 5px 20px rgba(0,0,0,0.08); border-top:4px solid #2C3E5E;
-                    display:flex; flex-direction:column; justify-content:space-between;">
-            <div>
-                <h3 style="color:#1B2B4D; font-size:1.6rem; font-weight:600; margin-bottom:16px;">Deal Sourcing Path</h3>
-                <ul style="margin-top:10px; line-height:1.9; color:#333;">
-                    <li><a href='?page=deal' style='color:#1B2B4D; text-decoration:none;'>AI‑powered deal identification</a></li>
-                    <li><a href='?page=market' style='color:#1B2B4D; text-decoration:none;'>Market analysis handoff</a></li>
-                    <li><a href='?page=dd' style='color:#1B2B4D; text-decoration:none;'>Proceed to due diligence</a></li>
-                </ul>
-            </div>
-            <div style="margin-top:auto;text-align:center;">
-                <a href="?page=deal" style="{button_style}" onmouseover="{hover_in}" onmouseout="{hover_out}">
-                  Start Deal Sourcing
-                </a>
-            </div>
+                    box-shadow:0 5px 20px rgba(0,0,0,0.08); border-top:4px solid #2C3E5E;">
+            <h3 style="color:#1B2B4D; font-size:1.6rem; font-weight:600; margin-bottom:16px;">Deal Sourcing Path</h3>
+            <ul style="margin-top:10px; line-height:1.9; color:#333;">
+                <li>AI‑powered deal identification</li>
+                <li>Market analysis integration</li>
+                <li>Automated handoff to due diligence</li>
+            </ul>
         </div>
         """,
         unsafe_allow_html=True,
     )
+    if st.button("Start Deal Sourcing", use_container_width=True):
+        st.switch_page("pages/1_Deal_Sourcing.py")
 
+# --- Right Card (Due Diligence)
 with col2:
     st.markdown(
-        f"""
+        """
         <div style="background:white; border-radius:16px; padding:35px; height:390px;
-                    box-shadow:0 5px 20px rgba(0,0,0,0.08); border-top:4px solid #2C3E5E;
-                    display:flex; flex-direction:column; justify-content:space-between;">
-            <div>
-                <h3 style="color:#1B2B4D; font-size:1.6rem; font-weight:600; margin-bottom:16px;">Due Diligence Path</h3>
-                <ul style="margin-top:10px; line-height:1.9; color:#333;">
-                    <li><a href='?page=dd' style='color:#1B2B4D; text-decoration:none;'>Upload and analyze company data</a></li>
-                    <li><a href='?page=market' style='color:#1B2B4D; text-decoration:none;'>Market fit comparatives</a></li>
-                    <li><a href='?page=memo' style='color:#1B2B4D; text-decoration:none;'>Create Investment Memo</a></li>
-                </ul>
-            </div>
-            <div style="margin-top:auto;text-align:center;">
-                <a href="?page=dd" style="{button_style}" onmouseover="{hover_in}" onmouseout="{hover_out}">
-                  Start Due Diligence
-                </a>
-            </div>
+                    box-shadow:0 5px 20px rgba(0,0,0,0.08); border-top:4px solid #2C3E5E;">
+            <h3 style="color:#1B2B4D; font-size:1.6rem; font-weight:600; margin-bottom:16px;">Due Diligence Path</h3>
+            <ul style="margin-top:10px; line-height:1.9; color:#333;">
+                <li>Upload company documents for review</li>
+                <li>Auto‑generated checklists and scores</li>
+                <li>Continue to Investment Memo</li>
+            </ul>
         </div>
         """,
         unsafe_allow_html=True,
     )
+    if st.button("Start Due Diligence", use_container_width=True):
+        st.switch_page("pages/2_Due_Diligence.py")
+
 qdb_section_end()
 
-# ===== FOOTER (Minimal Width + Branding) =====
+# ===== FOOTER =====
 st.markdown(
     f"""
 <div style="
     background-color:#1B2B4D;
     color:#E2E8F0;
-    padding:25px 20px;
-    margin:0 auto;
-    width:85%;
-    border-radius:15px 15px 0 0;
+    padding:40px 20px;
+    margin:0 -3rem -2rem -3rem;
     font-size:0.94rem;">
-  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+  <div style="max-width:1100px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
     <div style="flex:3;">
       <ul style="list-style:none; display:flex; gap:25px; flex-wrap:wrap; padding:0; margin:0;">
         <li><a href="#" style="text-decoration:none; color:#E2E8F0;">About Regulus</a></li>
@@ -273,8 +207,10 @@ st.markdown(
       </ul>
     </div>
     <div style="flex:1; text-align:right;">
-      <p style="margin:0; color:#A0AEC0; font-size:0.9rem;">Powered by Regulus AI</p>
-      {"<img src='"+regulus_logo+"' style='max-height:55px; margin-top:6px; opacity:0.95;'>" if regulus_logo else "<b>Regulus</b>"}
+      <div style="display:flex; align-items:center; justify-content:flex-end; gap:10px;">
+        <p style="margin:0; color:#A0AEC0; font-size:0.9rem;">Powered by Regulus AI</p>
+        {"<img src='"+regulus_logo+"' style='max-height:55px; margin-top:6px; opacity:0.95;'>" if regulus_logo else "<b>Regulus</b>"}
+      </div>
     </div>
   </div>
 </div>
