@@ -47,10 +47,13 @@ def main():
     # Main content
     # Container for your header
 
+import streamlit as st
+
 with st.container():
     st.markdown(
         """
         <div style='
+            background-color: #ADE1FF;
             border: 3px solid #1F77B4;
             border-radius: 10px;
             padding: 20px;
@@ -62,6 +65,7 @@ with st.container():
         """,
         unsafe_allow_html=True
     )
+
 
     
     st.markdown("### Accelerate Your Investment Analysis with AI")
