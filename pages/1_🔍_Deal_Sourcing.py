@@ -29,43 +29,43 @@ scraper, llm, template_gen = init_handlers()
 # DATA SOURCE CONFIGURATION
 # ========================================
 DEAL_SOURCES = {
-    " Crunchbase": {
+    "Crunchbase": {
         "url": "https://www.crunchbase.com/",
         "description": "70M+ profiles, funding rounds, and acquisitions",
         "best_for": "Comprehensive startup database",
         "region": "Global"
     },
-    " AngelList": {
+    "AngelList": {
         "url": "https://www.angellist.com/",
         "description": "Startup jobs, funding, and investors",
         "best_for": "Early-stage startups and angel networks",
         "region": "Global"
     },
-    " PitchBook": {
+    "PitchBook": {
         "url": "https://pitchbook.com/",
         "description": "Private equity and VC deal database",
         "best_for": "PE/VC-backed companies",
         "region": "Global"
     },
-    " Magnitt": {
+    "Magnitt": {
         "url": "https://magnitt.com/",
         "description": "MENA startup and investor platform",
         "best_for": "Middle East & North Africa deals",
         "region": "MENA"
     },
-    " Wamda": {
+    "Wamda": {
         "url": "https://www.wamda.com/",
         "description": "MENA ecosystem intelligence",
         "best_for": "Regional market insights",
         "region": "MENA"
     },
-    " Dealroom": {
+    "Dealroom": {
         "url": "https://dealroom.co/",
         "description": "Global startup intelligence platform",
         "best_for": "European and global trends",
         "region": "Europe"
     },
-    " Bloomberg": {
+    "Bloomberg": {
         "url": "https://www.bloomberg.com/",
         "description": "Financial markets and companies",
         "best_for": "Public market and late-stage data",
@@ -73,10 +73,21 @@ DEAL_SOURCES = {
     }
 }
 
+# Optional: emoji mapping for nicer labels
+EMOJI_LABELS = {
+    "Crunchbase": "🔷 Crunchbase",
+    "AngelList": "💼 AngelList",
+    "PitchBook": "📊 PitchBook",
+    "Magnitt": "🧭 Magnitt",
+    "Wamda": "🌐 Wamda",
+    "Dealroom": "🏛 Dealroom",
+    "Bloomberg": "💹 Bloomberg"
+}
+
 # ========================================
 # HEADER
 # ========================================
-st.title(" Deal Discovery & Sourcing")
+st.title("Deal Discovery & Sourcing")
 st.markdown("""
 Discover and qualify investment opportunities from leading global platforms.  
 Use AI-powered analysis to filter deals matching your investment thesis.
@@ -87,7 +98,7 @@ st.divider()
 # ========================================
 # SECTION 1: Investment Criteria
 # ========================================
-st.markdown("###  Define Investment Criteria")
+st.markdown("### Define Investment Criteria")
 
 col1, col2, col3 = st.columns(3)
 
@@ -95,8 +106,8 @@ with col1:
     sectors = st.multiselect(
         "Target Sectors",
         [
-            "Fintech", "ClimateTech", "HealthTech", "Enterprise SaaS", 
-            "AI/ML", "E-commerce", "Logistics", "Agritech", 
+            "Fintech", "ClimateTech", "HealthTech", "Enterprise SaaS",
+            "AI/ML", "E-commerce", "Logistics", "Agritech",
             "EdTech", "Biotech", "PropTech", "FoodTech"
         ],
         default=["Fintech", "ClimateTech", "Enterprise SaaS"],
@@ -146,13 +157,16 @@ st.divider()
 st.markdown("### 🌐 Select Data Sources")
 st.caption("Choose one or more platforms to aggregate deal flow. Multiple sources provide broader coverage.")
 
-# Display source cards
-selected_sources = st.multiselect(
+# Display source cards with emojis
+selected_sources_labels = st.multiselect(
     "Active Data Providers",
-    options=list(DEAL_SOURCES.keys()),
-    default=["🔷 Crunchbase", "💼 AngelList", "🧭 Magnitt"],
+    options=list(EMOJI_LABELS.values()),
+    default=[EMOJI_LABELS["Crunchbase"], EMOJI_LABELS["AngelList"], EMOJI_LABELS["Magnitt"]],
     help="Select multiple sources for comprehensive deal discovery"
 )
+
+# Map back to internal keys
+selected_sources = [key for key, label in EMOJI_LABELS.items() if label in selected_sources_labels]
 
 # Show selected source details
 if selected_sources:
@@ -162,7 +176,7 @@ if selected_sources:
         col_idx = idx % 4
         with cols[col_idx]:
             with st.container():
-                st.markdown(f"**{source}**")
+                st.markdown(f"**{EMOJI_LABELS[source]}**")
                 st.caption(DEAL_SOURCES[source]["description"])
                 st.link_button("Visit →", DEAL_SOURCES[source]["url"], use_container_width=True)
 
@@ -184,13 +198,11 @@ if st.button("🚀 Discover Deals", type="primary", use_container_width=True):
             # Scrape from each selected source
             for idx, source in enumerate(selected_sources):
                 source_url = DEAL_SOURCES[source]["url"]
-                st.info(f"🌐 Scanning {source}...")
+                st.info(f"🌐 Scanning {EMOJI_LABELS[source]}...")
                 
                 try:
-                    # Actual scraping (you can enhance with specific parsers per platform)
                     content = scraper.scrape_url(source_url)
                     
-                    # Demo deal generation (replace with actual parsing logic)
                     num_deals = deal_count // len(selected_sources)
                     for i in range(num_deals):
                         deal = {
@@ -208,7 +220,7 @@ if st.button("🚀 Discover Deals", type="primary", use_container_width=True):
                         all_deals.append(deal)
                     
                 except Exception as e:
-                    st.warning(f"⚠️ Could not fetch from {source}: {str(e)}")
+                    st.warning(f"⚠️ Could not fetch from {EMOJI_LABELS[source]}: {str(e)}")
                 
                 progress_bar.progress((idx + 1) / len(selected_sources))
             
@@ -227,8 +239,6 @@ if st.button("🚀 Discover Deals", type="primary", use_container_width=True):
             qual_progress = st.progress(0)
             
             for idx, deal in enumerate(all_deals):
-                
-                # Build criteria dict
                 criteria = {
                     "sectors": sectors,
                     "stage_range": ", ".join(stage),
@@ -236,8 +246,7 @@ if st.button("🚀 Discover Deals", type="primary", use_container_width=True):
                     "geography": geography
                 }
                 
-                # AI qualification
-                with st.expander(f"📋 {deal['company']} ({deal['sector']}) - {deal['source']}"):
+                with st.expander(f"📋 {deal['company']} ({deal['sector']}) - {EMOJI_LABELS[deal['source']]}"):
                     col_a, col_b = st.columns([2, 1])
                     
                     with col_a:
@@ -252,99 +261,37 @@ if st.button("🚀 Discover Deals", type="primary", use_container_width=True):
                     st.markdown("**🧠 AI Analysis:**")
                     st.markdown(qualification)
                     
-                    # Categorize
                     if "qualified" in qualification.lower() or "strong match" in qualification.lower():
                         qualified_deals.append(deal)
-                        st.success("✅ **Status: QUALIFIED**")
-                    elif "maybe" in qualification.lower() or "review" in qualification.lower():
+                    elif "maybe" in qualification.lower():
                         maybe_deals.append(deal)
-                        st.warning("⚠️ **Status: NEEDS REVIEW**")
                     else:
                         not_qualified_deals.append(deal)
-                        st.error("❌ **Status: NOT QUALIFIED**")
                 
                 qual_progress.progress((idx + 1) / len(all_deals))
             
             # ========================================
-            # SECTION 5: Summary & Export
+            # SECTION 5: Results Summary
             # ========================================
             st.divider()
-            st.markdown("### 📊 Deal Flow Summary")
+            st.markdown("### 📊 Deal Discovery Summary")
             
-            col_sum1, col_sum2, col_sum3 = st.columns(3)
-            with col_sum1:
-                st.metric("✅ Qualified", len(qualified_deals))
-            with col_sum2:
-                st.metric("⚠️ Needs Review", len(maybe_deals))
-            with col_sum3:
-                st.metric("❌ Not Qualified", len(not_qualified_deals))
+            st.success(f"✅ Qualified Deals: {len(qualified_deals)}")
+            st.info(f"⚖️ Maybe Deals: {len(maybe_deals)}")
+            st.warning(f"❌ Not Qualified: {len(not_qualified_deals)}")
             
-            # Export options
-            if qualified_deals or maybe_deals:
-                st.markdown("### 📥 Export Results")
-                
-                export_df = pd.DataFrame(qualified_deals + maybe_deals)
-                
-                col_exp1, col_exp2 = st.columns(2)
-                
-                with col_exp1:
-                    csv = export_df.to_csv(index=False).encode('utf-8')
-                    st.download_button(
-                        label="📄 Download CSV",
-                        data=csv,
-                        file_name=f"qualified_deals_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
-                        mime="text/csv",
-                        use_container_width=True
-                    )
-                
-                with col_exp2:
-                    json_data = export_df.to_json(orient='records', indent=2)
-                    st.download_button(
-                        label="📋 Download JSON",
-                        data=json_data,
-                        file_name=f"qualified_deals_{datetime.now().strftime('%Y%m%d_%H%M')}.json",
-                        mime="application/json",
-                        use_container_width=True
-                    )
-                
-                # Display table
-                st.markdown("#### 📋 Qualified Deals Table")
-                st.dataframe(export_df, use_container_width=True, height=400)
-                
-                # Generate Daily Deals Report
-                if st.button("📝 Generate Daily Deals Report", type="secondary"):
-                    report = template_gen.generate_daily_deals_report(
-                        qualified_deals + maybe_deals,
-                        criteria
-                    )
-                    st.markdown(report)
-                    st.download_button(
-                        "💾 Download Report",
-                        report,
-                        file_name=f"daily_deals_report_{datetime.now().strftime('%Y%m%d')}.md",
-                        mime="text/markdown"
-                    )
-
-# ========================================
-# SIDEBAR: Tips & Resources
-# ========================================
-with st.sidebar:
-    st.markdown("### 💡 Deal Sourcing Tips")
-    st.info("""
-    **Best Practices:**
-    - Use 3-5 sources for optimal coverage
-    - Refine criteria based on past success
-    - Schedule weekly deal reviews
-    - Track source quality metrics
-    - Follow up on "Needs Review" deals
-    """)
-    
-    st.markdown("### 📚 Helpful Resources")
-    st.markdown("- [Crunchbase Pro](https://www.crunchbase.com/)")
-    st.markdown("- [AngelList Venture](https://www.angellist.com/)")
-    st.markdown("- [Magnitt MENA Data](https://magnitt.com/)")
-    st.markdown("- [Dealroom.co](https://dealroom.co/)")
-    
-    st.markdown("### 🔧 Quick Actions")
-    if st.button("🔄 Reset Criteria", use_container_width=True):
-        st.rerun()
+            # Display qualified deals in a table
+            if qualified_deals:
+                df_qualified = pd.DataFrame(qualified_deals)
+                st.dataframe(df_qualified[["company", "sector", "stage", "region", "revenue", "source", "url"]])
+            
+            # Export to CSV
+            if st.button("💾 Export All Deals as CSV"):
+                df_all = pd.DataFrame(all_deals)
+                csv = df_all.to_csv(index=False).encode('utf-8')
+                st.download_button(
+                    label="Download CSV",
+                    data=csv,
+                    file_name=f"deal_discovery_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    mime="text/csv"
+                )
