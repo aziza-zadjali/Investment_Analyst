@@ -1,6 +1,6 @@
 """
 Investment Analyst AI - QDB Official Branding
-Professional corporate interface matching Qatar Development Bank website
+Full-width layout with no sidebar (complete screen utilization)
 """
 
 import streamlit as st
@@ -22,7 +22,7 @@ QDB_LIGHT_GRAY = "#F5F5F5"
 
 
 def encode_image(path):
-    """Convert image to base64 for embedding"""
+    """Convert image to base64"""
     if os.path.exists(path):
         with open(path, "rb") as f:
             return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
@@ -33,18 +33,24 @@ qdb_logo = encode_image("QDB_Logo.png")
 regulus_logo = encode_image("regulus_logo.png")
 
 
-# --- STYLING WITH CENTERING ---
+# --- FULL-WIDTH STYLING (NO SIDEBAR SPACE) ---
 st.markdown(f"""
 <style>
-/* Hide sidebar */
-[data-testid="stSidebar"] {{visibility: hidden;}}
-.main > div {{padding-top: 1.5rem;}}
+/* COMPLETELY HIDE SIDEBAR */
+[data-testid="stSidebar"] {{
+    display: none !important;
+}}
 
-/* Center content container */
-.main-container {{
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 40px;
+/* REMOVE ALL SIDEBAR SPACING */
+.main {{
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+}}
+
+/* FULL WIDTH CONTAINER */
+.main > div {{
+    max-width: 100% !important;
+    padding: 1.5rem 3rem !important;
 }}
 
 /* QDB Button Styling */
@@ -69,10 +75,10 @@ st.markdown(f"""
 /* Header Grid */
 .qdb-header {{
     display: grid;
-    grid-template-columns: 1fr 2fr 1fr;
+    grid-template-columns: 1fr 2.5fr 1fr;
     align-items: center;
     padding: 25px 0 35px 0;
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     border-bottom: 3px solid {QDB_PURPLE};
 }}
@@ -131,6 +137,12 @@ st.markdown(f"""
     font-weight: 600;
 }}
 
+/* Content Centering */
+.content-wrapper {{
+    max-width: 1400px;
+    margin: 0 auto;
+}}
+
 @media (max-width: 900px) {{
     .qdb-header {{grid-template-columns: 1fr;}}
 }}
@@ -138,8 +150,8 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 
-# --- CENTERED CONTAINER ---
-st.markdown("<div class='main-container'>", unsafe_allow_html=True)
+# --- CENTERED CONTENT WRAPPER ---
+st.markdown("<div class='content-wrapper'>", unsafe_allow_html=True)
 
 # --- HEADER ---
 st.markdown("<div class='qdb-header'>", unsafe_allow_html=True)
@@ -250,5 +262,5 @@ with col_f2:
 with col_f3:
     st.markdown(f"<p style='text-align:right;color:{QDB_GOLD};font-weight:500;'>Powered by Regulus</p>", unsafe_allow_html=True)
 
-# Close container
+# Close content wrapper
 st.markdown("</div>", unsafe_allow_html=True)
