@@ -29,43 +29,43 @@ scraper, llm, template_gen = init_handlers()
 # DATA SOURCE CONFIGURATION
 # ========================================
 DEAL_SOURCES = {
-    "🔷 Crunchbase": {
+    " Crunchbase": {
         "url": "https://www.crunchbase.com/",
         "description": "70M+ profiles, funding rounds, and acquisitions",
         "best_for": "Comprehensive startup database",
         "region": "Global"
     },
-    "💼 AngelList": {
+    " AngelList": {
         "url": "https://www.angellist.com/",
         "description": "Startup jobs, funding, and investors",
         "best_for": "Early-stage startups and angel networks",
         "region": "Global"
     },
-    "📊 PitchBook": {
+    " PitchBook": {
         "url": "https://pitchbook.com/",
         "description": "Private equity and VC deal database",
         "best_for": "PE/VC-backed companies",
         "region": "Global"
     },
-    "🧭 Magnitt": {
+    " Magnitt": {
         "url": "https://magnitt.com/",
         "description": "MENA startup and investor platform",
         "best_for": "Middle East & North Africa deals",
         "region": "MENA"
     },
-    "🌍 Wamda": {
+    " Wamda": {
         "url": "https://www.wamda.com/",
         "description": "MENA ecosystem intelligence",
         "best_for": "Regional market insights",
         "region": "MENA"
     },
-    "🏛️ Dealroom": {
+    " Dealroom": {
         "url": "https://dealroom.co/",
         "description": "Global startup intelligence platform",
         "best_for": "European and global trends",
         "region": "Europe"
     },
-    "🏦 Bloomberg": {
+    " Bloomberg": {
         "url": "https://www.bloomberg.com/",
         "description": "Financial markets and companies",
         "best_for": "Public market and late-stage data",
@@ -76,7 +76,7 @@ DEAL_SOURCES = {
 # ========================================
 # HEADER
 # ========================================
-st.title("🔍 Deal Discovery & Sourcing")
+st.title(" Deal Discovery & Sourcing")
 st.markdown("""
 Discover and qualify investment opportunities from leading global platforms.  
 Use AI-powered analysis to filter deals matching your investment thesis.
@@ -87,7 +87,7 @@ st.divider()
 # ========================================
 # SECTION 1: Investment Criteria
 # ========================================
-st.markdown("### 🎯 Define Investment Criteria")
+st.markdown("###  Define Investment Criteria")
 
 col1, col2, col3 = st.columns(3)
 
