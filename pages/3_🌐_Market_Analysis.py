@@ -1,4 +1,5 @@
-""" Market & Competitive Analysis
+""" 
+Market & Competitive Analysis
 AI-powered market research and competitive intelligence
 """
 
@@ -360,4 +361,86 @@ Cover:
    - International harmonization
 3. **Regulatory Risks**
    - Compliance risks
-   -
+   - Regulatory uncertainties
+   - Enforcement trends
+4. **Strategic Implications**
+   - Impact on business operations
+   - Compliance costs
+   - Competitive implications
+"""
+            try:
+                analysis_results['regulatory_environment'] = llm.generate(regulatory_prompt)
+            except Exception as e:
+                analysis_results['regulatory_environment'] = "Analysis unavailable"
+
+        # Generate Comprehensive Report
+        st.info("📝 Generating comprehensive market report...")
+        markdown_report = template_gen.generate_market_analysis_report(analysis_results)
+
+        # Store in session state
+        st.session_state.market_complete = True
+        st.session_state.market_report = markdown_report
+        st.session_state.market_data = analysis_results
+        st.success("✅ Market Analysis Complete!")
+
+# Display Results
+if st.session_state.market_complete:
+    st.divider()
+    st.subheader("📥 Download Reports")
+    data = st.session_state.market_data
+
+    col_dl1, col_dl2 = st.columns(2)
+    with col_dl1:
+        st.download_button(
+            label="⬇️ Download Markdown Report",
+            data=st.session_state.market_report,
+            file_name=f"{data['company_name']}_Market_Analysis_{datetime.now().strftime('%Y%m%d')}.md",
+            mime="text/markdown"
+        )
+
+    with col_dl2:
+        # Generate DOCX
+        try:
+            docx_doc = template_gen.markdown_to_docx(st.session_state.market_report)
+            docx_buffer = BytesIO()
+            docx_doc.save(docx_buffer)
+            docx_buffer.seek(0)
+            st.download_button(
+                label="⬇️ Download DOCX Report",
+                data=docx_buffer.getvalue(),
+                file_name=f"{data['company_name']}_Market_Analysis_{datetime.now().strftime('%Y%m%d')}.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            )
+        except Exception as e:
+            st.error(f"Error generating DOCX: {e}")
+
+    st.divider()
+
+    # Preview
+    with st.expander("📄 Preview Report", expanded=False):
+        st.markdown(st.session_state.market_report)
+
+# Sidebar
+with st.sidebar:
+    st.markdown("### 💡 Market Analysis Features")
+    st.markdown("""
+✓ **Market Size & Growth Analysis**
+✓ **Competitive Intelligence**
+✓ **Trend Analysis**
+✓ **SWOT Analysis**
+✓ **Porter's Five Forces**
+✓ **Customer Segmentation**
+✓ **Regulatory Assessment**
+✓ **Optional Web Research**
+✓ **Professional Reports (MD & DOCX)**
+""")
+
+    if st.session_state.market_complete:
+        st.divider()
+        st.markdown("### 📋 Analysis Summary")
+        st.caption(f"**Company:** {st.session_state.market_data.get('company_name', 'N/A')}")
+        st.caption(f"**Industry:** {st.session_state.market_data.get('industry', 'N/A')}")
+        st.caption(f"**Date:** {st.session_state.market_data.get('analysis_date', 'N/A')}")
+        areas = st.session_state.market_data.get('analysis_areas', [])
+        if areas:
+            st.caption(f"**Areas Analyzed:** {len(areas)}")
