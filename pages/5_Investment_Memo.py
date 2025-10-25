@@ -294,7 +294,7 @@ if st.session_state.memo_complete:
             st.switch_page("pages/4_Financial_Modeling.py")
     with col_f2:
         if st.button("🏠 Home", type="primary", use_container_width=True):
-            st.switch_page("Main_Page.py")
+            st.switch_page("streamlit_app.py")
 
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown("<div style='text-align: center; color: #999; font-size: 0.9rem;'>Investment Memo | Powered by Regulus AI</div>", unsafe_allow_html=True)
