@@ -1,6 +1,6 @@
 """
-Deal Discovery & Sourcing Page with Integrated Filtering
-AI-powered deal sourcing from multiple funding platforms with automatic qualification
+Deal Discovery & Sourcing Page
+Professional UI matching main app color scheme
 """
 
 import streamlit as st
@@ -12,11 +12,11 @@ from datetime import datetime
 
 st.set_page_config(page_title="Deal Discovery", layout="wide")
 
-# Gradient style helper
-def gradient_box(text, height="60px", gradient="linear-gradient(90deg, #4b6cb7 0%, #182848 100%)"):
-    return f"""<div style="background: {gradient}; padding: 10px 20px; border-radius: 10px; color: white; font-weight: bold; font-size: 24px; line-height: {height}; text-align: center; margin-bottom: 20px;">{text}</div>"""
+# Matching gradient colors from main app
+def gradient_box(text, gradient="linear-gradient(90deg, #A6D8FF, #D5B8FF)"):
+    return f"""<div style="background: {gradient}; padding: 15px 20px; border-radius: 12px; color: white; font-weight: 600; font-size: 1.5rem; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);">{text}</div>"""
 
-# Unattractive Industries from Qatar Development Bank List
+# Unattractive Industries
 UNATTRACTIVE_INDUSTRIES = {
     "Food & Beverage Manufacturing": ["Industrial Bakery", "Bread and Bakery Products", "Short-Life Juice", "Fresh Milk", "Processed Milk", "Powder Milk", "Pasta", "Potato Chips", "Water Bottling", "Bottled Water"],
     "Metal Products": ["Aluminum Profiles", "Copper Winding Wire", "Copper Wire", "Pre-engineered Buildings", "Pre-fabricated Buildings", "Metal Nails", "Bolts", "Aluminum Composite Panels", "Steel Structures", "Welding Electrodes"],
@@ -26,39 +26,36 @@ UNATTRACTIVE_INDUSTRIES = {
     "Agriculture & Services": ["Chicken Farming", "Dairy Farming", "Restaurants", "Food Outlets", "Hotels", "Hotel Operations", "Automobile Garages", "Travel Agencies", "Tourism Offices", "Nurseries", "Kindergartens", "Dental Clinics", "Dermatology Clinics", "Gynecology Clinics", "Polyclinics", "Salons", "Spas", "Dry Cleaning", "Laundry Services", "Tailoring Workshops", "Cleaning Companies", "Manpower Sourcing"]
 }
 
-# Initialize handlers
 @st.cache_resource
 def init_handlers():
     return WebScraper(), LLMHandler(), TemplateGenerator()
 
 scraper, llm, template_gen = init_handlers()
 
-# Session state
 if 'discovered_deals' not in st.session_state:
     st.session_state.discovered_deals = []
-if 'filtered_deals' not in st.session_state:
-    st.session_state.filtered_deals = []
 
 # HEADER
 st.markdown(gradient_box("Deal Discovery & Sourcing"), unsafe_allow_html=True)
-st.markdown("Discover and qualify investment opportunities from leading global platforms with **AI-powered two-stage filtering**.")
+st.markdown("<p style='text-align: center; color: #666; font-size: 1.1rem; margin-bottom: 30px;'>Discover and qualify investment opportunities from leading global platforms</p>", unsafe_allow_html=True)
 
-st.divider()
+# Divider
+st.markdown("<div style='background: linear-gradient(90deg, #A6D8FF, #D5B8FF); height: 4px; border-radius: 2px; margin-bottom: 30px;'></div>", unsafe_allow_html=True)
 
-# INTEGRATED: Define Investment Criteria with Industry Filter
-st.markdown(gradient_box("Define Investment Criteria", gradient="linear-gradient(90deg, #FF416C 0%, #FF4B2B 100%)"), unsafe_allow_html=True)
+# Define Investment Criteria
+st.markdown(gradient_box("Define Investment Criteria"), unsafe_allow_html=True)
 
-# Industry Filter Toggle
+# Industry Filter
 col_filter1, col_filter2 = st.columns([3, 1])
 
 with col_filter1:
-    st.markdown("**🚫 Unattractive Industries Screening** - Filter deals based on Qatar Development Bank's list")
+    st.markdown("**Unattractive Industries Screening** - Filter deals based on Qatar Development Bank's list")
 
 with col_filter2:
     enable_industry_filter = st.checkbox("Enable Filter", value=True, help="Tag deals in unattractive industries")
 
 if enable_industry_filter:
-    with st.expander("📋 View Complete Unattractive Industries List"):
+    with st.expander("View Complete Unattractive Industries List"):
         for category, industries_list in UNATTRACTIVE_INDUSTRIES.items():
             st.markdown(f"**{category}:**")
             st.caption(", ".join(industries_list))
@@ -68,68 +65,42 @@ st.markdown("<br>", unsafe_allow_html=True)
 # Target Industry
 industries = st.multiselect(
     "Target Industry",
-    ["Technology", "Healthcare", "Financial Services", "Energy", "Consumer Goods",
-     "Industrial", "Real Estate", "Agriculture", "Transportation", "Media & Entertainment",
-     "Education", "Telecommunications", "Retail", "Manufacturing"],
-    default=["Technology", "Healthcare"],
-    help="Select broader industry categories"
+    ["Technology", "Healthcare", "Financial Services", "Energy", "Consumer Goods", "Industrial", "Real Estate", "Agriculture", "Transportation", "Media & Entertainment", "Education", "Telecommunications", "Retail", "Manufacturing"],
+    default=["Technology", "Healthcare"]
 )
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Target Sectors + Stage + Geography
+# Sectors + Stage + Geography
 col1, col2, col3 = st.columns(3)
 
 with col1:
     sectors = st.multiselect(
         "Target Sectors",
-        ["Fintech", "ClimateTech", "HealthTech", "Enterprise SaaS", "AI/ML", "E-commerce",
-         "Logistics", "Agritech", "EdTech", "Biotech", "PropTech", "FoodTech", "DeepTech",
-         "Cybersecurity", "Blockchain", "IoT", "Robotics", "Clean Energy"],
-        default=["Fintech", "ClimateTech", "Enterprise SaaS"],
-        help="Specific sectors within your target industries"
+        ["Fintech", "ClimateTech", "HealthTech", "Enterprise SaaS", "AI/ML", "E-commerce", "Logistics", "Agritech", "EdTech", "Biotech", "PropTech", "FoodTech", "DeepTech", "Cybersecurity", "Blockchain", "IoT", "Robotics", "Clean Energy"],
+        default=["Fintech", "ClimateTech", "Enterprise SaaS"]
     )
 
 with col2:
-    stage = st.multiselect(
-        "Funding Stage",
-        ["Pre-Seed", "Seed", "Series A", "Series B", "Series C+", "Growth"],
-        default=["Seed", "Series A"]
-    )
+    stage = st.multiselect("Funding Stage", ["Pre-Seed", "Seed", "Series A", "Series B", "Series C+", "Growth"], default=["Seed", "Series A"])
 
 with col3:
-    geography = st.multiselect(
-        "Geography",
-        ["North America", "Europe", "MENA", "Asia Pacific", "Latin America", "Africa", "Global"],
-        default=["North America", "MENA"]
-    )
+    geography = st.multiselect("Geography", ["North America", "Europe", "MENA", "Asia Pacific", "Latin America", "Africa", "Global"], default=["North America", "MENA"])
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Revenue Range + Deal Count + Investment Ticket Size
+# Revenue + Deal Count + Ticket Size
 col4, col5, col6 = st.columns(3)
 
 with col4:
-    revenue_range = st.select_slider(
-        "Annual Revenue Range (USD)",
-        options=["Pre-revenue", "$0-500K", "$500K-$2M", "$2M-$10M", "$10M-$50M", "$50M+"],
-        value=("$500K-$2M", "$10M-$50M")
-    )
+    revenue_range = st.select_slider("Annual Revenue Range (USD)", options=["Pre-revenue", "$0-500K", "$500K-$2M", "$2M-$10M", "$10M-$50M", "$50M+"], value=("$500K-$2M", "$10M-$50M"))
 
 with col5:
-    deal_count = st.number_input(
-        "Number of Deals to Source",
-        min_value=5,
-        max_value=100,
-        value=20,
-        step=5
-    )
+    deal_count = st.number_input("Number of Deals to Source", min_value=5, max_value=100, value=20, step=5)
 
 with col6:
     st.markdown("**Investment Ticket Size (Optional)**")
-    
     enable_ticket_size = st.checkbox("Define ticket size", value=False)
-    
     if enable_ticket_size:
         ticket_min = st.number_input("Min Investment ($M)", min_value=0.1, max_value=100.0, value=1.0, step=0.5, format="%.1f")
         ticket_max = st.number_input("Max Investment ($M)", min_value=0.1, max_value=100.0, value=10.0, step=0.5, format="%.1f")
@@ -137,10 +108,11 @@ with col6:
     else:
         ticket_size_range = None
 
-st.divider()
+# Divider
+st.markdown("<div style='background: linear-gradient(90deg, #A6D8FF, #D5B8FF); height: 4px; border-radius: 2px; margin: 30px 0;'></div>", unsafe_allow_html=True)
 
-# Data Source Selection
-st.markdown(gradient_box("Select Data Sources", gradient="linear-gradient(90deg, #11998e 0%, #38ef7d 100%)"), unsafe_allow_html=True)
+# Data Sources
+st.markdown(gradient_box("Select Data Sources"), unsafe_allow_html=True)
 
 DEAL_SOURCES = {
     "Crunchbase": {"url": "https://www.crunchbase.com/", "description": "70M+ profiles, funding rounds"},
@@ -151,11 +123,7 @@ DEAL_SOURCES = {
     "Dealroom": {"url": "https://dealroom.co/", "description": "Global startup intelligence"}
 }
 
-selected_sources = st.multiselect(
-    "Active Data Providers",
-    options=list(DEAL_SOURCES.keys()),
-    default=["Crunchbase", "AngelList", "Magnitt"]
-)
+selected_sources = st.multiselect("Active Data Providers", options=list(DEAL_SOURCES.keys()), default=["Crunchbase", "AngelList", "Magnitt"])
 
 if selected_sources:
     st.markdown("#### Selected Sources:")
@@ -165,23 +133,23 @@ if selected_sources:
             st.markdown(f"**{source}**")
             st.caption(DEAL_SOURCES[source]["description"])
 
-st.divider()
+# Divider
+st.markdown("<div style='background: linear-gradient(90deg, #A6D8FF, #D5B8FF); height: 4px; border-radius: 2px; margin: 30px 0;'></div>", unsafe_allow_html=True)
 
-# Deal Discovery Execution
-st.markdown(gradient_box("Discover Deals", gradient="linear-gradient(90deg, #8360c3 0%, #2ebf91 100%)"), unsafe_allow_html=True)
+# Discovery Button
+st.markdown(gradient_box("Discover Deals"), unsafe_allow_html=True)
 
-if st.button("🚀 Start Discovery", type="primary", use_container_width=True):
-    
+if st.button("Start Discovery", type="primary", use_container_width=True):
     if not selected_sources:
         st.error("Please select at least one data source")
     else:
-        with st.spinner("Fetching deals from selected sources..."):
+        with st.spinner("Fetching deals..."):
             all_deals = []
             progress_bar = st.progress(0)
             deal_count_per_source = deal_count // len(selected_sources)
 
             for idx, source in enumerate(selected_sources):
-                st.info(f"🔍 Scanning {source}...")
+                st.info(f"Scanning {source}...")
                 try:
                     for i in range(deal_count_per_source):
                         deal = {
@@ -192,7 +160,7 @@ if st.button("🚀 Start Discovery", type="primary", use_container_width=True):
                             "region": geography[i % len(geography)] if geography else "Global",
                             "revenue": revenue_range[0],
                             "source": source,
-                            "description": f"Innovative {sectors[i % len(sectors)] if sectors else 'tech'} company in {industries[i % len(industries)] if industries else 'Technology'}",
+                            "description": f"Innovative {sectors[i % len(sectors)] if sectors else 'tech'} company",
                             "founded": str(2020 + (i % 5)),
                             "employees": f"{20 + i * 10}-{30 + i * 10}",
                             "unattractive_flag": False,
@@ -200,7 +168,6 @@ if st.button("🚀 Start Discovery", type="primary", use_container_width=True):
                             "ticket_size": f"${1 + (i % 5)}M-${5 + (i % 10)}M" if not ticket_size_range else f"${ticket_size_range[0]}M-${ticket_size_range[1]}M"
                         }
                         
-                        # Industry Filter
                         if enable_industry_filter:
                             for category, industry_list in UNATTRACTIVE_INDUSTRIES.items():
                                 for unattr_industry in industry_list:
@@ -212,20 +179,18 @@ if st.button("🚀 Start Discovery", type="primary", use_container_width=True):
                                     break
                         
                         all_deals.append(deal)
-                        
                 except Exception as e:
                     st.warning(f"Could not fetch from {source}: {e}")
                 
                 progress_bar.progress((idx + 1) / len(selected_sources))
             
             st.session_state.discovered_deals = all_deals
-            st.success(f"✅ Discovered {len(all_deals)} potential deals")
+            st.success(f"Discovered {len(all_deals)} potential deals")
 
-# Display Discovered Deals
+# Display Deals
 if st.session_state.discovered_deals:
-    
-    st.divider()
-    st.markdown(gradient_box("Discovered Potential Deals", gradient="linear-gradient(90deg, #667eea 0%, #764ba2 100%)"), unsafe_allow_html=True)
+    st.markdown("<div style='background: linear-gradient(90deg, #A6D8FF, #D5B8FF); height: 4px; border-radius: 2px; margin: 30px 0;'></div>", unsafe_allow_html=True)
+    st.markdown(gradient_box("Discovered Potential Deals"), unsafe_allow_html=True)
     
     total_deals = len(st.session_state.discovered_deals)
     unattractive_deals = sum(1 for d in st.session_state.discovered_deals if d['unattractive_flag'])
@@ -235,12 +200,10 @@ if st.session_state.discovered_deals:
     
     with col_stat1:
         st.metric("Total Deals", total_deals)
-    
     with col_stat2:
-        st.metric("✅ Attractive", attractive_deals)
-    
+        st.metric("Attractive", attractive_deals)
     with col_stat3:
-        st.metric("⚠️ Tagged Unattractive", unattractive_deals)
+        st.metric("Tagged Unattractive", unattractive_deals)
     
     show_filter = st.radio("Show:", ["All Deals", "Attractive Only", "Unattractive Only"], horizontal=True)
     
@@ -256,11 +219,11 @@ if st.session_state.discovered_deals:
             col_deal1, col_deal2, col_deal3 = st.columns([3, 2, 1])
             
             with col_deal1:
-                flag_emoji = "⚠️" if deal['unattractive_flag'] else "✅"
-                st.markdown(f"### {flag_emoji} {deal['company']}")
+                flag = "UNATTRACTIVE" if deal['unattractive_flag'] else "ATTRACTIVE"
+                st.markdown(f"### {deal['company']} - {flag}")
                 st.caption(deal['description'])
                 if deal['unattractive_flag']:
-                    st.error(f"🚫 **Industry Flag:** {deal['unattractive_reason']}")
+                    st.error(f"**Industry Flag:** {deal['unattractive_reason']}")
             
             with col_deal2:
                 st.markdown(f"**Industry:** {deal['industry']}")
@@ -270,27 +233,22 @@ if st.session_state.discovered_deals:
             
             with col_deal3:
                 st.markdown(f"**Revenue:** {deal['revenue']}")
-                st.markdown(f"**Ticket Size:** {deal['ticket_size']}")
+                st.markdown(f"**Ticket:** {deal['ticket_size']}")
                 st.markdown(f"**Founded:** {deal['founded']}")
                 st.markdown(f"**Source:** {deal['source']}")
             
-            st.divider()
+            st.markdown("<div style='height: 1px; background: #ddd; margin: 20px 0;'></div>", unsafe_allow_html=True)
     
-    # Export Options
-    st.markdown(gradient_box("Export Results", gradient="linear-gradient(90deg, #f093fb 0%, #f5576c 100%)"), unsafe_allow_html=True)
+    # Export
+    st.markdown("<div style='background: linear-gradient(90deg, #A6D8FF, #D5B8FF); height: 4px; border-radius: 2px; margin: 30px 0;'></div>", unsafe_allow_html=True)
+    st.markdown(gradient_box("Export Results"), unsafe_allow_html=True)
     
     col_export1, col_export2 = st.columns(2)
     
     with col_export1:
         df = pd.DataFrame(st.session_state.discovered_deals)
         csv = df.to_csv(index=False)
-        
-        st.download_button(
-            label="⬇️ Download CSV",
-            data=csv,
-            file_name=f"Deal_Discovery_{datetime.now().strftime('%Y%m%d')}.csv",
-            mime="text/csv"
-        )
+        st.download_button("Download CSV", csv, f"Deal_Discovery_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv")
     
     with col_export2:
         try:
@@ -307,34 +265,7 @@ if st.session_state.discovered_deals:
                 'regions': ', '.join(geography) if geography else 'N/A',
                 'ticket_size': f"${ticket_size_range[0]}M-${ticket_size_range[1]}M" if ticket_size_range else 'Not specified'
             }
-            
             report = template_gen.generate_deal_sourcing_report(report_data)
-            
-            st.download_button(
-                label="⬇️ Download Report (MD)",
-                data=report,
-                file_name=f"Deal_Report_{datetime.now().strftime('%Y%m%d')}.md",
-                mime="text/markdown"
-            )
+            st.download_button("Download Report (MD)", report, f"Deal_Report_{datetime.now().strftime('%Y%m%d')}.md", "text/markdown")
         except Exception as e:
-            st.error(f"Report generation error: {e}")
-
-# Sidebar
-with st.sidebar:
-    st.markdown("### 💡 Deal Sourcing Features")
-    st.markdown("""
-✓ **Integrated Industry Filter**
-✓ **Target Industry + Sector**
-✓ **Investment Ticket Size**
-✓ **Multi-Source Aggregation**
-✓ **Unattractive Industry Tagging**
-✓ **Export to CSV & Reports**
-""")
-    
-    if st.session_state.discovered_deals:
-        st.divider()
-        st.markdown("### 📊 Current Session")
-        st.caption(f"**Deals Discovered:** {len(st.session_state.discovered_deals)}")
-        st.caption(f"**Sources Used:** {len(selected_sources) if selected_sources else 0}")
-        if ticket_size_range:
-            st.caption(f"**Ticket Size:** ${ticket_size_range[0]}M-${ticket_size_range[1]}M")
+            st.error(f"Report error: {e}")
