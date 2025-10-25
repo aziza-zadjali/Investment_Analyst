@@ -1,6 +1,6 @@
 """
 Investment Memo Generation - Final Workflow Step
-Auto-filled from complete analysis workflow
+QDB-branded with auto-fill from complete analysis workflow
 """
 
 import streamlit as st
@@ -8,21 +8,10 @@ from datetime import datetime
 from io import BytesIO
 from utils.template_generator import TemplateGenerator
 from utils.llm_handler import LLMHandler
-from utils.qdb_styling import apply_qdb_styling
+from utils.qdb_styling import apply_qdb_styling, QDB_PURPLE, QDB_GOLD, QDB_DARK_BLUE, qdb_header, qdb_divider
 
-st.set_page_config(page_title="Deal Sourcing", layout="wide")
-apply_qdb_styling()  # ✅ Global styling applied
-
-# Hide sidebar
-st.markdown("""
-<style>
-    [data-testid="stSidebar"] {display: none;}
-    .main > div {padding-top: 2rem;}
-</style>
-""", unsafe_allow_html=True)
-
-def gradient_box(text, gradient="linear-gradient(90deg, #A6D8FF, #D5B8FF)"):
-    return f"""<div style="background: {gradient}; padding: 15px 20px; border-radius: 12px; color: white; font-weight: 600; font-size: 1.5rem; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);">{text}</div>"""
+st.set_page_config(page_title="Investment Memo - QDB", layout="wide", initial_sidebar_state="collapsed")
+apply_qdb_styling()  # ✅ QDB styling
 
 # DEFINE FUNCTION FIRST - BEFORE IT'S USED
 def generate_memo(data):
@@ -136,14 +125,14 @@ with col_nav1:
     if st.button("← Back to Financial"):
         st.switch_page("pages/4_Financial_Modeling.py")
 with col_nav2:
-    st.markdown("<p style='text-align: center; color: #666; font-weight: 600;'>Step 5 of 5: Investment Memo</p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='text-align: center; color:{QDB_DARK_BLUE}; font-weight: 600;'>Step 5 of 5: Investment Memo</p>", unsafe_allow_html=True)
 with col_nav3:
     st.markdown("<p style='text-align: right; color: #999;'>QDB Analyst</p>", unsafe_allow_html=True)
 
-st.markdown("<div style='background: linear-gradient(90deg, #A6D8FF, #D5B8FF); height: 4px; border-radius: 2px; margin-bottom: 30px;'></div>", unsafe_allow_html=True)
+qdb_divider()
 
 # HEADER
-st.markdown(gradient_box("Investment Memorandum Generator"), unsafe_allow_html=True)
+qdb_header("Investment Memorandum Generator", "Generate comprehensive investment recommendations")
 
 # Auto-fill from workflow
 selected_deal = st.session_state.get('selected_deal')
@@ -161,10 +150,10 @@ else:
     sector_default = ""
     stage_default = "Seed"
 
-st.markdown("<div style='background: linear-gradient(90deg, #A6D8FF, #D5B8FF); height: 4px; border-radius: 2px; margin: 30px 0;'></div>", unsafe_allow_html=True)
+qdb_divider()
 
 # Company & Deal Information
-st.markdown(gradient_box("Company & Deal Information", "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"), unsafe_allow_html=True)
+qdb_header("Company & Deal Information", "Core investment details and terms")
 
 col1, col2, col3 = st.columns(3)
 with col1:
@@ -185,7 +174,7 @@ with col5:
 with col6:
     recommendation = st.selectbox("Recommendation *", ["STRONG BUY", "BUY", "HOLD", "PASS"])
 
-st.markdown("<div style='background: linear-gradient(90deg, #A6D8FF, #D5B8FF); height: 4px; border-radius: 2px; margin: 30px 0;'></div>", unsafe_allow_html=True)
+qdb_divider()
 
 # Business Overview
 col_bus1, col_bus2 = st.columns(2)
@@ -220,7 +209,7 @@ with st.expander("📊 Optional: Scoring Framework"):
     st.metric("Composite", f"{composite_score:.1f}/10")
     enable_scoring = st.checkbox("Include in memo")
 
-st.markdown("<div style='background: linear-gradient(90deg, #A6D8FF, #D5B8FF); height: 4px; border-radius: 2px; margin: 30px 0;'></div>", unsafe_allow_html=True)
+qdb_divider()
 
 # Generate
 if st.button("🚀 Generate Investment Memo", type="primary", use_container_width=True):
@@ -268,7 +257,7 @@ if st.button("🚀 Generate Investment Memo", type="primary", use_container_widt
 
 # Display
 if st.session_state.memo_complete:
-    st.markdown("<div style='background: linear-gradient(90deg, #A6D8FF, #D5B8FF); height: 4px; border-radius: 2px; margin: 30px 0;'></div>", unsafe_allow_html=True)
+    qdb_divider()
     
     col_dl1, col_dl2 = st.columns(2)
     with col_dl1:
@@ -287,7 +276,7 @@ if st.session_state.memo_complete:
     
     # Complete
     st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("""<div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 30px; color: white; text-align: center;'><h2 style='margin: 0;'>🎉 Workflow Complete!</h2></div>""", unsafe_allow_html=True)
+    st.markdown(f"""<div style='background: linear-gradient(135deg, {QDB_PURPLE} 0%, {QDB_DARK_BLUE} 100%); border-radius: 12px; padding: 30px; color: white; text-align: center;'><h2 style='margin: 0;'>🎉 Workflow Complete!</h2></div>""", unsafe_allow_html=True)
     
     st.markdown("<br>", unsafe_allow_html=True)
     col_f1, col_f2 = st.columns(2)
@@ -296,7 +285,7 @@ if st.session_state.memo_complete:
             st.switch_page("pages/4_Financial_Modeling.py")
     with col_f2:
         if st.button("🏠 Home", type="primary", use_container_width=True):
-            st.switch_page("streamlit_app.py")
+            st.switch_page("Main_Page.py")
 
 st.markdown("<br>", unsafe_allow_html=True)
-st.markdown("<div style='text-align: center; color: #999; font-size: 0.9rem;'>Investment Memo | Powered by Regulus AI</div>", unsafe_allow_html=True)
+st.markdown(f"<div style='text-align: center; color:{QDB_GOLD}; font-size: 0.9rem;'>Investment Memo | Powered by Regulus AI</div>", unsafe_allow_html=True)
