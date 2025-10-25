@@ -45,7 +45,8 @@ def main():
         st.info("**Tip:** Use multi-page navigation to access different features")
         
     # Main content
-    st.title("🚀 Welcome to Investment Analyst AI")
+    with st.container():
+        st.title("🚀 Welcome to Investment Analyst AI")
     
     st.markdown("### Accelerate Your Investment Analysis with AI")
     
