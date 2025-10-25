@@ -6,19 +6,11 @@ Full-width layout with no sidebar (complete screen utilization)
 import streamlit as st
 import base64
 import os
+from utils.qdb_styling import apply_qdb_styling
 
-st.set_page_config(
-    page_title="Investment Analyst AI - QDB",
-    page_icon="💼",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
+st.set_page_config(page_title="Investment Analyst AI", layout="wide")
+apply_qdb_styling()  # ✅ This applies all styling
 
-# QDB Official Brand Colors
-QDB_PURPLE = "#5E2A84"
-QDB_GOLD = "#C69C6D"
-QDB_DARK_BLUE = "#1B2B4D"
-QDB_LIGHT_GRAY = "#F5F5F5"
 
 
 def encode_image(path):
