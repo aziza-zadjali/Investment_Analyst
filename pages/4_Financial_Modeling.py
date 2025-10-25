@@ -13,8 +13,10 @@ import io
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
 from openpyxl.utils.dataframe import dataframe_to_rows
+from utils.qdb_styling import apply_qdb_styling
 
-st.set_page_config(page_title="Financial Modeling", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Deal Sourcing", layout="wide")
+apply_qdb_styling()  # ✅ Global styling applied
 
 # Hide sidebar
 st.markdown("""
