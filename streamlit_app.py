@@ -86,7 +86,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ===== OVERRIDE WITH TEAL COLOR =====
+# ===== OVERRIDE WITH DARKER TEAL COLOR =====
 st.markdown(
     """
 <style>
@@ -98,32 +98,34 @@ st.markdown(
     text-align: center;
 }
 
-/* Center columns container */
+/* Make all buttons same width */
 div[data-testid="column"] {
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-/* FORCE TEAL COLOR - Override QDB purple styling */
+/* FORCE DARKER TEAL COLOR - Override QDB purple styling */
 div[data-testid="column"] > div > div > div > div > button,
 div[data-testid="column"] button,
 .stButton > button,
 button[kind="secondary"],
 button[kind="primary"] {
-    background: linear-gradient(135deg, #09AE98 0%, #0BC5AB 100%) !important;
-    background-color: #09AE98 !important;
+    background: linear-gradient(135deg, #138074 0%, #16967F 100%) !important;
+    background-color: #138074 !important;
     color: white !important;
     border: none !important;
     border-radius: 32px !important;
-    padding: 10px 24px !important;
+    padding: 10px 28px !important;
+    min-width: 160px !important;
     font-weight: 700 !important;
     font-size: 0.95rem !important;
     transition: all 0.3s ease !important;
-    box-shadow: 0 3px 14px rgba(9,174,152,0.3) !important;
+    box-shadow: 0 3px 14px rgba(19,128,116,0.35) !important;
     letter-spacing: 0.02em !important;
     line-height: 1.3 !important;
     text-transform: none !important;
+    white-space: pre-line !important;
 }
 
 div[data-testid="column"] > div > div > div > div > button:hover,
@@ -131,40 +133,46 @@ div[data-testid="column"] button:hover,
 .stButton > button:hover,
 button[kind="secondary"]:hover,
 button[kind="primary"]:hover {
-    background: linear-gradient(135deg, #077e70 0%, #099984 100%) !important;
-    background-color: #077e70 !important;
-    box-shadow: 0 6px 18px rgba(9,174,152,0.45) !important;
+    background: linear-gradient(135deg, #0e5f55 0%, #107563 100%) !important;
+    background-color: #0e5f55 !important;
+    box-shadow: 0 6px 18px rgba(19,128,116,0.5) !important;
     transform: translateY(-2px) !important;
+}
+
+div[data-testid="column"] > div > div > div > div > button:active,
+div[data-testid="column"] button:active,
+.stButton > button:active {
+    transform: translateY(0px) !important;
 }
 </style>
 """,
     unsafe_allow_html=True,
 )
 
-# ===== TOP NAVIGATION - CENTERED =====
+# ===== TOP NAVIGATION - CENTERED WITH EQUAL WIDTHS =====
 st.markdown('<div class="nav-container">', unsafe_allow_html=True)
 
-# Add empty columns for centering
+# Add empty columns for centering with equal button widths
 nav_cols = st.columns([0.5, 1, 1, 1, 1, 1, 0.5])
 
 with nav_cols[1]:
-    if st.button("Deal\nSourcing", key="nav_deal", type="primary"):
+    if st.button("Deal\nSourcing", key="nav_deal", type="primary", use_container_width=True):
         st.switch_page("pages/1_Deal_Sourcing.py")
 
 with nav_cols[2]:
-    if st.button("Due\nDiligence", key="nav_dd", type="primary"):
+    if st.button("Due\nDiligence", key="nav_dd", type="primary", use_container_width=True):
         st.switch_page("pages/2_Due_Diligence_Analysis.py")
 
 with nav_cols[3]:
-    if st.button("Market\nAnalysis", key="nav_market", type="primary"):
+    if st.button("Market\nAnalysis", key="nav_market", type="primary", use_container_width=True):
         st.switch_page("pages/3_Market_Analysis.py")
 
 with nav_cols[4]:
-    if st.button("Financial\nModeling", key="nav_fin", type="primary"):
+    if st.button("Financial\nModeling", key="nav_fin", type="primary", use_container_width=True):
         st.switch_page("pages/4_Financial_Modeling.py")
 
 with nav_cols[5]:
-    if st.button("Investment\nMemo", key="nav_memo", type="primary"):
+    if st.button("Investment\nMemo", key="nav_memo", type="primary", use_container_width=True):
         st.switch_page("pages/5_Investment_Memo.py")
 
 st.markdown("</div>", unsafe_allow_html=True)
@@ -191,7 +199,7 @@ with path_cols[1]:
     st.markdown(
         f"""
         <div style="background:white; border-radius:16px; padding:30px; height:280px;
-                    box-shadow:0 5px 20px rgba(0,0,0,0.08); border-top:4px solid #09AE98;
+                    box-shadow:0 5px 20px rgba(0,0,0,0.08); border-top:4px solid #138074;
                     display:flex; flex-direction:column; justify-content:space-between;">
             <div>
                 <h3 style="color:#1B2B4D; font-size:1.4rem; font-weight:600; margin-bottom:14px;">Deal Sourcing Path</h3>
@@ -214,7 +222,7 @@ with path_cols[2]:
     st.markdown(
         f"""
         <div style="background:white; border-radius:16px; padding:30px; height:280px;
-                    box-shadow:0 5px 20px rgba(0,0,0,0.08); border-top:4px solid #09AE98;
+                    box-shadow:0 5px 20px rgba(0,0,0,0.08); border-top:4px solid #138074;
                     display:flex; flex-direction:column; justify-content:space-between;">
             <div>
                 <h3 style="color:#1B2B4D; font-size:1.4rem; font-weight:600; margin-bottom:14px;">Due Diligence Path</h3>
