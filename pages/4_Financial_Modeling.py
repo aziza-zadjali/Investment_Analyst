@@ -1,6 +1,6 @@
 """
 Financial Modeling Page
-Auto-filled from workflow with Excel export
+QDB-branded with auto-fill from workflow and Excel export
 """
 
 import streamlit as st
@@ -13,21 +13,10 @@ import io
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
 from openpyxl.utils.dataframe import dataframe_to_rows
-from utils.qdb_styling import apply_qdb_styling
+from utils.qdb_styling import apply_qdb_styling, QDB_PURPLE, QDB_GOLD, QDB_DARK_BLUE, qdb_header, qdb_divider
 
-st.set_page_config(page_title="Deal Sourcing", layout="wide")
-apply_qdb_styling()  # ✅ Global styling applied
-
-# Hide sidebar
-st.markdown("""
-<style>
-    [data-testid="stSidebar"] {display: none;}
-    .main > div {padding-top: 2rem;}
-</style>
-""", unsafe_allow_html=True)
-
-def gradient_box(text, gradient="linear-gradient(90deg, #A6D8FF, #D5B8FF)"):
-    return f"""<div style="background: {gradient}; padding: 15px 20px; border-radius: 12px; color: white; font-weight: 600; font-size: 1.5rem; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);">{text}</div>"""
+st.set_page_config(page_title="Financial Modeling - QDB", layout="wide", initial_sidebar_state="collapsed")
+apply_qdb_styling()  # ✅ QDB styling
 
 @st.cache_resource
 def init_handlers():
@@ -44,14 +33,14 @@ with col_nav1:
     if st.button("← Back to Market"):
         st.switch_page("pages/3_Market_Analysis.py")
 with col_nav2:
-    st.markdown("<p style='text-align: center; color: #666; font-weight: 600;'>Step 4 of 5: Financial Modeling</p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='text-align: center; color:{QDB_DARK_BLUE}; font-weight: 600;'>Step 4 of 5: Financial Modeling</p>", unsafe_allow_html=True)
 with col_nav3:
     st.markdown("<p style='text-align: right; color: #999;'>QDB Analyst</p>", unsafe_allow_html=True)
 
-st.markdown("<div style='background: linear-gradient(90deg, #A6D8FF, #D5B8FF); height: 4px; border-radius: 2px; margin-bottom: 30px;'></div>", unsafe_allow_html=True)
+qdb_divider()
 
 # HEADER
-st.markdown(gradient_box("Financial Modeling & Projections"), unsafe_allow_html=True)
+qdb_header("Financial Modeling & Projections", "Build comprehensive financial models and forecasts")
 
 # Auto-fill from selected deal
 selected_deal = st.session_state.get('selected_deal')
@@ -65,10 +54,10 @@ else:
     company_name = st.text_input("Company Name", value="")
     sector = "Technology"
 
-st.markdown("<div style='background: linear-gradient(90deg, #A6D8FF, #D5B8FF); height: 4px; border-radius: 2px; margin: 30px 0;'></div>", unsafe_allow_html=True)
+qdb_divider()
 
 # Model Parameters
-st.markdown(gradient_box("Model Parameters"), unsafe_allow_html=True)
+qdb_header("Model Parameters", "Configure financial assumptions and projections")
 
 col_param1, col_param2, col_param3 = st.columns(3)
 
@@ -115,8 +104,8 @@ if st.button("🚀 Generate Financial Model", type="primary", use_container_widt
 
 # Display Model
 if st.session_state.financial_model is not None:
-    st.markdown("<div style='background: linear-gradient(90deg, #A6D8FF, #D5B8FF); height: 4px; border-radius: 2px; margin: 30px 0;'></div>", unsafe_allow_html=True)
-    st.markdown(gradient_box("Financial Projections"), unsafe_allow_html=True)
+    qdb_divider()
+    qdb_header("Financial Projections", "Review and analyze projected financial performance")
     
     df = st.session_state.financial_model
     
@@ -153,7 +142,7 @@ if st.session_state.financial_model is not None:
         st.metric("Avg EBITDA Margin", f"{df['EBITDA Margin %'].mean():.1f}%")
     
     # Export Excel
-    st.markdown("<div style='background: linear-gradient(90deg, #A6D8FF, #D5B8FF); height: 4px; border-radius: 2px; margin: 30px 0;'></div>", unsafe_allow_html=True)
+    qdb_divider()
     
     def create_excel():
         output = io.BytesIO()
@@ -163,15 +152,15 @@ if st.session_state.financial_model is not None:
         
         # Header
         ws['A1'] = f"{company_name} - Financial Projections"
-        ws['A1'].font = Font(bold=True, size=14)
+        ws['A1'].font = Font(bold=True, size=14, color="5E2A84")
         
         # Data
         for r_idx, row in enumerate(dataframe_to_rows(df, index=False, header=True), 3):
             for c_idx, value in enumerate(row, 1):
                 cell = ws.cell(row=r_idx, column=c_idx, value=value)
                 if r_idx == 3:
-                    cell.font = Font(bold=True)
-                    cell.fill = PatternFill(start_color="A6D8FF", end_color="A6D8FF", fill_type="solid")
+                    cell.font = Font(bold=True, color="FFFFFF")
+                    cell.fill = PatternFill(start_color="5E2A84", end_color="5E2A84", fill_type="solid")
         
         wb.save(output)
         return output.getvalue()
@@ -201,9 +190,9 @@ if st.session_state.financial_model is not None:
     # WORKFLOW NAVIGATION
     st.markdown("<br><br>", unsafe_allow_html=True)
     st.markdown(
-        """
+        f"""
         <div style='
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, {QDB_PURPLE} 0%, {QDB_DARK_BLUE} 100%);
             border-radius: 12px;
             padding: 25px;
             color: white;
@@ -233,4 +222,4 @@ if st.session_state.financial_model is not None:
             st.switch_page("Main_Page.py")
 
 st.markdown("<br><br>", unsafe_allow_html=True)
-st.markdown("<div style='text-align: center; color: #999; font-size: 0.9rem;'>Financial Modeling | Powered by Regulus AI</div>", unsafe_allow_html=True)
+st.markdown(f"<div style='text-align: center; color:{QDB_GOLD}; font-size: 0.9rem;'>Financial Modeling | Powered by Regulus AI</div>", unsafe_allow_html=True)
