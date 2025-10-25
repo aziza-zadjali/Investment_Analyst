@@ -134,7 +134,7 @@ with col1:
       <div style="margin-top:auto; text-align:center;">
         <a href="?page=deal" style="{BTN_TEAL}"
            onmouseover="{HOVER_ON}" onmouseout="{HOVER_OUT}">
-           🚀 Start Deal Sourcing
+           Start Deal Sourcing
         </a>
       </div>
     </div>
@@ -167,7 +167,7 @@ with col2:
       <div style="margin-top:auto; text-align:center;">
         <a href="?page=dd" style="{BTN_TEAL}"
            onmouseover="{HOVER_ON}" onmouseout="{HOVER_OUT}">
-           📋 Start Due Diligence
+           Start Due Diligence
         </a>
       </div>
     </div>
