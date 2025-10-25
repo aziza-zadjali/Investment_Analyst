@@ -18,15 +18,6 @@ st.set_page_config(
 )
 
 # Gradient style helper
-
-from PIL import Image
-import streamlit as st
-
-image = Image.open("C:\Users\ultra\Star_Drones\3d Printing Presentation\IMG_3478-removebg-preview.png")
-st.image(image, caption=" ", use_column_width=True)
-
-
-
 def gradient_box(text, height="60px", gradient="linear-gradient(90deg, #4b6cb7 0%, #182848 100%)"):
     return f"""
     <div style="
