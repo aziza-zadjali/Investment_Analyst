@@ -9,8 +9,11 @@ from utils.llm_handler import LLMHandler
 from utils.template_generator import TemplateGenerator
 import pandas as pd
 from datetime import datetime
+from utils.qdb_styling import apply_qdb_styling
 
-st.set_page_config(page_title="Deal Discovery", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Deal Sourcing", layout="wide")
+apply_qdb_styling()  # ✅ Global styling applied
+
 
 # Hide sidebar
 st.markdown("""
