@@ -6,7 +6,6 @@ Footer refined | Powered by Regulus AI only
 import streamlit as st
 import base64
 import os
-from pathlib import Path
 from utils.qdb_styling import (
     apply_qdb_styling,
     QDB_PURPLE,
@@ -87,113 +86,70 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ===== TOP NAVIGATION WITH TEAL BUTTONS (SMALLER & NICER) =====
+# ===== TOP NAVIGATION WITH TEAL BUTTONS =====
 st.markdown(
     """
 <style>
-/* Teal navigation buttons - smaller and nicer */
-.nav-button-container button {
-  background-color: #319795 !important;
-  color: white !important;
-  border: none !important;
-  border-radius: 30px !important;
-  padding: 8px 20px !important;
-  font-weight: 600 !important;
-  font-size: 0.85rem !important;
-  transition: all 0.3s ease !important;
-  box-shadow: 0 2px 6px rgba(49,151,149,0.25) !important;
-  margin: 0 5px !important;
-}
-.nav-button-container button:hover {
-  background-color: #2C7A7B !important;
-  box-shadow: 0 3px 10px rgba(49,151,149,0.35) !important;
-  transform: translateY(-1px);
-}
-.nav-button-container button:active {
-  transform: translateY(0px);
+.nav-button-container {
+  background-color: #F6F5F2;
+  margin: 0 -3rem;
+  padding: 16px 20px;
+  text-align: center;
 }
 
-/* Main action buttons - Teal oval style */
-button[key="deal_btn"],
-button[key="dd_btn"] {
-  background-color: #319795 !important;
+.nav-button-container button {
+  background-color: #09AE98 !important;
   color: white !important;
   border: none !important;
-  border-radius: 40px !important;
-  padding: 12px 32px !important;
+  border-radius: 32px !important;
+  padding: 10px 24px !important;
+  font-weight: 700 !important;
   font-size: 0.95rem !important;
-  font-weight: 600 !important;
-  box-shadow: 0 4px 12px rgba(49,151,149,0.3) !important;
   transition: all 0.3s ease !important;
+  box-shadow: 0 3px 14px rgba(9,174,152,0.25) !important;
+  margin: 0 6px !important;
+  letter-spacing: 0.02em !important;
+  line-height: 1.3 !important;
 }
-button[key="deal_btn"]:hover,
-button[key="dd_btn"]:hover {
-  background-color: #2C7A7B !important;
-  box-shadow: 0 6px 16px rgba(49,151,149,0.4) !important;
-  transform: translateY(-2px);
+
+.nav-button-container button:hover {
+  background-color: #077e70 !important;
+  box-shadow: 0 6px 18px rgba(9,174,152,0.35) !important;
+  transform: translateY(-2px) !important;
+}
+
+.nav-button-container button:active {
+  transform: translateY(0px) !important;
 }
 </style>
+
+<div class="nav-button-container">
 """,
     unsafe_allow_html=True,
 )
 
-# Navigation bar with smaller teal buttons
-st.markdown("<div style='background-color:#F6F5F2; margin:0 -3rem; padding:12px 0;'>", unsafe_allow_html=True)
-st.markdown("<div class='nav-button-container' style='text-align:center;'>", unsafe_allow_html=True)
-
-nav_cols = st.columns([1, 1, 1, 1, 1])
+nav_cols = st.columns(5, gap="small")
 
 with nav_cols[0]:
-    if st.button("Deal Sourcing", key="nav_deal"):
-        try:
-            st.switch_page("pages/Deal_Sourcing.py")
-        except:
-            try:
-                st.switch_page("pages/deal_sourcing.py")
-            except:
-                st.warning("Deal Sourcing page not found")
+    if st.button("Deal\nSourcing", key="nav_deal", use_container_width=True):
+        st.switch_page("pages/Deal_Sourcing.py")
 
 with nav_cols[1]:
-    if st.button("Due Diligence", key="nav_dd"):
-        try:
-            st.switch_page("pages/Due_Diligence.py")
-        except:
-            try:
-                st.switch_page("pages/due_diligence.py")
-            except:
-                st.warning("Due Diligence page not found")
+    if st.button("Due\nDiligence", key="nav_dd", use_container_width=True):
+        st.switch_page("pages/Due_Diligence.py")
 
 with nav_cols[2]:
-    if st.button("Market Analysis", key="nav_market"):
-        try:
-            st.switch_page("pages/Market_Analysis.py")
-        except:
-            try:
-                st.switch_page("pages/market_analysis.py")
-            except:
-                st.warning("Market Analysis page not found")
+    if st.button("Market\nAnalysis", key="nav_market", use_container_width=True):
+        st.switch_page("pages/Market_Analysis.py")
 
 with nav_cols[3]:
-    if st.button("Financial Modeling", key="nav_fin"):
-        try:
-            st.switch_page("pages/Financial_Modeling.py")
-        except:
-            try:
-                st.switch_page("pages/financial_modeling.py")
-            except:
-                st.warning("Financial Modeling page not found")
+    if st.button("Financial\nModeling", key="nav_fin", use_container_width=True):
+        st.switch_page("pages/Financial_Modeling.py")
 
 with nav_cols[4]:
-    if st.button("Investment Memo", key="nav_memo"):
-        try:
-            st.switch_page("pages/Investment_Memo.py")
-        except:
-            try:
-                st.switch_page("pages/investment_memo.py")
-            except:
-                st.warning("Investment Memo page not found")
+    if st.button("Investment\nMemo", key="nav_memo", use_container_width=True):
+        st.switch_page("pages/Investment_Memo.py")
 
-st.markdown("</div>", unsafe_allow_html=True)
 st.markdown("</div>", unsafe_allow_html=True)
 
 # ===== CHOOSE PATH SECTION =====
@@ -216,8 +172,8 @@ col1, col2 = st.columns(2, gap="large")
 with col1:
     st.markdown(
         f"""
-        <div style="background:white; border-radius:16px; padding:35px; height:340px;
-                    box-shadow:0 5px 20px rgba(0,0,0,0.08); border-top:4px solid #319795;
+        <div style="background:white; border-radius:16px; padding:35px; height:360px;
+                    box-shadow:0 5px 20px rgba(0,0,0,0.08); border-top:4px solid #09AE98;
                     display:flex; flex-direction:column; justify-content:space-between;">
             <div>
                 <h3 style="color:#1B2B4D; font-size:1.6rem; font-weight:600; margin-bottom:16px;">Deal Sourcing Path</h3>
@@ -232,21 +188,15 @@ with col1:
         unsafe_allow_html=True,
     )
     st.markdown("<div style='text-align:center; margin-top:20px;'>", unsafe_allow_html=True)
-    if st.button("Start Deal Sourcing", key="deal_btn", use_container_width=False):
-        try:
-            st.switch_page("pages/Deal_Sourcing.py")
-        except:
-            try:
-                st.switch_page("pages/deal_sourcing.py")
-            except:
-                st.warning("Deal Sourcing page not found. Please create pages/Deal_Sourcing.py")
+    if st.button("Start Deal Sourcing", key="deal_btn"):
+        st.switch_page("pages/Deal_Sourcing.py")
     st.markdown("</div>", unsafe_allow_html=True)
 
 with col2:
     st.markdown(
         f"""
-        <div style="background:white; border-radius:16px; padding:35px; height:340px;
-                    box-shadow:0 5px 20px rgba(0,0,0,0.08); border-top:4px solid #319795;
+        <div style="background:white; border-radius:16px; padding:35px; height:360px;
+                    box-shadow:0 5px 20px rgba(0,0,0,0.08); border-top:4px solid #09AE98;
                     display:flex; flex-direction:column; justify-content:space-between;">
             <div>
                 <h3 style="color:#1B2B4D; font-size:1.6rem; font-weight:600; margin-bottom:16px;">Due Diligence Path</h3>
@@ -261,15 +211,37 @@ with col2:
         unsafe_allow_html=True,
     )
     st.markdown("<div style='text-align:center; margin-top:20px;'>", unsafe_allow_html=True)
-    if st.button("Start Due Diligence", key="dd_btn", use_container_width=False):
-        try:
-            st.switch_page("pages/Due_Diligence.py")
-        except:
-            try:
-                st.switch_page("pages/due_diligence.py")
-            except:
-                st.warning("Due Diligence page not found. Please create pages/Due_Diligence.py")
+    if st.button("Start Due Diligence", key="dd_btn"):
+        st.switch_page("pages/Due_Diligence.py")
     st.markdown("</div>", unsafe_allow_html=True)
+
+# ===== STYLE MAIN ACTION BUTTONS =====
+st.markdown(
+    """
+<style>
+button[key="deal_btn"],
+button[key="dd_btn"] {
+  background-color: #09AE98 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 40px !important;
+  padding: 12px 36px !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 14px rgba(9,174,152,0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+button[key="deal_btn"]:hover,
+button[key="dd_btn"]:hover {
+  background-color: #077e70 !important;
+  box-shadow: 0 6px 18px rgba(9,174,152,0.4) !important;
+  transform: translateY(-2px) !important;
+}
+</style>
+""",
+    unsafe_allow_html=True,
+)
 
 qdb_section_end()
 
