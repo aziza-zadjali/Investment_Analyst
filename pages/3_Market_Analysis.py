@@ -9,8 +9,10 @@ from utils.llm_handler import LLMHandler
 from utils.template_generator import TemplateGenerator
 from utils.web_scraper import WebScraper
 import io
+from utils.qdb_styling import apply_qdb_styling
 
-st.set_page_config(page_title="Market Analysis", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Deal Sourcing", layout="wide")
+apply_qdb_styling()  # ✅ Global styling applied
 
 # Hide sidebar
 st.markdown("""
