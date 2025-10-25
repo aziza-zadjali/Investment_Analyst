@@ -110,7 +110,7 @@ with st.container():
                 margin: 0;
                 text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
             '>
-                Plstform overview
+                Platform overview
             </h1>
         </div>
         """,
