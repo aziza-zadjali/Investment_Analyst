@@ -1,6 +1,6 @@
 """
 Market Analysis Page
-Auto-filled from workflow with guided navigation
+QDB-branded with auto-fill from workflow
 """
 
 import streamlit as st
@@ -9,21 +9,10 @@ from utils.llm_handler import LLMHandler
 from utils.template_generator import TemplateGenerator
 from utils.web_scraper import WebScraper
 import io
-from utils.qdb_styling import apply_qdb_styling
+from utils.qdb_styling import apply_qdb_styling, QDB_PURPLE, QDB_GOLD, QDB_DARK_BLUE, qdb_header, qdb_divider
 
-st.set_page_config(page_title="Deal Sourcing", layout="wide")
-apply_qdb_styling()  # ✅ Global styling applied
-
-# Hide sidebar
-st.markdown("""
-<style>
-    [data-testid="stSidebar"] {display: none;}
-    .main > div {padding-top: 2rem;}
-</style>
-""", unsafe_allow_html=True)
-
-def gradient_box(text, gradient="linear-gradient(90deg, #A6D8FF, #D5B8FF)"):
-    return f"""<div style="background: {gradient}; padding: 15px 20px; border-radius: 12px; color: white; font-weight: 600; font-size: 1.5rem; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);">{text}</div>"""
+st.set_page_config(page_title="Market Analysis - QDB", layout="wide", initial_sidebar_state="collapsed")
+apply_qdb_styling()  # ✅ QDB styling
 
 @st.cache_resource
 def init_handlers():
@@ -40,14 +29,14 @@ with col_nav1:
     if st.button("← Back to DD"):
         st.switch_page("pages/2_Due_Diligence_Analysis.py")
 with col_nav2:
-    st.markdown("<p style='text-align: center; color: #666; font-weight: 600;'>Step 3 of 5: Market Analysis</p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='text-align: center; color:{QDB_DARK_BLUE}; font-weight: 600;'>Step 3 of 5: Market Analysis</p>", unsafe_allow_html=True)
 with col_nav3:
     st.markdown("<p style='text-align: right; color: #999;'>QDB Analyst</p>", unsafe_allow_html=True)
 
-st.markdown("<div style='background: linear-gradient(90deg, #A6D8FF, #D5B8FF); height: 4px; border-radius: 2px; margin-bottom: 30px;'></div>", unsafe_allow_html=True)
+qdb_divider()
 
 # HEADER
-st.markdown(gradient_box("Market Analysis"), unsafe_allow_html=True)
+qdb_header("Market Analysis", "Comprehensive market research and competitive intelligence")
 
 # Auto-fill from selected deal
 selected_deal = st.session_state.get('selected_deal')
@@ -69,10 +58,10 @@ else:
     sector = st.text_input("Sector", value="")
     region = st.text_input("Geographic Focus", value="")
 
-st.markdown("<div style='background: linear-gradient(90deg, #A6D8FF, #D5B8FF); height: 4px; border-radius: 2px; margin: 30px 0;'></div>", unsafe_allow_html=True)
+qdb_divider()
 
 # Analysis Parameters
-st.markdown(gradient_box("Analysis Parameters"), unsafe_allow_html=True)
+qdb_header("Analysis Parameters", "Configure market research scope and depth")
 
 col_param1, col_param2, col_param3 = st.columns(3)
 
@@ -101,7 +90,7 @@ with col_comp3:
 with col_comp4:
     include_swot = st.checkbox("SWOT Analysis", value=True)
 
-st.markdown("<div style='background: linear-gradient(90deg, #A6D8FF, #D5B8FF); height: 4px; border-radius: 2px; margin: 30px 0;'></div>", unsafe_allow_html=True)
+qdb_divider()
 
 # Run Analysis
 if st.button("🚀 Run Market Analysis", type="primary", use_container_width=True):
@@ -111,7 +100,6 @@ if st.button("🚀 Run Market Analysis", type="primary", use_container_width=Tru
     else:
         with st.spinner("Conducting market analysis..."):
             
-            # Generate analysis prompt
             analysis_prompt = f"""
             Conduct comprehensive market analysis for:
             
@@ -135,10 +123,8 @@ if st.button("🚀 Run Market Analysis", type="primary", use_container_width=Tru
             try:
                 st.info("🤖 Generating AI-powered market analysis...")
                 
-                # Generate analysis using LLM
                 analysis_result = llm.generate(analysis_prompt)
                 
-                # Prepare report data
                 report_data = {
                     'company_name': company_name,
                     'industry': industry,
@@ -160,15 +146,12 @@ if st.button("🚀 Run Market Analysis", type="primary", use_container_width=Tru
                     'recommendations': f'Strategic recommendations for {company_name} market positioning and growth strategy.'
                 }
                 
-                # Generate report
                 st.session_state.market_report = template_gen.generate_market_analysis_report(report_data)
-                
                 st.success("✅ Market analysis completed!")
                 
             except Exception as e:
                 st.error(f"Analysis error: {str(e)}")
                 
-                # Fallback report
                 report_data = {
                     'company_name': company_name,
                     'industry': industry,
@@ -188,8 +171,8 @@ if st.button("🚀 Run Market Analysis", type="primary", use_container_width=Tru
 
 # Display Results
 if st.session_state.market_report:
-    st.markdown("<div style='background: linear-gradient(90deg, #A6D8FF, #D5B8FF); height: 4px; border-radius: 2px; margin: 30px 0;'></div>", unsafe_allow_html=True)
-    st.markdown(gradient_box("Analysis Results"), unsafe_allow_html=True)
+    qdb_divider()
+    qdb_header("Analysis Results", "Review and download market research report")
     
     with st.expander("📄 View Report Preview", expanded=True):
         st.markdown(st.session_state.market_report[:2000] + "...")
@@ -223,9 +206,9 @@ if st.session_state.market_report:
     # WORKFLOW NAVIGATION
     st.markdown("<br><br>", unsafe_allow_html=True)
     st.markdown(
-        """
+        f"""
         <div style='
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, {QDB_PURPLE} 0%, {QDB_DARK_BLUE} 100%);
             border-radius: 12px;
             padding: 25px;
             color: white;
@@ -255,4 +238,4 @@ if st.session_state.market_report:
             st.switch_page("pages/5_Investment_Memo.py")
 
 st.markdown("<br><br>", unsafe_allow_html=True)
-st.markdown("<div style='text-align: center; color: #999; font-size: 0.9rem;'>Market Analysis | Powered by Regulus AI</div>", unsafe_allow_html=True)
+st.markdown(f"<div style='text-align: center; color:{QDB_GOLD}; font-size: 0.9rem;'>Market Analysis | Powered by Regulus AI</div>", unsafe_allow_html=True)
