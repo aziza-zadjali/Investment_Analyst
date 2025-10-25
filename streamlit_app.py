@@ -1,6 +1,6 @@
 """
 Investment Analyst AI - QDB Official Branding
-Styled to match Qatar Development Bank corporate website (qdb.qa)
+Professional corporate interface matching Qatar Development Bank website
 """
 
 import streamlit as st
@@ -21,8 +21,8 @@ QDB_DARK_BLUE = "#1B2B4D"
 QDB_LIGHT_GRAY = "#F5F5F5"
 
 
-# Helper function
 def encode_image(path):
+    """Convert image to base64 for embedding"""
     if os.path.exists(path):
         with open(path, "rb") as f:
             return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
@@ -33,14 +33,21 @@ qdb_logo = encode_image("QDB_Logo.png")
 regulus_logo = encode_image("regulus_logo.png")
 
 
-# --- QDB OFFICIAL STYLING ---
+# --- STYLING WITH CENTERING ---
 st.markdown(f"""
 <style>
-/* Hide Streamlit defaults */
+/* Hide sidebar */
 [data-testid="stSidebar"] {{visibility: hidden;}}
 .main > div {{padding-top: 1.5rem;}}
 
-/* QDB Brand Buttons */
+/* Center content container */
+.main-container {{
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 40px;
+}}
+
+/* QDB Button Styling */
 .stButton > button {{
     background: linear-gradient(135deg, {QDB_PURPLE} 0%, {QDB_DARK_BLUE} 100%);
     color: white;
@@ -59,7 +66,7 @@ st.markdown(f"""
     transform: translateY(-2px);
 }}
 
-/* Header Container */
+/* Header Grid */
 .qdb-header {{
     display: grid;
     grid-template-columns: 1fr 2fr 1fr;
@@ -84,17 +91,11 @@ st.markdown(f"""
     font-size: 2.8rem;
     font-weight: 700;
     color: {QDB_DARK_BLUE};
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     letter-spacing: -0.5px;
 }}
-.qdb-title p {{
-    color: #666;
-    font-size: 1.15rem;
-    font-weight: 400;
-    margin: 0;
-}}
 
-/* Pathway Cards (QDB Style) */
+/* Cards */
 .qdb-card {{
     background: white;
     border-radius: 12px;
@@ -137,24 +138,32 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 
-# --- HEADER SECTION ---
+# --- CENTERED CONTAINER ---
+st.markdown("<div class='main-container'>", unsafe_allow_html=True)
+
+# --- HEADER ---
 st.markdown("<div class='qdb-header'>", unsafe_allow_html=True)
 
-# Left logo
+# Left logo (QDB)
 if qdb_logo:
     st.markdown(f"<div class='qdb-logo'><img src='{qdb_logo}'></div>", unsafe_allow_html=True)
 else:
     st.markdown("<div class='qdb-logo'><strong>Qatar Development Bank</strong></div>", unsafe_allow_html=True)
 
-# Center title
-st.markdown("""
+# Center title with dual taglines
+st.markdown(f"""
 <div class='qdb-title'>
     <h1>Investment Analyst AI</h1>
-    <p>Intelligent Investment Analysis Platform</p>
+    <p style='color:{QDB_GOLD};font-weight:600;font-size:1.18rem;margin-bottom:6px;'>
+        Supporting Qatar's Economic Vision with Data-Driven Investment Analysis & Strategic Decision Intelligence
+    </p>
+    <p style='color:#666;font-size:1.05rem;margin:0;'>
+        End-to-End AI Platform for Deal Sourcing, Due Diligence, Market Analysis & Investment Memoranda
+    </p>
 </div>
 """, unsafe_allow_html=True)
 
-# Right logo
+# Right logo (Regulus)
 if regulus_logo:
     st.markdown(f"<div class='qdb-logo'><img src='{regulus_logo}'></div>", unsafe_allow_html=True)
 else:
@@ -240,3 +249,6 @@ with col_f2:
     st.markdown("<p style='text-align:center;color:#999;'><strong>Investment Analyst AI</strong> | Version 1.0.0</p>", unsafe_allow_html=True)
 with col_f3:
     st.markdown(f"<p style='text-align:right;color:{QDB_GOLD};font-weight:500;'>Powered by Regulus</p>", unsafe_allow_html=True)
+
+# Close container
+st.markdown("</div>", unsafe_allow_html=True)
