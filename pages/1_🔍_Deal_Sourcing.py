@@ -1,5 +1,5 @@
 """
-Deal Discovery & Sourcing Page with Enhanced Filtering
+Deal Discovery & Sourcing Page with Integrated Filtering
 AI-powered deal sourcing from multiple funding platforms with automatic qualification
 """
 
@@ -41,28 +41,31 @@ if 'filtered_deals' not in st.session_state:
 
 # HEADER
 st.markdown(gradient_box("Deal Discovery & Sourcing"), unsafe_allow_html=True)
-st.markdown("Discover and qualify investment opportunities from leading global platforms. Use AI-powered analysis with **two-stage filtering**: Industry screening + Investment criteria.")
+st.markdown("Discover and qualify investment opportunities from leading global platforms with **AI-powered two-stage filtering**.")
 
 st.divider()
 
-# STAGE 1: Industry Filter
-st.markdown(gradient_box("Stage 1: Industry Filter", gradient="linear-gradient(90deg, #d31027 0%, #ea384d 100%)"), unsafe_allow_html=True)
+# INTEGRATED: Define Investment Criteria with Industry Filter
+st.markdown(gradient_box("Define Investment Criteria", gradient="linear-gradient(90deg, #FF416C 0%, #FF4B2B 100%)"), unsafe_allow_html=True)
 
-st.info("**🚫 Unattractive Industries Screening** - Based on Qatar Development Bank's list. Deals in these sectors will be **tagged** for review.")
+# Industry Filter Toggle
+col_filter1, col_filter2 = st.columns([3, 1])
 
-with st.expander("📋 View Complete Unattractive Industries List"):
-    for category, industries in UNATTRACTIVE_INDUSTRIES.items():
-        st.markdown(f"**{category}:**")
-        st.caption(", ".join(industries))
+with col_filter1:
+    st.markdown("**🚫 Unattractive Industries Screening** - Filter deals based on Qatar Development Bank's list")
 
-enable_industry_filter = st.checkbox("Enable Industry Filter (Tag unattractive industries)", value=True, help="Deals matching unattractive industries will be tagged but not removed")
+with col_filter2:
+    enable_industry_filter = st.checkbox("Enable Filter", value=True, help="Tag deals in unattractive industries")
 
-st.divider()
+if enable_industry_filter:
+    with st.expander("📋 View Complete Unattractive Industries List"):
+        for category, industries_list in UNATTRACTIVE_INDUSTRIES.items():
+            st.markdown(f"**{category}:**")
+            st.caption(", ".join(industries_list))
 
-# STAGE 2: Investment Criteria
-st.markdown(gradient_box("Stage 2: Define Investment Criteria", gradient="linear-gradient(90deg, #FF416C 0%, #FF4B2B 100%)"), unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
-# Row 1: Target Industry
+# Target Industry
 industries = st.multiselect(
     "Target Industry",
     ["Technology", "Healthcare", "Financial Services", "Energy", "Consumer Goods",
@@ -74,7 +77,7 @@ industries = st.multiselect(
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Row 2: Target Sectors (within industries)
+# Target Sectors + Stage + Geography
 col1, col2, col3 = st.columns(3)
 
 with col1:
@@ -103,7 +106,7 @@ with col3:
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Row 3: Revenue Range, Deal Count, Investment Ticket Size
+# Revenue Range + Deal Count + Investment Ticket Size
 col4, col5, col6 = st.columns(3)
 
 with col4:
@@ -128,24 +131,8 @@ with col6:
     enable_ticket_size = st.checkbox("Define ticket size", value=False)
     
     if enable_ticket_size:
-        ticket_min = st.number_input(
-            "Min Investment ($M)",
-            min_value=0.1,
-            max_value=100.0,
-            value=1.0,
-            step=0.5,
-            format="%.1f"
-        )
-        
-        ticket_max = st.number_input(
-            "Max Investment ($M)",
-            min_value=0.1,
-            max_value=100.0,
-            value=10.0,
-            step=0.5,
-            format="%.1f"
-        )
-        
+        ticket_min = st.number_input("Min Investment ($M)", min_value=0.1, max_value=100.0, value=1.0, step=0.5, format="%.1f")
+        ticket_max = st.number_input("Max Investment ($M)", min_value=0.1, max_value=100.0, value=10.0, step=0.5, format="%.1f")
         ticket_size_range = (ticket_min, ticket_max)
     else:
         ticket_size_range = None
@@ -213,7 +200,7 @@ if st.button("🚀 Start Discovery", type="primary", use_container_width=True):
                             "ticket_size": f"${1 + (i % 5)}M-${5 + (i % 10)}M" if not ticket_size_range else f"${ticket_size_range[0]}M-${ticket_size_range[1]}M"
                         }
                         
-                        # Stage 1: Industry Filter
+                        # Industry Filter
                         if enable_industry_filter:
                             for category, industry_list in UNATTRACTIVE_INDUSTRIES.items():
                                 for unattr_industry in industry_list:
@@ -336,10 +323,7 @@ if st.session_state.discovered_deals:
 with st.sidebar:
     st.markdown("### 💡 Deal Sourcing Features")
     st.markdown("""
-✓ **Two-Stage Filtering**
-  - Industry Screening
-  - Investment Criteria
-
+✓ **Integrated Industry Filter**
 ✓ **Target Industry + Sector**
 ✓ **Investment Ticket Size**
 ✓ **Multi-Source Aggregation**
