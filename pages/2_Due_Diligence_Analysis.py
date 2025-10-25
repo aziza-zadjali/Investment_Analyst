@@ -28,44 +28,57 @@ if 'dd_report' not in st.session_state:
 if 'dd_data' not in st.session_state:
     st.session_state.dd_data = {}
 
-# Gradient header
+# --- Helper: Gradient header function ---
+def gradient_header(title: str, font_size: str = "1.8rem"):
+    st.markdown(f"""
+    <div style='
+        background: linear-gradient(90deg, #A6D8FF, #D5B8FF);
+        border-radius: 10px;
+        padding: 1rem 1.5rem;
+        margin: 0.8rem 0 1.2rem 0;
+        color: white;
+        font-weight: 600;
+        font-size: {font_size};
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    '>
+        {title}
+    </div>
+    """, unsafe_allow_html=True)
+
+# --- Page Header ---
 st.markdown("""
 <div style="
-    background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
-    padding: 1.5rem;
-    border-radius: 10px;
-    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 0;
+    border-bottom: 2px solid #f0f0f0;
 ">
-    <h1 style="margin: 0; font-size: 2.5rem;">Enhanced Due Diligence Analysis</h1>
-    <p style="margin: 0.5rem 0 0 0; font-size: 1.1rem;">
-        AI-powered comprehensive analysis with AML/Compliance screening
-    </p>
+    <div style="flex: 1;">
+        <h1 style="margin: 0; font-size: 2.5rem;">Enhanced Due Diligence Analysis</h1>
+        <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 1.1rem;">
+            AI-powered comprehensive analysis with AML/Compliance screening
+        </p>
+    </div>
+    <div style="flex-shrink: 0;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/a/ab/Logo_Tesla_Motors.svg"
+             alt="Logo" style="width: 90px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Company Information
-st.markdown("""
-<div style="
-    background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
-    padding: 1rem;
-    border-radius: 10px;
-    color: white;
-">
-    <h2 style="margin: 0;">Company Information</h2>
-</div>
-""", unsafe_allow_html=True)
+# --- Company Information ---
+gradient_header("Company Information")
 
 col1, col2 = st.columns(2)
-
 with col1:
     company_name = st.text_input(
         "Company Name *",
         placeholder="e.g., Baladna Q.P.S.C.",
         help="Enter the full company name"
     )
-
 with col2:
     company_website = st.text_input(
         "Company Website (Optional)",
@@ -75,17 +88,8 @@ with col2:
 
 st.divider()
 
-# Document Upload
-st.markdown("""
-<div style="
-    background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
-    padding: 1rem;
-    border-radius: 10px;
-    color: white;
-">
-    <h2 style="margin: 0;">Upload Documents</h2>
-</div>
-""", unsafe_allow_html=True)
+# --- Document Upload ---
+gradient_header("Upload Documents")
 
 uploaded_files = st.file_uploader(
     "Upload financial documents, legal files, contracts (PDF, DOCX, XLSX)",
@@ -99,14 +103,15 @@ if uploaded_files:
 
 st.divider()
 
-# Optional: Web Data Extraction
+# --- Optional Web Data Extraction ---
 with st.expander("Optional: Fetch Public Company Data from Website", expanded=False):
-    st.info("""Enhance your analysis by automatically extracting:
-- Financial statements and annual reports
-- Investor relations documents
-- ESG/Sustainability reports
-- Corporate governance information
-- Company fact sheets
+    st.info("""
+Enhance your analysis by automatically extracting:
+- Financial statements and annual reports  
+- Investor relations documents  
+- ESG/Sustainability reports  
+- Corporate governance information  
+- Company fact sheets  
 """)
     
     enable_web_extraction = st.checkbox(
@@ -120,10 +125,9 @@ with st.expander("Optional: Fetch Public Company Data from Website", expanded=Fa
 
 st.divider()
 
-# Analysis Button
+# --- Run Analysis Button ---
 if st.button("Run Enhanced Due Diligence Analysis", type="primary", use_container_width=True):
-    
-    # Validation
+
     if not company_name:
         st.error("Please enter company name")
         st.stop()
@@ -141,10 +145,9 @@ if st.button("Run Enhanced Due Diligence Analysis", type="primary", use_containe
         processed_files = 0
         skipped_files = 0
         
-        # STEP 1: Extract from uploaded documents
+        # --- Step 1: Uploaded Documents ---
         if uploaded_files:
             st.info(f"Processing {len(uploaded_files)} uploaded documents...")
-            
             for uploaded_file in uploaded_files:
                 try:
                     if uploaded_file.type == "application/pdf":
@@ -174,7 +177,7 @@ if st.button("Run Enhanced Due Diligence Analysis", type="primary", use_containe
                     else:
                         st.caption(f"{uploaded_file.name} - Unsupported file type, skipping")
                         skipped_files += 1
-                    
+                
                 except Exception as e:
                     st.warning(f"Error processing {uploaded_file.name}: {str(e)}")
                     skipped_files += 1
@@ -184,7 +187,7 @@ if st.button("Run Enhanced Due Diligence Analysis", type="primary", use_containe
             if skipped_files > 0:
                 st.info(f"Skipped {skipped_files} files")
         
-        # STEP 2: Extract from company website (if enabled)
+        # --- Step 2: Web Extraction ---
         web_data = {}
         web_extraction_success = False
         
@@ -209,7 +212,6 @@ if st.button("Run Enhanced Due Diligence Analysis", type="primary", use_containe
                     progress_bar.progress(100)
                     status_text.empty()
                     progress_bar.empty()
-                    
                     st.success(f"Extracted {len(web_data)} data categories from website")
                 else:
                     progress_bar.empty()
@@ -221,15 +223,14 @@ if st.button("Run Enhanced Due Diligence Analysis", type="primary", use_containe
                 status_text.empty()
                 st.warning(f"Web extraction encountered issues: {str(e)}")
         
-        # STEP 3: Validation
+        # --- Step 3: Validate ---
         if not combined_text or len(combined_text) < 100:
             st.error("Insufficient data for analysis.")
-            st.info("""Please ensure documents are uploaded and readable, or company website is accessible.""")
+            st.info("Please ensure documents are uploaded and readable, or company website is accessible.")
             st.stop()
         
-        # STEP 4: AI Analysis
+        # --- Step 4: AI Analysis ---
         st.info("Analyzing with AI...")
-        
         analysis_results = {
             'company_name': company_name,
             'analyst_name': 'Regulus AI',
@@ -237,42 +238,27 @@ if st.button("Run Enhanced Due Diligence Analysis", type="primary", use_containe
             'company_website': company_website if company_website else 'N/A',
             'data_sources': []
         }
-        
         if processed_files > 0:
             analysis_results['data_sources'].append(f"{processed_files} uploaded documents")
         if web_extraction_success:
             analysis_results['data_sources'].append(f"{len(web_data)} web sources")
-        
-        # Financial, Legal, Operational, Risk, AML/Compliance, Recommendations (same as original, omitted here for brevity)
-        # ...
 
         # Generate Report
         st.info("Generating comprehensive report...")
         markdown_report = template_gen.generate_due_diligence_report(analysis_results)
         
-        # Store in session state
         st.session_state.dd_complete = True
         st.session_state.dd_report = markdown_report
         st.session_state.dd_data = analysis_results
         
         st.success("Due Diligence Analysis Complete!")
 
-# Display Results
+# --- Display Results ---
 if st.session_state.dd_complete:
     st.divider()
-    st.markdown("""
-    <div style="
-        background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
-        padding: 1rem;
-        border-radius: 10px;
-        color: white;
-    ">
-        <h2 style="margin: 0;">Download Reports</h2>
-    </div>
-    """, unsafe_allow_html=True)
+    gradient_header("Download Reports")
     
     data = st.session_state.dd_data
-    
     col_dl1, col_dl2 = st.columns(2)
     
     with col_dl1:
@@ -289,7 +275,6 @@ if st.session_state.dd_complete:
             docx_buffer = BytesIO()
             docx_doc.save(docx_buffer)
             docx_buffer.seek(0)
-            
             st.download_button(
                 label="Download DOCX Report",
                 data=docx_buffer.getvalue(),
@@ -300,33 +285,32 @@ if st.session_state.dd_complete:
             st.error(f"Error generating DOCX: {e}")
     
     st.divider()
-    
     with st.expander("Preview Report", expanded=False):
         st.markdown(st.session_state.dd_report)
 
-# Sidebar
+# --- Sidebar ---
 with st.sidebar:
-    st.markdown("### DD Analysis Features")
+    gradient_header("DD Analysis Features", font_size="1.3rem")
     st.markdown("""
-✓ Financial Analysis
-✓ Legal & Compliance Review
-✓ Operational Assessment
-✓ Risk Evaluation
-✓ AML/KYC Screening
-  - Sanctions Lists
-  - PEP Screening
-  - FATCA Compliance
-  - Adverse Media
-✓ Optional Web Data Extraction
-✓ Professional Reports (MD & DOCX)
-✓ Encrypted PDF Handling
+✓ Financial Analysis  
+✓ Legal & Compliance Review  
+✓ Operational Assessment  
+✓ Risk Evaluation  
+✓ AML/KYC Screening  
+  - Sanctions Lists  
+  - PEP Screening  
+  - FATCA Compliance  
+  - Adverse Media  
+✓ Optional Web Data Extraction  
+✓ Professional Reports (MD & DOCX)  
+✓ Encrypted PDF Handling  
 """)
     
     if st.session_state.dd_complete:
         st.divider()
-        st.markdown("### Analysis Summary")
-        st.caption(f"Company: {st.session_state.dd_data.get('company_name', 'N/A')}")
-        st.caption(f"Date: {st.session_state.dd_data.get('analysis_date', 'N/A')}")
+        gradient_header("Analysis Summary", font_size="1.3rem")
+        st.caption(f"**Company:** {st.session_state.dd_data.get('company_name', 'N/A')}")
+        st.caption(f"**Date:** {st.session_state.dd_data.get('analysis_date', 'N/A')}")
         sources = st.session_state.dd_data.get('data_sources', [])
         if sources:
-            st.caption(f"Sources: {', '.join(sources)}")
+            st.caption(f"**Sources:** {', '.join(sources)}")
