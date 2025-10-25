@@ -34,6 +34,22 @@ def encode_image(path):
 qdb_logo = encode_image("QDB_Logo.png")
 regulus_logo = encode_image("regulus_logo.png")
 
+# Get query parameters
+query_params = st.query_params
+page = query_params.get("page", None)
+
+# Handle page navigation
+if page == "deal":
+    st.switch_page("pages/deal_sourcing.py")
+elif page == "dd":
+    st.switch_page("pages/due_diligence.py")
+elif page == "market":
+    st.switch_page("pages/market_analysis.py")
+elif page == "fin":
+    st.switch_page("pages/financial_modeling.py")
+elif page == "memo":
+    st.switch_page("pages/investment_memo.py")
+
 # ===== HERO SECTION =====
 st.markdown(
     f"""
@@ -107,7 +123,15 @@ st.markdown(
   border-bottom:2.5px solid transparent;
   transition:color 0.3s, border-color 0.3s;
 }}
-.nav-item:hover {{color:#319795; border-color:#319795;}}
+.nav-item a {{
+  text-decoration:none;
+  color:{QDB_DARK_BLUE};
+  transition:color 0.3s;
+}}
+.nav-item:hover, .nav-item:hover a {{
+  color:#319795;
+  border-color:#319795;
+}}
 .card {{
   position:absolute; top:38px; left:50%;
   transform:translateX(-50%);
@@ -136,35 +160,35 @@ st.markdown(
 
 <div class="navbar">
   <div class="nav-item">
-    <a href="?page=deal" style="text-decoration:none; color:inherit;">Deal Sourcing</a>
+    <a href="?page=deal">Deal Sourcing</a>
     <div class="card">
       <a href="?page=deal"><h4>Deal Sourcing</h4>
       <p>Discover and qualify investment opportunities using AI‑based ranking.</p></a>
     </div>
   </div>
   <div class="nav-item">
-    <a href="?page=dd" style="text-decoration:none; color:inherit;">Due Diligence</a>
+    <a href="?page=dd">Due Diligence</a>
     <div class="card">
       <a href="?page=dd"><h4>Due Diligence</h4>
       <p>Run comprehensive due diligence across financial, legal, and operational data.</p></a>
     </div>
   </div>
   <div class="nav-item">
-    <a href="?page=market" style="text-decoration:none; color:inherit;">Market Analysis</a>
+    <a href="?page=market">Market Analysis</a>
     <div class="card">
       <a href="?page=market"><h4>Market Analysis</h4>
       <p>Extract actionable insights and competitive landscape summaries instantly.</p></a>
     </div>
   </div>
   <div class="nav-item">
-    <a href="?page=fin" style="text-decoration:none; color:inherit;">Financial Modeling</a>
+    <a href="?page=fin">Financial Modeling</a>
     <div class="card">
       <a href="?page=fin"><h4>Financial Modeling</h4>
       <p>Build predictive financial models with AI‑powered accuracy checks.</p></a>
     </div>
   </div>
   <div class="nav-item">
-    <a href="?page=memo" style="text-decoration:none; color:inherit;">Investment Memo</a>
+    <a href="?page=memo">Investment Memo</a>
     <div class="card">
       <a href="?page=memo"><h4>Investment Memo</h4>
       <p>Create professional‑grade summary memos ready for executive review.</p></a>
