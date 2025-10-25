@@ -32,7 +32,7 @@ st.markdown("""
 <div style="padding: 1.5rem 0; border-bottom: 2px solid #f0f0f0;">
     <h1 style="margin: 0; font-size: 2.5rem;">📄 Enhanced Due Diligence Analysis</h1>
     <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 1.1rem;">
-        AI-powered comprehensive analysis with AML/Compliance screening and automatic web data extraction
+        AI-powered comprehensive analysis with AML/Compliance screening
     </p>
 </div>
 """, unsafe_allow_html=True)
@@ -53,41 +53,10 @@ with col1:
 
 with col2:
     company_website = st.text_input(
-        "Company Website",
-        placeholder="e.g., baladna.com or https://www.baladna.com",
-        help="Enter company website for automatic data extraction (optional)"
+        "Company Website (Optional)",
+        placeholder="e.g., baladna.com",
+        help="Optionally provide company website for enhanced data extraction"
     )
-
-st.divider()
-
-# Web Data Extraction Options
-st.subheader("🌐 Automatic Web Data Extraction")
-
-st.info("""
-**🚀 Smart Web Extraction:** The system will automatically:
-- Discover investor relations pages
-- Extract financial statements, annual reports, governance docs
-- Pull sustainability/ESG reports
-- Gather fact sheets and company profiles
-- Extract share/stock information
-
-This enriches your DD report with the latest public information!
-""")
-
-col_web1, col_web2 = st.columns(2)
-
-with col_web1:
-    enable_web_extraction = st.checkbox(
-        "Enable Automatic Web Data Extraction",
-        value=False,
-        help="Automatically fetch public company data from website"
-    )
-
-with col_web2:
-    if enable_web_extraction:
-        st.info("✓ Web extraction enabled - will fetch data from company website")
-    else:
-        st.caption("Web extraction disabled - only uploaded documents will be analyzed")
 
 st.divider()
 
@@ -98,11 +67,35 @@ uploaded_files = st.file_uploader(
     "Upload financial documents, legal files, contracts (PDF, DOCX, XLSX)",
     type=['pdf', 'docx', 'xlsx'],
     accept_multiple_files=True,
-    help="Upload any existing documents you have for analysis (optional if web extraction is enabled)"
+    help="Upload company documents for analysis"
 )
 
 if uploaded_files:
     st.success(f"✅ {len(uploaded_files)} file(s) uploaded")
+
+st.divider()
+
+# Optional: Web Data Extraction
+with st.expander("🌐 **Optional:** Fetch Public Company Data from Website", expanded=False):
+    st.info("""
+**Enhance your analysis by automatically extracting:**
+- Financial statements and annual reports
+- Investor relations documents
+- ESG/Sustainability reports
+- Corporate governance information
+- Company fact sheets
+
+This feature works best with publicly listed companies that have dedicated investor relations pages.
+    """)
+    
+    enable_web_extraction = st.checkbox(
+        "Enable automatic web data extraction",
+        value=False,
+        help="System will attempt to discover and extract relevant company documents from the provided website"
+    )
+    
+    if enable_web_extraction and not company_website:
+        st.warning("⚠️ Please provide company website above to use this feature")
 
 st.divider()
 
@@ -114,12 +107,12 @@ if st.button("🔍 Run Enhanced Due Diligence Analysis", type="primary", use_con
         st.error("⚠️ Please enter company name")
         st.stop()
     
-    if enable_web_extraction and not company_website:
-        st.error("⚠️ Please enter company website for web extraction")
+    if not uploaded_files and not enable_web_extraction:
+        st.error("⚠️ Please upload documents or enable web data extraction")
         st.stop()
     
-    if not uploaded_files and not enable_web_extraction:
-        st.error("⚠️ Please either upload documents OR enable web data extraction")
+    if enable_web_extraction and not company_website:
+        st.error("⚠️ Please enter company website to use web extraction feature")
         st.stop()
     
     with st.spinner("🤖 Performing comprehensive due diligence analysis..."):
@@ -150,12 +143,12 @@ if st.button("🔍 Run Enhanced Due Diligence Analysis", type="primary", use_con
             if combined_text:
                 st.success(f"✅ Processed {len(uploaded_files)} documents ({len(combined_text)} characters)")
         
-        # STEP 2: Extract from company website
+        # STEP 2: Extract from company website (if enabled)
         web_data = {}
         web_extraction_success = False
         
         if enable_web_extraction and company_website:
-            st.info(f"🌐 Extracting data from {company_website}...")
+            st.info(f"🌐 Extracting public data from {company_website}...")
             
             progress_bar = st.progress(0)
             status_text = st.empty()
@@ -187,13 +180,13 @@ if st.button("🔍 Run Enhanced Due Diligence Analysis", type="primary", use_con
                 else:
                     progress_bar.empty()
                     status_text.empty()
-                    st.warning("⚠️ No data found on website. Please check URL or upload documents.")
+                    st.warning("⚠️ No data found on website. Analysis will proceed with uploaded documents only.")
                 
             except Exception as e:
                 progress_bar.empty()
                 status_text.empty()
-                st.error(f"❌ Web extraction failed: {str(e)}")
-                st.info("💡 Try uploading documents manually or check if the website is accessible")
+                st.warning(f"⚠️ Web extraction encountered issues: {str(e)}")
+                st.info("💡 Analysis will proceed with uploaded documents")
         
         # STEP 3: Validation
         if not combined_text or len(combined_text) < 100:
@@ -201,8 +194,7 @@ if st.button("🔍 Run Enhanced Due Diligence Analysis", type="primary", use_con
             st.info("""
 **Please ensure:**
 - Documents are uploaded and readable, OR
-- Company website URL is correct and accessible
-- Website has investor relations/corporate pages
+- Company website is accessible with investor relations content
             """)
             st.stop()
         
@@ -213,14 +205,14 @@ if st.button("🔍 Run Enhanced Due Diligence Analysis", type="primary", use_con
             'company_name': company_name,
             'analyst_name': 'Regulus AI',
             'analysis_date': datetime.now().strftime('%B %d, %Y'),
-            'company_website': company_website,
+            'company_website': company_website if company_website else 'N/A',
             'data_sources': []
         }
         
         if uploaded_files:
             analysis_results['data_sources'].append(f"{len(uploaded_files)} uploaded documents")
         if web_extraction_success:
-            analysis_results['data_sources'].append(f"{len(web_data)} website sections")
+            analysis_results['data_sources'].append(f"{len(web_data)} web sources")
         
         # Financial Analysis
         st.info("📊 Analyzing financials...")
@@ -472,7 +464,7 @@ with st.sidebar:
   - PEP Screening
   - FATCA Compliance
   - Adverse Media
-✓ **Web Data Extraction**
+✓ **Optional Web Data Extraction**
 ✓ **Professional Reports (MD & DOCX)**
 """)
     
