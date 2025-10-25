@@ -185,12 +185,12 @@ st.divider()
 # ========================================
 # SECTION 3: Deal Discovery Execution
 # ========================================
-if st.button("🚀 Discover Deals", type="primary", use_container_width=True):
+if st.button(" Discover Deals", type="primary", use_container_width=True):
     
     if not selected_sources:
         st.error("⚠️ Please select at least one data source to begin discovery.")
     else:
-        with st.spinner("🔍 Fetching deals from selected sources..."):
+        with st.spinner(" Fetching deals from selected sources..."):
             
             all_deals = []
             progress_bar = st.progress(0)
