@@ -12,7 +12,7 @@ from utils.llm_handler import LLMHandler
 from utils.template_generator import TemplateGenerator
 from utils.web_scraper import WebScraper
 
-st.set_page_config(page_title="Market Analysis", page_icon="🌐", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Market Analysis", layout="wide", initial_sidebar_state="collapsed")
 apply_qdb_styling()
 
 # ===== Image Loader =====
@@ -32,7 +32,7 @@ def init_handlers():
 
 llm, template_gen, web_scraper = init_handlers()
 
-# Session state
+# ===== INITIALIZE SESSION STATE =====
 if 'market_complete' not in st.session_state:
     st.session_state.market_complete = False
 if 'market_report' not in st.session_state:
@@ -59,22 +59,6 @@ st.markdown("""
     background: linear-gradient(135deg,#0E5F55 0%,#107563 100%)!important;
     transform:translateY(-2px)!important;
     box-shadow:0 6px 18px rgba(22,160,133,0.4)!important;
-}
-
-.section-title {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: white;
-    margin: 0;
-}
-
-.section-blue {
-    background: linear-gradient(135deg, #1B2B4D 0%, #2C3E5E 100%);
-    color: white;
-    border-radius: 10px;
-    padding: 20px;
-    margin: 12px 0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .section-beige {
@@ -132,7 +116,7 @@ if st.button("← Return Home", key="home_btn"):
 
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
-# ===== COMPANY INFORMATION SECTION (BEIGE - NO BLUE BACKGROUND) =====
+# ===== COMPANY INFORMATION SECTION (BEIGE) =====
 st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">Company & Market Information</div>', unsafe_allow_html=True)
 
 col1, col2 = st.columns(2)
@@ -220,15 +204,13 @@ st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
-# ===== ANALYSIS BUTTON (BLUE) =====
-st.markdown('<div class="section-blue">', unsafe_allow_html=True)
-
+# ===== ANALYSIS BUTTON - NO BLUE BOX, JUST BUTTON =====
 if st.button("Generate Market Analysis", use_container_width=True):
     if not company_name or not industry:
-        st.error("⚠️ Please enter both company name and industry")
+        st.error("Please enter both company name and industry")
         st.stop()
     if not analysis_options:
-        st.error("⚠️ Please select at least one analysis area")
+        st.error("Please select at least one analysis area")
         st.stop()
 
     with st.spinner("Conducting comprehensive market analysis..."):
@@ -336,19 +318,18 @@ Analyze the regulatory environment for {company_name} in the {industry} industry
         st.info("Generating comprehensive market report...")
         markdown_report = template_gen.generate_market_analysis_report(analysis_results)
 
+        # ===== SAVE TO SESSION STATE =====
         st.session_state.market_complete = True
         st.session_state.market_report = markdown_report
         st.session_state.market_data = analysis_results
 
         st.success("Market Analysis Complete!")
 
-st.markdown("</div>", unsafe_allow_html=True)
-
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
-# ===== RESULTS SECTION (BLUE) =====
+# ===== RESULTS SECTION (BEIGE) =====
 if st.session_state.market_complete:
-    st.markdown('<div class="section-blue"><div class="section-title">Download Report</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">Download Report</div>', unsafe_allow_html=True)
     
     data = st.session_state.market_data
 
@@ -356,15 +337,14 @@ if st.session_state.market_complete:
     
     with col_dl1:
         try:
-            # ✅ FIX: Generate DOCX FIRST and convert to bytes properly
             docx_doc = template_gen.markdown_to_docx(st.session_state.market_report)
             docx_buffer = BytesIO()
             docx_doc.save(docx_buffer)
-            docx_bytes = docx_buffer.getvalue()  # ✅ Extract bytes from buffer
+            docx_bytes = docx_buffer.getvalue()
             
             st.download_button(
                 label="Download DOCX Report",
-                data=docx_bytes,  # ✅ Pass bytes, not BytesIO object
+                data=docx_bytes,
                 file_name=f"{data['company_name']}_Market_Analysis_{datetime.now().strftime('%Y%m%d')}.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
@@ -374,11 +354,10 @@ if st.session_state.market_complete:
 
     with col_dl2:
         try:
-            # ✅ Markdown download with bytes
             markdown_bytes = st.session_state.market_report.encode('utf-8')
             st.download_button(
                 label="Preview Report",
-                data=markdown_bytes,  # ✅ Pass bytes
+                data=markdown_bytes,
                 file_name=f"{data['company_name']}_Market_Analysis_{datetime.now().strftime('%Y%m%d')}.md",
                 mime="text/markdown",
                 use_container_width=True
