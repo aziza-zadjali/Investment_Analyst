@@ -7,13 +7,7 @@ import base64
 import os
 from datetime import datetime
 from io import BytesIO
-from utils.qdb_styling import (
-    apply_qdb_styling,
-    QDB_PURPLE,
-    QDB_DARK_BLUE,
-    qdb_section_start,
-    qdb_section_end,
-)
+from utils.qdb_styling import apply_qdb_styling
 from utils.llm_handler import LLMHandler
 from utils.template_generator import TemplateGenerator
 from utils.web_scraper import WebScraper
@@ -49,42 +43,6 @@ if 'market_data' not in st.session_state:
 # ===== CUSTOM STYLING =====
 st.markdown("""
 <style>
-/* Section Container Styling */
-.qdb-section-container {
-    background-color: #F6F5F2;
-    border-radius: 10px;
-    padding: 24px;
-    margin: 16px 0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-
-.qdb-section-blue {
-    background: linear-gradient(135deg, #1B2B4D 0%, #2C3E5E 100%);
-    color: white;
-    border-radius: 10px;
-    padding: 24px;
-    margin: 16px 0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.qdb-section-beige {
-    background-color: #F6F5F2;
-    border-radius: 10px;
-    padding: 24px;
-    margin: 16px 0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-
-.section-title {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: #1B2B4D;
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
 .stButton>button {
     background: linear-gradient(135deg,#16A085 0%,#138074 100%)!important;
     color:white!important;
@@ -103,89 +61,118 @@ st.markdown("""
     box-shadow:0 6px 18px rgba(22,160,133,0.4)!important;
 }
 
-.stTextInput>div>div>input, .stSelectbox>div>div>select, .stMultiSelect>div {
-    border-radius: 6px!important;
-    border: 1px solid #D0D0D0!important;
+.section-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: white;
+    margin: 0;
 }
 
-.required-label::after {
-    content: " *";
-    color: #E74C3C;
-    font-weight: 700;
+.section-blue {
+    background: linear-gradient(135deg, #1B2B4D 0%, #2C3E5E 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 12px 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.section-beige {
+    background-color: #F6F5F2;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 12px 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-# ===== HEADER WITH LOGOS =====
+# ===== HERO HEADER WITH LOGOS =====
 st.markdown(f"""
-<div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:2px solid #E0E0E0; margin-bottom:24px;">
-    <div style="flex:1;">
-        <h1 style="margin:0; color:#1B2B4D; font-size:2rem; font-weight:800;">Market & Competitive Analysis</h1>
-        <p style="margin:4px 0 0 0; color:#666; font-size:0.95rem;">AI-powered market research with web data extraction</p>
-    </div>
-    <div style="display:flex; gap:16px; align-items:center;">
-        {'<img src="'+qdb_logo+'" style="max-height:50px;">' if qdb_logo else ''}
-        {'<img src="'+regulus_logo+'" style="max-height:50px;">' if regulus_logo else ''}
-    </div>
+<div style="
+    background: linear-gradient(135deg,#1B2B4D 0%,#2C3E5E 100%);
+    color: white;
+    text-align: center;
+    margin: 0 -3rem;
+    padding: 40px 20px 50px 20px;
+    position: relative;
+    overflow:visible;
+    width: calc(100% + 6rem);
+    border-bottom: 3px solid #16A085;">
+
+  <!-- Left: QDB -->
+  <div style="position:absolute; top:15px; left:35px;">
+    {'<img src="'+qdb_logo+'" style="max-height:55px;">' if qdb_logo else ''}
+  </div>
+
+  <!-- Right: Regulus -->
+  <div style="position:absolute; top:15px; right:35px;">
+    {'<img src="'+regulus_logo+'" style="max-height:55px;">' if regulus_logo else ''}
+  </div>
+
+  <div style="max-width:800px; margin:0 auto;">
+    <h1 style="font-size:2rem; font-weight:800; margin-bottom:6px;">Market & Competitive Analysis</h1>
+    <p style="color:#E2E8F0; font-size:0.95rem; margin:0;">AI-powered market research with competitive intelligence</p>
+  </div>
 </div>
 """, unsafe_allow_html=True)
+
+st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
 
 # ===== HOME BUTTON =====
 if st.button("← Return Home", key="home_btn"):
     st.switch_page("streamlit_app.py")
 
-st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
 # ===== COMPANY INFORMATION SECTION (BLUE) =====
-qdb_section_start("dark")
-st.markdown(f'<div class="section-title">🏢 Company & Market Information</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-blue"><div class="section-title">🏢 Company & Market Information</div>', unsafe_allow_html=True)
 
 col1, col2 = st.columns(2)
 with col1:
+    st.markdown("<div style='color:#E2E8F0; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Company Name *</div>", unsafe_allow_html=True)
     company_name = st.text_input(
         "Company Name",
         placeholder="e.g., Tesla",
         help="Enter the company name for analysis",
         label_visibility="collapsed"
     )
-    st.caption("Company Name *")
 
 with col2:
+    st.markdown("<div style='color:#E2E8F0; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Industry/Sector *</div>", unsafe_allow_html=True)
     industry = st.text_input(
         "Industry/Sector",
         placeholder="e.g., Electric Vehicles",
         help="Enter the industry or sector",
         label_visibility="collapsed"
     )
-    st.caption("Industry/Sector *")
 
 col3, col4 = st.columns(2)
 with col3:
+    st.markdown("<div style='color:#E2E8F0; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Geographic Markets</div>", unsafe_allow_html=True)
     geographic_focus = st.multiselect(
         "Geographic Markets",
         ["North America", "Europe", "Asia Pacific", "Latin America", "Middle East & Africa", "Global"],
         default=["Global"],
         label_visibility="collapsed"
     )
-    st.caption("Geographic Markets")
 
 with col4:
+    st.markdown("<div style='color:#E2E8F0; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Company Website (Optional)</div>", unsafe_allow_html=True)
     company_website = st.text_input(
         "Company Website",
         placeholder="e.g., tesla.com",
         help="Optionally provide website for data extraction",
         label_visibility="collapsed"
     )
-    st.caption("Company Website (Optional)")
 
-qdb_section_end()
+st.markdown("</div>", unsafe_allow_html=True)
 
-st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
 # ===== ANALYSIS SCOPE SECTION (BEIGE) =====
-qdb_section_start("light")
-st.markdown(f'<div class="section-title">📊 Analysis Scope</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">📊 Analysis Scope</div>', unsafe_allow_html=True)
 
 analysis_options = st.multiselect(
     "Select Analysis Areas",
@@ -202,15 +189,12 @@ analysis_options = st.multiselect(
     label_visibility="collapsed"
 )
 
-st.caption("Select one or more analysis areas to include in your report")
+st.markdown("</div>", unsafe_allow_html=True)
 
-qdb_section_end()
-
-st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
 # ===== WEB RESEARCH SECTION (BEIGE) =====
-qdb_section_start("light")
-st.markdown(f'<div class="section-title">🌐 Optional: Web Research</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">🌐 Optional: Web Research</div>', unsafe_allow_html=True)
 
 enable_web_research = st.checkbox(
     "Enable automatic web research",
@@ -226,12 +210,12 @@ if enable_web_research:
     ✓ Regulatory updates
     """)
 
-qdb_section_end()
+st.markdown("</div>", unsafe_allow_html=True)
 
-st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
 # ===== ANALYSIS BUTTON (BLUE) =====
-qdb_section_start("dark")
+st.markdown('<div class="section-blue">', unsafe_allow_html=True)
 
 if st.button("Generate Market Analysis", use_container_width=True):
     if not company_name or not industry:
@@ -352,27 +336,33 @@ Analyze the regulatory environment for {company_name} in the {industry} industry
 
         st.success("✅ Market Analysis Complete!")
 
-qdb_section_end()
+st.markdown("</div>", unsafe_allow_html=True)
 
-st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
 # ===== RESULTS SECTION (BLUE) =====
 if st.session_state.market_complete:
-    qdb_section_start("dark")
-    st.markdown(f'<div class="section-title">📥 Download Reports</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-blue"><div class="section-title">📥 Download Report</div>', unsafe_allow_html=True)
     
     data = st.session_state.market_data
 
     col_dl1, col_dl2 = st.columns(2)
     
     with col_dl1:
-        st.download_button(
-            label="📄 Download DOCX Report",
-            data=lambda: template_gen.markdown_to_docx(st.session_state.market_report).tobytes() if hasattr(template_gen.markdown_to_docx(st.session_state.market_report), 'tobytes') else BytesIO(template_gen.markdown_to_docx(st.session_state.market_report).getvalue()).getvalue(),
-            file_name=f"{data['company_name']}_Market_Analysis_{datetime.now().strftime('%Y%m%d')}.docx",
-            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            use_container_width=True
-        )
+        try:
+            docx_doc = template_gen.markdown_to_docx(st.session_state.market_report)
+            docx_buffer = BytesIO()
+            docx_doc.save(docx_buffer)
+            docx_buffer.seek(0)
+            st.download_button(
+                label="📄 Download DOCX Report",
+                data=docx_buffer.getvalue(),
+                file_name=f"{data['company_name']}_Market_Analysis_{datetime.now().strftime('%Y%m%d')}.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                use_container_width=True
+            )
+        except Exception as e:
+            st.error(f"Error generating DOCX: {e}")
 
     with col_dl2:
         st.download_button(
@@ -383,15 +373,14 @@ if st.session_state.market_complete:
             use_container_width=True
         )
 
-    qdb_section_end()
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
     # ===== FULL REPORT SECTION (BEIGE) =====
-    qdb_section_start("light")
-    st.markdown(f'<div class="section-title">📖 Full Report</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">📖 Full Report</div>', unsafe_allow_html=True)
     st.markdown(st.session_state.market_report)
-    qdb_section_end()
+    st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("<div style='height:20px;'></div>", unsafe_allow_html=True)
 
