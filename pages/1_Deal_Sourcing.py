@@ -1,7 +1,6 @@
 """
-Deal Discovery & Sourcing – Regulus Edition
-Integrated with WebScraper, LLMHandler, TemplateGenerator
-AI-powered discovery, IR insights extraction, badges, and analyst summaries
+Deal Discovery & Sourcing – Regulus Edition
+Professional gradient UI + intelligent deal discovery + QDB unattractive filter + AI summaries
 """
 
 import streamlit as st
@@ -10,205 +9,189 @@ from datetime import datetime
 from utils.web_scraper import WebScraper
 from utils.llm_handler import LLMHandler
 from utils.template_generator import TemplateGenerator
-from utils.qdb_styling import apply_qdb_styling
-import base64, os
 
-# ---------------- Page Config ----------------
-st.set_page_config(page_title="Deal Discovery – Regulus", layout="wide", initial_sidebar_state="collapsed")
-apply_qdb_styling()
+st.set_page_config(page_title="Deal Discovery - Regulus", layout="wide")
 
-# ---------------- Logo Helper ----------------
-def encode_image(path):
-    if os.path.exists(path):
-        with open(path, "rb") as f:
-            return f"data:image/png;base64," + base64.b64encode(f.read()).decode()
-    return ""
-qdb_logo = encode_image("QDB_Logo.png")
+# --------------------------------------------------
+# Global Styling Helpers
+# --------------------------------------------------
+def gradient_box(text, gradient="linear-gradient(90deg, #138074, #0e5f55)"):
+    return f"""
+    <div style="background: {gradient};
+        padding:15px 20px;border-radius:10px;color:white;
+        font-weight:600;font-size:1.4rem;text-align:center;
+        margin-bottom:25px;box-shadow:0 4px 10px rgba(0,0,0,0.25);">
+        {text}
+    </div>
+    """
 
-# ---------------- Initialize Modules ----------------
+# --------------------------------------------------
+# Initialize Core Modules
+# --------------------------------------------------
 @st.cache_resource
-def init_modules():
+def init_handlers():
     return WebScraper(), LLMHandler(), TemplateGenerator()
-scraper, llm, template_gen = init_modules()
-if "deals" not in st.session_state:
-    st.session_state.deals = []
 
-# ---------------- Header ----------------
+scraper, llm, template_gen = init_handlers()
+
+if "discovered_deals" not in st.session_state:
+    st.session_state.discovered_deals = []
+
+# --------------------------------------------------
+# Header
+# --------------------------------------------------
+st.markdown(gradient_box("Deal Discovery & Sourcing"), unsafe_allow_html=True)
 st.markdown(
-f"""
-<div style="background:linear-gradient(135deg,#1B2B4D,#2C3E5E);
-color:white;text-align:center;margin:0 -3rem;padding:60px 20px;">
-<div style="position:absolute;top:20px;left:35px;">
-{"<img src='"+qdb_logo+"' style='max-height:60px;'>" if qdb_logo else "<b>QDB</b>"}
-</div>
-<h1 style="font-size:2.2rem;font-weight:700;margin-bottom:10px;">
-Deal Discovery & Intelligence
-</h1>
-<p style="color:#CBD5E0;font-size:0.95rem;">
-AI‑powered deal sourcing integrated with IR analysis and LLM summaries
-</p>
-</div>
-""",
-unsafe_allow_html=True,
+    "<p style='text-align:center;color:#666;font-size:1.05rem;'>"
+    "Discover and qualify investment opportunities from leading global startup platforms</p>",
+    unsafe_allow_html=True,
 )
+st.markdown("<hr style='height:4px;border:none;background:linear-gradient(90deg,#138074,#0e5f55);border-radius:3px;'>", unsafe_allow_html=True)
 
-# ---------------- Step Tracker ----------------
-st.markdown("""
-<style>
-.track{background:#F6F5F2;margin:0 -3rem;padding:18px 40px;display:flex;
-justify-content:space-between;align-items:center;}
-.steps{display:flex;align-items:center;gap:12px;justify-content:center;}
-.step{display:flex;flex-direction:column;align-items:center;}
-.circle{width:42px;height:42px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-weight:700;}
-.circle.active{background:#138074;color:white;box-shadow:0 3px 10px rgba(19,128,116,0.4);}
-.circle.inactive{background:#D1D5DB;color:#9CA3AF;}
-.label{font-size:0.8rem;font-weight:600;margin-top:4px;}
-.label.active{color:#138074;}
-.label.inactive{color:#9CA3AF;}
-.line{height:2px;width:50px;background:#D1D5DB;}
-.link{color:#138074;text-decoration:none;font-weight:600;}
-.link:hover{color:#0e5f55;}
-</style>
-<div class="track">
-  <a href="streamlit_app.py" class="link">Back to Home</a>
-  <div class="steps">
-    <div class="step"><div class="circle active">1</div><div class="label active">Deal Sourcing</div></div>
-    <div class="line"></div>
-    <div class="step"><div class="circle inactive">2</div><div class="label inactive">Due Diligence</div></div>
-    <div class="line"></div>
-    <div class="step"><div class="circle inactive">3</div><div class="label inactive">Market</div></div>
-    <div class="line"></div>
-    <div class="step"><div class="circle inactive">4</div><div class="label inactive">Financials</div></div>
-    <div class="line"></div>
-    <div class="step"><div class="circle inactive">5</div><div class="label inactive">Memo</div></div>
-  </div>
-  <span style="color:#999;">Regulus AI</span>
-</div>
-""", unsafe_allow_html=True)
+# --------------------------------------------------
+# Unattractive Industries
+# --------------------------------------------------
+UNATTRACTIVE_INDUSTRIES = {
+    "Food & Beverage": ["Bakery", "Bread", "Juice", "Milk", "Pasta", "Chips", "Water"],
+    "Plastics": ["PET", "Plastic Pipe", "Garbage Bin", "Sheet", "UPVC"],
+    "Construction": ["Cement", "Blocks", "Tiles", "Glass", "Stone"],
+    "Services": ["Salon", "Laundry", "Restaurant", "Clinic", "Hotel", "Manpower"],
+}
 
-# ---------------- Filters ----------------
-st.markdown("### Define Sourcing Criteria")
-col1,col2,col3,col4 = st.columns(4)
-with col1:
-    industries = st.multiselect("Industries",
-        ["Technology","Healthcare","CleanTech","Finance","Manufacturing"], ["Technology"])
-with col2:
-    sectors = st.multiselect("Sectors",
-        ["AI","HealthTech","FinTech","ClimateTech","SaaS"], ["FinTech"])
-with col3:
-    stage = st.multiselect("Funding Stage",
-        ["Pre‑Seed","Seed","Series A","Series B","Growth"], ["Seed"])
-with col4:
-    geo = st.multiselect("Regions",["MENA","Europe","North America"],["MENA"])
-col5,col6 = st.columns(2)
-with col5:
-    deal_count = st.number_input("Number of Deals",5,50,10,5)
-with col6:
-    unattractive = st.checkbox("Exclude Unattractive (QDB Filter)", True)
+# Filter Toggle
+col_f1, col_f2 = st.columns([3, 1])
+with col_f1:
+    st.markdown("**Industry Screening Filter (QDB):** Exclude unattractive, low-priority sectors")
+with col_f2:
+    enable_filter = st.checkbox("Enable Filter", value=True)
+
+if enable_filter:
+    with st.expander("View Complete Unattractive Industry List"):
+        for k, v in UNATTRACTIVE_INDUSTRIES.items():
+            st.markdown(f"**{k}:**")
+            st.caption(", ".join(v))
 
 st.markdown("<br>", unsafe_allow_html=True)
-center = st.columns([1,0.8,1])[1]
-with center:
-    discover_clicked = st.button("Discover Deals", type="primary", use_container_width=True)
 
-st.markdown("""
-<style>
-div.stButton>button:first-child{
-background:linear-gradient(135deg,#138074,#0e5f55)!important;color:white!important;
-border:none!important;border-radius:40px!important;
-padding:12px 32px!important;font-weight:700!important;font-size:0.95rem!important;
-box-shadow:0 4px 10px rgba(19,128,116,0.3)!important;transition:all 0.2s ease!important;}
-div.stButton>button:first-child:hover{
-background:linear-gradient(135deg,#0e5f55,#138074)!important;
-transform:translateY(-2px)!important;}
-</style>
-""", unsafe_allow_html=True)
+# --------------------------------------------------
+# Filters – Industries, Sectors, Stage, Region
+# --------------------------------------------------
+col1, col2, col3, col4 = st.columns(4)
+with col1:
+    industries = st.multiselect(
+        "Target Industries",
+        ["Technology","Healthcare","CleanTech","Finance","Manufacturing","Retail"],
+        ["Technology","Healthcare"]
+    )
+with col2:
+    sectors = st.multiselect(
+        "Sectors",
+        ["FinTech","AI/ML","ClimateTech","HealthTech","SaaS","EdTech","Logistics"],
+        ["FinTech","AI/ML"]
+    )
+with col3:
+    stages = st.multiselect("Stage",["Pre-Seed","Seed","Series A","Series B","Growth"],["Seed"])
+with col4:
+    regions = st.multiselect("Regions",["MENA","Europe","North America","Asia"],["MENA","Europe"])
 
-# ---------------- Discovery ----------------
-if discover_clicked:
-    with st.spinner("Discovering deals and analyzing IR documents via Regulus AI..."):
-        startup_list = scraper.scrape_startup_data()
-        enriched = []
+col5, col6 = st.columns(2)
+with col5:
+    deal_count = st.number_input("Deals to Discover", 5, 50, 10, 5)
+with col6:
+    revenue_range = st.select_slider("Annual Revenue (USD)",
+        options=["Pre-revenue","$0-500K","$500K-$2M","$2M-$10M","$10M-$50M","$50M+"],
+        value=("$500K-$2M", "$10M-$50M"))
 
-        for s in startup_list[:deal_count]:
-            name, website = s["name"], s["website"]
-            ir_data = scraper.extract_company_data(website, name)
+# --------------------------------------------------
+# Start Discovery
+# --------------------------------------------------
+st.markdown(gradient_box("Start Deal Discovery"), unsafe_allow_html=True)
+if st.button("Run Discovery", type="primary", use_container_width=True):
+    with st.spinner("Fetching and analyzing opportunities..."):
+        dataset = scraper.scrape_startup_data()
+        results = []
 
-            # --- Summarize IR content ---
-            ir_summary = ""
+        for data in dataset[:deal_count]:
+            company, website = data["name"], data["website"]
+
+            # --- Discover IR & generate summaries
+            ir_data = scraper.extract_company_data(website, company)
+            ir_summary_text = ""
             for cat, content in ir_data.items():
                 if len(content) > 200:
-                    result = llm.summarize(content, max_length="medium")
-                    ir_summary += f"### {cat.replace('_',' ').title()}\n{result}\n\n"
+                    ir_summary_text += f"### {cat.title()}\n{llm.summarize(content, max_length='medium')}\n\n"
 
-            # --- Analyst summary ---
-            analyst_summary = llm.summarize(
-                f"""
-Company Name: {name}
-Industry: {s['industry']}
-Stage: {s['stage']}
-Funding: {s['funding']}
-Description: {s['description']}
-""",
+            analyst_note = llm.summarize(
+                f"Company: {company}\nDescription: {data['description']}\nIndustry: {data['industry']}\nStage: {data['stage']}",
                 max_length="short"
             )
 
-            enriched.append({
-                "Company": name,
-                "Industry": s["industry"],
-                "Stage": s["stage"],
-                "Funding": s["funding"],
-                "Region": s["location"],
-                "Website": website,
-                "AnalystSummary": analyst_summary,
-                "IR_Summary": ir_summary or "No IR data found.",
-                "QDB": "Excluded" if unattractive and "Clean" not in s["industry"] else "Preferred",
+            unattractive_flag, unattractive_reason = False, ""
+            if enable_filter:
+                for sector, items in UNATTRACTIVE_INDUSTRIES.items():
+                    if any(i.lower() in data["industry"].lower() or i.lower() in data["description"].lower() for i in items):
+                        unattractive_flag, unattractive_reason = True, f"{sector} Sector"
+                        break
+
+            results.append({
+                "company": company,
+                "industry": data["industry"],
+                "stage": data["stage"],
+                "funding": data["funding"],
+                "region": data["location"],
+                "description": data["description"],
+                "analyst_summary": analyst_note,
+                "ir_summary": ir_summary_text or "No IR data available.",
+                "unattractive": unattractive_flag,
+                "reason": unattractive_reason,
             })
 
-        st.session_state.deals = enriched
-        st.success(f"{len(enriched)} deals discovered and IR data summarized.")
+        st.session_state.discovered_deals = results
+        st.success(f"{len(results)} deals processed with Regulus Analyst Summaries")
 
-# ---------------- Display ----------------
-if st.session_state.deals:
-    df = pd.DataFrame(st.session_state.deals)
-    st.markdown("### Discovered Deals & Analyst Insights")
-    sort_by = st.radio("Sort results by:", ["Industry","Stage","Funding"], horizontal=True)
-    if sort_by == "Industry":
-        df = df.sort_values("Industry")
-    elif sort_by == "Stage":
-        order = {"Pre‑Seed":1,"Seed":2,"Series A":3,"Series B":4,"Growth":5}
-        df["ord"] = df["Stage"].map(order)
-        df = df.sort_values("ord")
-    elif sort_by == "Funding":
-        df["FundingValue"] = df["Funding"].str.extract(r"(\\d+)").astype(float)
-        df = df.sort_values("FundingValue", ascending=False)
+# --------------------------------------------------
+# Results Display
+# --------------------------------------------------
+if st.session_state.discovered_deals:
+    df = pd.DataFrame(st.session_state.discovered_deals)
+    total, bad = len(df), sum(df["unattractive"])
+    good = total - bad
 
-    df["QDB Status"] = df["QDB"].apply(
-        lambda x: "🟢 Attractive" if "Pref" in x else "🔴 Excluded Sector")
-    st.dataframe(df[["QDB Status","Company","Industry","Stage","Funding","Region","Website"]],
-                 use_container_width=True)
-    st.caption("🟢 Aligned with QDB Priorities | 🔴 Excluded Sector")
+    st.markdown("<hr style='margin:30px 0;background:linear-gradient(90deg,#138074,#0e5f55);height:3px;border:none;'>", unsafe_allow_html=True)
+    st.markdown(gradient_box("Discovered Deals"), unsafe_allow_html=True)
+    c1,c2,c3 = st.columns(3)
+    c1.metric("Total", total)
+    c2.metric("Attractive", good)
+    c3.metric("Excluded", bad)
 
-    for _, row in df.iterrows():
-        with st.expander(row["Company"]):
-            st.markdown(f"**Industry:** {row['Industry']} | **Stage:** {row['Stage']} | **Funding:** {row['Funding']} | **Region:** {row['Region']}")
-            st.markdown("#### Regulus Analyst Summary")
-            st.markdown(row["AnalystSummary"])
-            st.markdown("---\n#### Investor Relations Synopsis")
-            st.markdown(row["IR_Summary"])
+    sel = st.radio("Show Results:", ["All", "Attractive Only", "Excluded Only"], horizontal=True)
+    disp = df if sel=="All" else df[~df.unattractive] if sel=="Attractive Only" else df[df.unattractive]
 
+    for _, row in disp.iterrows():
+        st.markdown(
+            f"<div style='border:1px solid #ccc;border-radius:10px;padding:15px;margin:10px 0;'>"
+            f"<h4>{row['company']} {'🟢' if not row['unattractive'] else '🔴'}</h4>"
+            f"<p><b>Industry:</b> {row['industry']} | <b>Stage:</b> {row['stage']} | <b>Funding:</b> {row['funding']} | <b>Region:</b> {row['region']}</p>"
+            f"<p><i>{row['description']}</i></p>"
+            f"{'<p style=\"color:red;font-weight:600;\">Excluded: '+row['reason']+'</p>' if row['unattractive'] else ''}"
+            f"<details><summary style='color:#138074;font-weight:600;'>Regulus Analyst Summary</summary><p>{row['analyst_summary']}</p></details>"
+            f"<details><summary style='color:#0e5f55;font-weight:600;'>Investor Relations Synopsis</summary><p>{row['ir_summary']}</p></details>"
+            f"</div>", unsafe_allow_html=True)
+
+    st.markdown(gradient_box("Export Results"), unsafe_allow_html=True)
     csv = df.to_csv(index=False)
-    st.download_button(" Download Results (CSV) ", csv, "Deals.csv", "text/csv")
+    st.download_button("Download CSV", csv, "Deals.csv", "text/csv")
 
-# ---------------- Footer ----------------
-st.markdown("""
-<div style="background:#1B2B4D;color:#E2E8F0;padding:30px 40px;margin:40px -3rem 0 -3rem;">
-<div style="display:flex;justify-content:space-between;align-items:center;max-width:1400px;margin:0 auto;">
-<ul style="list-style:none;display:flex;gap:30px;flex-wrap:wrap;padding:0;margin:0;">
-<li><a href="#" style="color:#E2E8F0;text-decoration:none;">About Regulus</a></li>
-<li><a href="#" style="color:#E2E8F0;text-decoration:none;">Careers</a></li>
-<li><a href="#" style="color:#E2E8F0;text-decoration:none;">Contact Us</a></li>
-<li><a href="#" style="color:#E2E8F0;text-decoration:none;">Privacy Policy</a></li>
-</ul>
-<p style="margin:0;color:#A0AEC0;font-size:0.9rem;">Powered by Regulus AI</p></div></div>
-""", unsafe_allow_html=True)
+    # Optional Report Export
+    try:
+        report = template_gen.generate_deal_sourcing_report({
+            "analyst_name": "Regulus AI",
+            "analysis_date": datetime.now().strftime("%B %d, %Y"),
+            "total_deals": total,
+            "attractive_deals": good,
+            "unattractive_deals": bad,
+            "deals": st.session_state.discovered_deals
+        })
+        st.download_button("Download Report (Markdown)", report, "Deal_Report.md", "text/markdown")
+    except Exception as e:
+        st.error(f"Report Export Failed: {e}")
