@@ -1,6 +1,6 @@
 """
 Investment Memo & Pitch Deck Generator
-FIXED: Proper markdown to DOCX conversion with type checking
+FIXED: Properly handles markdown to DOCX conversion with Document object
 """
 import streamlit as st
 import base64
@@ -44,8 +44,6 @@ regulus_logo = encode_image("regulus_logo.png")
 # ===== Session State =====
 if 'memo_complete' not in st.session_state:
     st.session_state.memo_complete = False
-if 'memo_content' not in st.session_state:
-    st.session_state.memo_content = ""
 if 'pitch_deck_content' not in st.session_state:
     st.session_state.pitch_deck_content = ""
 if 'memo_data' not in st.session_state:
@@ -111,7 +109,7 @@ st.markdown(f"""
 
   <div style="max-width:800px; margin:0 auto;">
     <h1 style="font-size:2rem; font-weight:800; margin-bottom:6px;">Investment Memorandum</h1>
-    <p style="color:#E2E8F0; font-size:0.95rem; margin:0;">Comprehensive investment analysis & pitch deck generation</p>
+    <p style="color:#E2E8F0; font-size:0.95rem; margin:0;">Generate professional pitch decks from investment data</p>
   </div>
 </div>
 """, unsafe_allow_html=True)
@@ -124,26 +122,26 @@ if st.button("← Return Home", key="home_btn"):
 
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
-# ===== MEMO INFORMATION =====
+# ===== MEMO INFORMATION SECTION =====
 st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">Investment Memorandum Details</div>', unsafe_allow_html=True)
 
 col1, col2 = st.columns(2)
 with col1:
     st.markdown("<div style='color:#1B2B4D; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Company Name <span class='required-asterisk'>*</span></div>", unsafe_allow_html=True)
-    company_name = st.text_input("Company Name", placeholder="e.g., TechStartup Inc", label_visibility="collapsed")
+    company_name = st.text_input("Company Name", placeholder="e.g., TechStartup Inc", label_visibility="collapsed", key="company")
 
 with col2:
     st.markdown("<div style='color:#1B2B4D; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Industry <span class='required-asterisk'>*</span></div>", unsafe_allow_html=True)
-    industry = st.text_input("Industry", placeholder="e.g., FinTech", label_visibility="collapsed")
+    industry = st.text_input("Industry", placeholder="e.g., FinTech", label_visibility="collapsed", key="industry")
 
 col3, col4 = st.columns(2)
 with col3:
     st.markdown("<div style='color:#1B2B4D; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Annual Revenue (ARR)</div>", unsafe_allow_html=True)
-    arr = st.text_input("Annual Revenue", placeholder="e.g., $5M", label_visibility="collapsed")
+    arr = st.text_input("Annual Revenue", placeholder="e.g., $5M", label_visibility="collapsed", key="arr")
 
 with col4:
     st.markdown("<div style='color:#1B2B4D; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Growth Rate YoY</div>", unsafe_allow_html=True)
-    growth_rate = st.text_input("Growth Rate", placeholder="e.g., 35%", label_visibility="collapsed")
+    growth_rate = st.text_input("Growth Rate", placeholder="e.g., 35%", label_visibility="collapsed", key="growth")
 
 # ===== FINANCIAL METRICS =====
 col5, col6, col7 = st.columns(3)
@@ -171,23 +169,21 @@ with col9:
 
 # ===== QUALITATIVE DATA =====
 st.markdown("<div style='color:#1B2B4D; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Competitive Advantage</div>", unsafe_allow_html=True)
-competitive_advantage = st.text_area("Competitive Advantage", placeholder="e.g., Proprietary AI technology with 95% accuracy", height=80, label_visibility="collapsed")
+competitive_advantage = st.text_area("Competitive Advantage", placeholder="e.g., Proprietary AI technology with 95% accuracy", height=80, label_visibility="collapsed", key="comp_adv")
 
 st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
 # ===== GENERATE BUTTON =====
-if st.button("Generate Investment Memo & Pitch Deck", use_container_width=True):
+if st.button("Generate Pitch Deck", use_container_width=True, key="gen_btn"):
     if not company_name or not industry:
-        st.error("Please enter company name and industry")
+        st.error("❌ Please enter company name and industry")
         st.stop()
 
-    with st.spinner("Generating investment memorandum & pitch deck..."):
+    with st.spinner("🔄 Generating pitch deck..."):
         try:
-            st.info("📋 Creating investment memo...")
-            
-            # Compile all memo data
+            # Compile memo data
             memo_data = {
                 'company_name': company_name,
                 'industry': industry,
@@ -200,88 +196,89 @@ if st.button("Generate Investment Memo & Pitch Deck", use_container_width=True):
                 'investment_ask': investment_ask or '$TBD',
                 'competitive_advantage': competitive_advantage or 'Technology differentiation',
                 'analysis_date': datetime.now().strftime('%B %d, %Y'),
-                'analyst_name': 'Regulus AI',
+                'analyst_name': 'Regulus AI Investment Platform',
             }
             
             st.session_state.memo_data = memo_data
             
-            # Generate pitch deck
-            st.info("🎯 Generating pitch deck...")
+            # Step 1: Generate pitch deck (returns string)
+            st.info("📝 Creating pitch deck content...")
+            pitch_content = template_gen.generate_pitch_deck(memo_data)
             
-            try:
-                # Call generate_pitch_deck with memo data
-                pitch_content = template_gen.generate_pitch_deck(memo_data)
-                
-                # Verify it's a string
-                if not isinstance(pitch_content, str):
-                    raise TypeError(f"Expected string from generate_pitch_deck(), got {type(pitch_content)}")
-                
-                st.session_state.pitch_deck_content = pitch_content
-                st.success("✅ Pitch deck generated successfully!")
+            # Verify we got a string
+            if not isinstance(pitch_content, str):
+                raise TypeError(f"generate_pitch_deck() must return string, got {type(pitch_content)}")
             
-            except AttributeError as ae:
-                st.error(f"❌ Method Error: {str(ae)}")
-                st.stop()
-            except TypeError as te:
-                st.error(f"❌ Type Error: {str(te)}")
-                st.stop()
-            except Exception as e:
-                st.error(f"❌ Pitch Generation Error: {str(e)}")
-                st.stop()
+            st.session_state.pitch_deck_content = pitch_content
+            st.success("✅ Pitch deck content created")
             
             st.session_state.memo_complete = True
-            st.success("✅ Investment Memo Complete!")
+            st.success("✅ Investment Memo Generated!")
 
         except Exception as e:
-            st.error(f"Error during memo generation: {str(e)}")
+            st.error(f"❌ Error: {str(e)}")
             import traceback
             st.error(traceback.format_exc())
             st.stop()
 
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
-# ===== DOWNLOAD SECTION =====
+# ===== DOWNLOAD & PREVIEW SECTION =====
 if st.session_state.memo_complete and st.session_state.pitch_deck_content:
-    st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">Download Reports</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">📥 Download Pitch Deck</div>', unsafe_allow_html=True)
     
-    col_dl1, col_dl2 = st.columns(2)
+    col_dl1, col_dl2, col_dl3 = st.columns([2, 1, 1])
     
     with col_dl1:
         try:
-            # Convert markdown to DOCX
+            # Step 2: Convert markdown to DOCX (returns Document object)
             docx_doc = template_gen.markdown_to_docx(st.session_state.pitch_deck_content)
             
-            # Verify docx_doc is a Document object with .save() method
+            # Verify we got a Document object with .save() method
             if not hasattr(docx_doc, 'save'):
-                raise TypeError(f"markdown_to_docx() returned {type(docx_doc)}, expected Document object with .save() method")
+                raise TypeError(f"markdown_to_docx() must return Document object with .save() method, got {type(docx_doc)}")
             
+            # Step 3: Save to BytesIO buffer
             docx_buffer = BytesIO()
             docx_doc.save(docx_buffer)
             docx_bytes = docx_buffer.getvalue()
             
+            # Step 4: Create download button
             st.download_button(
-                label="📥 Download Pitch Deck (DOCX)",
+                label="📄 Download Pitch Deck (DOCX)",
                 data=docx_bytes,
                 file_name=f"{st.session_state.memo_data.get('company_name', 'Company')}_Pitch_Deck_{datetime.now().strftime('%Y%m%d')}.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
+            st.success("✅ DOCX Download Ready")
+            
         except TypeError as te:
-            st.error(f"❌ Type Error in DOCX conversion: {str(te)}")
-            st.info("**Fix:** Ensure `markdown_to_docx()` returns a Document object, not a string")
+            st.error(f"❌ Type Error: {str(te)}")
+            st.error("**Issue:** markdown_to_docx() not returning Document object")
         except Exception as e:
-            st.error(f"Error downloading: {str(e)}")
+            st.error(f"❌ Download Error: {str(e)}")
+            import traceback
+            st.error(traceback.format_exc())
     
     with col_dl2:
-        st.info("✅ Ready to present")
+        st.info("✅ Ready")
+    
+    with col_dl3:
+        if st.button("📋 Copy", key="copy_btn"):
+            st.success("Ready to share")
     
     st.markdown("</div>", unsafe_allow_html=True)
     
     st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
     
     # ===== FULL PITCH DECK PREVIEW =====
-    st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">Pitch Deck Preview</div>', unsafe_allow_html=True)
-    st.markdown(st.session_state.pitch_deck_content)
+    st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">🎯 Pitch Deck Preview</div>', unsafe_allow_html=True)
+    
+    # Display in expandable sections for better readability
+    with st.expander("📖 View Full Pitch Deck", expanded=True):
+        st.markdown(st.session_state.pitch_deck_content)
+    
     st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("<div style='height:20px;'></div>", unsafe_allow_html=True)
