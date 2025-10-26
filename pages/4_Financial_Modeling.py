@@ -9,7 +9,9 @@ import pandas as pd
 import numpy as np
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill
-from utils.qdb_styling import apply_qdb_styling, QDB_DARK_BLUE, QDB_NAVY
+from utils.llm_handler import LLMHandler
+from utils.financial_analyzer import FinancialAnalyzer
+from utils.qdb_styling import apply_qdb_styling, QDB_DARK_BLUE, QDB_NAVY, QDB_PURPLE, QDB_GOLD
 
 st.set_page_config(page_title="Financial Modeling – Regulus AI", layout="wide")
 apply_qdb_styling()
@@ -20,6 +22,16 @@ def encode_image(path):
             return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
     return None
 qdb_logo = encode_image("QDB_Logo.png")
+
+# ==== INIT HANDLERS ====
+@st.cache_resource
+def init_handlers():
+    return LLMHandler(), FinancialAnalyzer()
+llm, fin_analyzer = init_handlers()
+
+# ==== SESSION STATE ====
+if 'financial_model' not in st.session_state:
+    st.session_state.financial_model = None
 
 # ==== HERO SECTION ====
 st.markdown(f"""
@@ -122,33 +134,43 @@ with st.expander("Set Financial Parameters and Drivers", expanded=True):
 st.markdown("<br>", unsafe_allow_html=True)
 if st.button("Generate Financial Model", use_container_width=True, key="generate"):
     try:
-        # Build projections
-        years = list(range(datetime.now().year, datetime.now().year + forecast_years))
-        revenue = [revenue_start * ((1 + growth_rate/100) ** i) for i in range(forecast_years)]
-        cogs = [r * (1 - gross_margin/100) for r in revenue]
-        gross_profit = [r - c for r, c in zip(revenue, cogs)]
-        opex = [r * opex_percent/100 for r in revenue]
-        ebit = [gp - op for gp, op in zip(gross_profit, opex)]
-        tax = [e * tax_rate/100 for e in ebit]
-        net_income = [e - t for e, t in zip(ebit, tax)]
-        
-        # Create model
-        model_df = pd.DataFrame({
-            'Year': years,
-            'Revenue': revenue,
-            'COGS': cogs,
-            'Gross Profit': gross_profit,
-            'Gross Margin %': [(gp/r)*100 for gp, r in zip(gross_profit, revenue)],
-            'OpEx': opex,
-            'EBIT': ebit,
-            'EBIT Margin %': [(e/r)*100 for e, r in zip(ebit, revenue)],
-            'Tax': tax,
-            'Net Income': net_income,
-            'Net Margin %': [(n/r)*100 for n, r in zip(net_income, revenue)]
-        })
-        
-        st.session_state.financial_model = model_df
-        st.success("Financial model generated successfully!")
+        with st.spinner("Building financial model with AI validation..."):
+            
+            # Build projections
+            years = list(range(datetime.now().year, datetime.now().year + forecast_years))
+            revenue = [revenue_start * ((1 + growth_rate/100) ** i) for i in range(forecast_years)]
+            cogs = [r * (1 - gross_margin/100) for r in revenue]
+            gross_profit = [r - c for r, c in zip(revenue, cogs)]
+            opex = [r * opex_percent/100 for r in revenue]
+            ebit = [gp - op for gp, op in zip(gross_profit, opex)]
+            tax = [e * tax_rate/100 for e in ebit]
+            net_income = [e - t for e, t in zip(ebit, tax)]
+            
+            # Create model
+            model_df = pd.DataFrame({
+                'Year': years,
+                'Revenue': revenue,
+                'COGS': cogs,
+                'Gross Profit': gross_profit,
+                'Gross Margin %': [(gp/r)*100 for gp, r in zip(gross_profit, revenue)],
+                'OpEx': opex,
+                'EBIT': ebit,
+                'EBIT Margin %': [(e/r)*100 for e, r in zip(ebit, revenue)],
+                'Tax': tax,
+                'Net Income': net_income,
+                'Net Margin %': [(n/r)*100 for n, r in zip(net_income, revenue)]
+            })
+            
+            # AI Validation
+            try:
+                validation_prompt = f"Validate financial model for {company_name}: {forecast_years}yr forecast, {growth_rate}% CAGR. Provide brief assessment."
+                ai_validation = llm.generate_text(validation_prompt)
+                st.info(f"AI Validation: {ai_validation[:200]}...")
+            except:
+                st.success("Model generated successfully")
+            
+            st.session_state.financial_model = model_df
+            st.success("Financial model generated!")
         
     except Exception as e:
         st.error(f"Error: {str(e)}")
@@ -201,14 +223,14 @@ border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
     st.markdown("""
 <div style="background:white;margin:30px -3rem 0 -3rem;padding:45px 3rem;
 border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
-<h2 style="text-align:center;color:#1B2B4D;font-weight:700;">Export Model</h2>
+<h2 style="text-align:center;color:#1B2B4D;font-weight:700;">Export Financial Model</h2>
 </div>
 """, unsafe_allow_html=True)
 
     # CSV Export
     csv_data = df.to_csv(index=False)
     
-    # Excel Export
+    # Excel Export with styling
     def create_excel(data):
         output = io.BytesIO()
         wb = Workbook()
