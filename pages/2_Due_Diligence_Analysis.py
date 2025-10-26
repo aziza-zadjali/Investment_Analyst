@@ -1,7 +1,7 @@
 """
 Due Diligence Analysis Page | Regulus AI × QDB
-Comprehensive due diligence without linking to deal page.
-+ DOCX Export Added
+Comprehensive due diligence with document upload capability.
+Features: Manual entry + File upload + DOCX export
 """
 import streamlit as st
 from datetime import datetime
@@ -58,6 +58,8 @@ template_gen, llm = init_handlers()
 # ==== SESSION STATE ====
 if 'dd_report' not in st.session_state:
     st.session_state.dd_report = None
+if 'uploaded_doc_summary' not in st.session_state:
+    st.session_state.uploaded_doc_summary = ""
 
 # ==== RETURN HOME (TOP LEFT - HORIZONTAL) ====
 if st.button("← Return Home", use_container_width=False, key="home_btn"):
@@ -77,7 +79,7 @@ st.markdown(f"""
 <h1 style="font-size:2.5rem;font-weight:800;margin:0 0 10px 0;">Due Diligence Analysis</h1>
 <p style="font-size:1.2rem;color:#E2E8F0;margin:0 0 8px 0;font-weight:500;">Comprehensive Investment Due Diligence & Risk Assessment</p>
 <p style="color:#CBD5E0;font-size:0.95rem;max-width:700px;margin:0 auto;">
-Deep-dive analysis covering financial, operational, legal, and commercial assessments. Generate professional DOCX reports for analyst review.
+Upload supporting documents or enter details manually. Generate professional DOCX reports for analyst review.
 </p>
 </div>
 """, unsafe_allow_html=True)
@@ -110,6 +112,29 @@ color:white;box-shadow:0 4px 12px rgba(19,128,116,0.3);}
  <div><div class="circle">5</div><div class="label">Investment Memo</div></div>
 </div>
 """, unsafe_allow_html=True)
+
+st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+
+# ==== DOCUMENT UPLOAD SECTION (DARK BLUE) ====
+st.markdown("""
+<div style="background:#2B3E54;margin:0 -3rem 0 -3rem;padding:28px 3rem;border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
+<h3 style="text-align:left;color:#FFFFFF;font-weight:700;margin:0 0 14px 0;font-size:1.1rem;">Upload Supporting Documents</h3>
+<p style="text-align:left;color:#CBD5E0;margin:0;font-size:0.9rem;">Optional: Upload legal, financial, or operational documents (PDF, DOCX)</p>
+</div>
+""", unsafe_allow_html=True)
+
+uploaded_files = st.file_uploader(
+    "Select documents to upload",
+    type=["pdf", "docx"],
+    accept_multiple_files=True,
+    key="dd_files",
+    label_visibility="collapsed"
+)
+
+if uploaded_files:
+    st.success(f"✅ {len(uploaded_files)} file(s) uploaded successfully")
+    doc_names = ", ".join([f.name for f in uploaded_files])
+    st.session_state.uploaded_doc_summary = f"Reviewed Documents: {doc_names}"
 
 st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
 
@@ -221,7 +246,8 @@ with btn_col:
                     'legal_status': legal_status or 'To be assessed',
                     'ip_assets': ip_assets or 'To be assessed',
                     'top_customers': top_customers or 'To be assessed',
-                    'revenue_quality': revenue_quality or 'To be assessed'
+                    'revenue_quality': revenue_quality or 'To be assessed',
+                    'uploaded_docs': st.session_state.uploaded_doc_summary
                 }
                 st.session_state.dd_report = dd_data
                 st.success("DD Report Generated!")
@@ -303,6 +329,7 @@ if st.session_state.dd_report:
 ## {data['company_name']}
 
 **Date:** {data['analysis_date']}
+{f"**Supporting Documents:** {data['uploaded_docs']}" if data['uploaded_docs'] else ""}
 
 ## COMPANY OVERVIEW
 - **Sector:** {data['sector']}
