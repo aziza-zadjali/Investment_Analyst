@@ -1,6 +1,6 @@
 """
 Investment Analyst AI – Regulus Edition
-Dashboard with Toggle/Minimize Feature
+Grey Centered Dashboard Button
 """
 import streamlit as st
 import base64
@@ -73,7 +73,6 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-
 # ===== STYLE: Consistent Navigation & Smart Dashboard =====
 st.markdown("""
 <style>
@@ -115,23 +114,11 @@ st.markdown("""
     box-shadow:0 3px 10px rgba(22,160,133,0.25)!important;
 }
 
-/* Toggle Button Style */
-.toggle-btn {
-    background: linear-gradient(135deg, #A9A9A9 0%, #999999 100%) !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 8px !important;
-    padding: 10px 24px !important;
-    font-weight: 600 !important;
-    font-size: 0.9rem !important;
-    cursor: pointer !important;
-    transition: all 0.25s ease !important;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.15) !important;
-}
-
-.toggle-btn:hover {
-    background: linear-gradient(135deg, #999999 0%, #808080 100%) !important;
-    transform: translateY(-1px) !important;
+/* Centered Grey Toggle Button */
+.toggle-button-container {
+    display: flex;
+    justify-content: center;
+    padding: 12px 0 6px 0;
 }
 
 div[data-testid="column"] {display:flex; justify-content:center;}
@@ -232,19 +219,31 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
-# ===== DASHBOARD TOGGLE BUTTON (CENTERED) =====
-st.markdown("<div style='text-align:center; padding:12px 0;'>", unsafe_allow_html=True)
-if st.button(
-    f"{'▼ Hide' if st.session_state.dashboard_expanded else '▶ View'} Dashboard",
-    key="toggle_dashboard",
-    use_container_width=False
-):
-    st.session_state.dashboard_expanded = not st.session_state.dashboard_expanded
-    st.rerun()
+# ===== DASHBOARD TOGGLE BUTTON (CENTERED & GREY) =====
+st.markdown("""
+<div style="
+    display: flex;
+    justify-content: center;
+    padding: 12px 0;
+    background-color: #F6F5F2;
+    margin: 0 -3rem;
+    width: calc(100% + 6rem);
+">
+""", unsafe_allow_html=True)
+
+col_l, col_c, col_r = st.columns([1, 0.3, 1])
+with col_c:
+    if st.button(
+        f"{'▼ Hide' if st.session_state.dashboard_expanded else '▶ View'} Dashboard",
+        key="toggle_dashboard",
+        use_container_width=False
+    ):
+        st.session_state.dashboard_expanded = not st.session_state.dashboard_expanded
+        st.rerun()
+
 st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
-
 
 # ===== DASHBOARD CONTENT (CONDITIONAL) =====
 if st.session_state.dashboard_expanded:
@@ -435,7 +434,7 @@ if st.session_state.dashboard_expanded:
 else:
     st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
 
-# ===== CHOOSE PATH SECTION (LARGER SUBTITLE) =====
+# ===== CHOOSE PATH SECTION =====
 qdb_section_start("light")
 st.markdown(f"""
 <div style="text-align:center; max-width:900px; margin:0 auto 32px auto;">
