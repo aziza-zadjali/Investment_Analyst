@@ -1,92 +1,97 @@
 """
-Market Analysis | Regulus AI × QDB
-Standalone company entry, main page hero style, comprehensive market research.
+Market Analysis Page | Regulus AI × QDB
+QDB-branded with auto-fill from workflow
 """
 import streamlit as st
-import os, base64, io
 from datetime import datetime
+from io import BytesIO
 from utils.llm_handler import LLMHandler
 from utils.template_generator import TemplateGenerator
-from utils.web_scraper import WebScraper
-from utils.qdb_styling import apply_qdb_styling, QDB_DARK_BLUE, QDB_NAVY
+from utils.qdb_styling import apply_qdb_styling, QDB_DARK_BLUE, QDB_NAVY, QDB_PURPLE, QDB_GOLD
+import os, base64
 
 st.set_page_config(page_title="Market Analysis – Regulus AI", layout="wide")
 apply_qdb_styling()
+
+# ==== GLOBAL TEAL BUTTON STYLING ====
+st.markdown("""
+<style>
+button {
+ background:linear-gradient(135deg,#16A085 0%,#138074 50%,#0E5F55 100%)!important;
+ color:white!important;
+ border:none!important;
+ border-radius:40px!important;
+ padding:12px 36px!important;
+ font-weight:700!important;
+ font-size:0.95rem!important;
+ box-shadow:0 4px 16px rgba(19,128,116,0.25)!important;
+ transition:all 0.25s ease!important;
+ cursor:pointer!important;
+}
+button:hover{
+ background:linear-gradient(135deg,#0E5F55 0%,#138074 50%,#16A085 100%)!important;
+ transform:translateY(-2px)!important;
+ box-shadow:0 6px 22px rgba(19,128,116,0.35)!important;
+}
+button:active{
+ transform:translateY(0)!important;
+ box-shadow:0 3px 10px rgba(19,128,116,0.2)!important;
+}
+</style>
+""", unsafe_allow_html=True)
 
 def encode_image(path):
     if os.path.exists(path):
         with open(path, "rb") as f:
             return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
     return None
-
 qdb_logo = encode_image("QDB_Logo.png")
 
-# ==== HERO SECTION (MAIN PAGE STYLE) ====
-st.markdown(
-    f"""
-<div style="
-    background:linear-gradient(135deg,{QDB_DARK_BLUE} 0%, {QDB_NAVY} 100%);
-    color:white;
-    position:relative;
-    margin:0 -3rem; padding:100px 0 80px 0;
-    min-height:390px; text-align:center; overflow:hidden;">
-  <div style="position:absolute;left:50px;top:48px;">
-    {'<img src="'+qdb_logo+'" style="max-height:80px;">' if qdb_logo else '<b>QDB</b>'}
-  </div>
-  <div style="max-width:950px;margin:0 auto;">
-    <h1 style="font-size:2.8rem;font-weight:800;letter-spacing:-0.5px;line-height:1.18; margin-bottom:16px;">
-      Market Analysis & Research
-    </h1>
-    <p style="font-size:1.35rem;color:#E2E8F0; font-weight:500; margin-bottom:18px;">
-      Competitive Intelligence and Market Opportunity Assessment
-    </p>
-    <p style="color:#CBD5E0; font-size:1.07rem;line-height:1.6;max-width:760px;margin:0 auto 38px;">
-      AI-driven market sizing, competitive positioning, trend analysis and strategic insights. <br>
-      Generate comprehensive market research reports with actionable growth strategies.
-    </p>
-  </div>
+# ==== INIT HANDLERS ====
+@st.cache_resource
+def init_handlers():
+    return LLMHandler(), TemplateGenerator()
+llm, template_gen = init_handlers()
+
+# ==== SESSION STATE ====
+if 'market_report' not in st.session_state:
+    st.session_state.market_report = None
+
+# ==== RETURN HOME (TOP LEFT - HORIZONTAL) ====
+if st.button("← Return Home", use_container_width=False, key="home_btn"):
+    st.switch_page("streamlit_app.py")
+
+st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+
+# ==== HERO SECTION ====
+st.markdown(f"""
+<div style="background:linear-gradient(135deg,#1B2B4D 0%, #0E2E4D 100%);color:white;margin:0 -3rem;padding:70px 0 50px;text-align:center;">
+<div style="position:absolute;left:50px;top:35px;">
+{'<img src="'+qdb_logo+'" style="max-height:70px;">' if qdb_logo else '<b>QDB</b>'}
 </div>
-""",
-    unsafe_allow_html=True,
-)
+<h1 style="font-size:2.5rem;font-weight:800;margin:0 0 10px 0;">Market Analysis & Research</h1>
+<p style="font-size:1.2rem;color:#E2E8F0;margin:0 0 8px 0;font-weight:500;">Comprehensive Market Insights and Competitive Landscape</p>
+<p style="color:#CBD5E0;font-size:0.95rem;max-width:700px;margin:0 auto;">
+Deep-dive market analysis including TAM, competitive landscape, growth trends, and strategic recommendations for target industries.
+</p>
+</div>
+""", unsafe_allow_html=True)
 
-# ==== RETURN HOME BUTTON ====
-col1, col2, col3 = st.columns([1, 0.6, 1])
-with col2:
-    if st.button("Return Home", use_container_width=True, key="home_btn"):
-        st.switch_page("streamlit_app.py")
-
-st.markdown(
-    """
-<style>
-button[key="home_btn"]{
- background:linear-gradient(135deg,#16A085 0%,#138074 80%,#0E5F55 100%)!important;
- color:white!important; border:none!important; border-radius:44px!important;
- padding:14px 44px!important; font-weight:700!important; font-size:1.08rem!important;
- box-shadow:0 8px 34px rgba(19,128,116,.20)!important;
- transition:all .19s!important; cursor:pointer!important;}
-button[key="home_btn"]:hover{
- transform:translateY(-2px)!important;
- box-shadow:0 10px 40px rgba(19,128,116,.30)!important;}
-</style>
-""",
-    unsafe_allow_html=True,
-)
+st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
 # ==== WORKFLOW TRACKER ====
-st.markdown(
-    """
+st.markdown("""
 <style>
-.track{background:#F6F5F2;margin:-2px -3rem;padding:34px 0;
+.track{background:#F6F5F2;margin:0 -3rem;padding:24px 0;
 display:flex;justify-content:space-evenly;align-items:center;}
-.circle{width:54px;height:54px;border-radius:50%;display:flex;
+.circle{width:48px;height:48px;border-radius:50%;display:flex;
 align-items:center;justify-content:center;font-weight:700;
-background:#CBD5E0;color:#475569;font-size:0.95rem;}
-.circle.active{background:linear-gradient(135deg,#138074 0%,#0E5F55 100%);
-color:white;box-shadow:0 5px 15px rgba(19,128,116,0.4);}
-.label{margin-top:7px;font-size:0.9rem;font-weight:600;color:#708090;}
-.label.active{color:#138074;}
-.pipe{height:3px;width:70px;background:#CBD5E0;}
+background:#CBD5E0;color:#475569;font-size:0.9rem;}
+.circle.active{background:linear-gradient(135deg,#16A085 0%,#0E5F55 100%);
+color:white;box-shadow:0 4px 12px rgba(19,128,116,0.3);}
+.label{margin-top:5px;font-size:0.8rem;font-weight:600;color:#708090;}
+.label.active{color:#0E5F55;font-weight:700;}
+.pipe{height:2px;width:60px;background:#CBD5E0;}
 </style>
 <div class="track">
  <div><div class="circle">1</div><div class="label">Deal Sourcing</div></div>
@@ -99,206 +104,204 @@ color:white;box-shadow:0 5px 15px rgba(19,128,116,0.4);}
  <div class="pipe"></div>
  <div><div class="circle">5</div><div class="label">Investment Memo</div></div>
 </div>
-""",
-    unsafe_allow_html=True,
-)
+""", unsafe_allow_html=True)
 
-# ==== INIT RESOURCES ====
-@st.cache_resource
-def init_handlers():
-    return LLMHandler(), TemplateGenerator(), WebScraper()
+st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
 
-llm, template_gen, scraper = init_handlers()
-
-if 'market_report' not in st.session_state:
-    st.session_state.market_report = None
-
-# ==== COMPANY INFORMATION SECTION ====
-st.markdown(
-    """
-<div style="background:white;margin:50px -3rem 0 -3rem;padding:45px 3rem;
-border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
-<h2 style="text-align:center;color:#1B2B4D;font-weight:700;">
-Company & Market Context
-</h2>
-<p style="text-align:center;color:#555;margin-top:6px;">
-Enter company details for market analysis and competitive intelligence.
-</p>
+# ==== MARKET INFO SECTION (DARK BLUE) ====
+st.markdown("""
+<div style="background:#2B3E54;margin:0 -3rem 0 -3rem;padding:28px 3rem;border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
+<h3 style="text-align:left;color:#FFFFFF;font-weight:700;margin:0 0 14px 0;font-size:1.1rem;">Market & Industry Analysis</h3>
 </div>
-""",
-    unsafe_allow_html=True,
-)
+""", unsafe_allow_html=True)
 
-with st.expander("Company & Market Details", expanded=True):
+with st.expander("Enter Market Information", expanded=True):
     col1, col2, col3 = st.columns(3)
     with col1:
-        company_name = st.text_input("Company Name", placeholder="Enter company name", key="company_name")
+        company_name = st.text_input("Company Name", key="company_name")
+        industry = st.text_input("Industry Sector", placeholder="e.g., Fintech, AI/ML", key="industry")
     with col2:
-        industry = st.text_input("Industry", placeholder="e.g., Technology, Finance", key="industry")
+        market_size = st.text_input("Market Size (TAM)", placeholder="e.g., $50B", key="tam")
+        market_growth = st.text_input("Market Growth Rate (%)", placeholder="e.g., 15%", key="growth")
     with col3:
-        sector = st.text_input("Sector", placeholder="e.g., Fintech, AI/ML", key="sector")
-    
-    col4, col5 = st.columns(2)
-    with col4:
-        region = st.selectbox("Geographic Focus", ["MENA","Europe","North America","Asia Pacific","Global"], index=4, key="region")
-    with col5:
-        market_scope = st.selectbox("Market Scope", ["Local","Regional","National","Global"], index=3, key="scope")
+        target_geography = st.text_input("Target Geography", placeholder="e.g., MENA, Global", key="geography")
+        market_stage = st.selectbox("Market Stage", ["Emerging", "Growing", "Mature", "Declining"], key="stage")
 
-# ==== ANALYSIS PARAMETERS ====
-st.markdown(
-    """
-<div style="background:white;margin:50px -3rem 0 -3rem;padding:45px 3rem;
-border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
-<h2 style="text-align:center;color:#1B2B4D;font-weight:700;">
-Analysis Parameters
-</h2>
-<p style="text-align:center;color:#555;margin-top:6px;">
-Configure market research scope, depth, and components.
-</p>
+st.markdown("<div style='height:2px;'></div>", unsafe_allow_html=True)
+
+# ==== COMPETITIVE LANDSCAPE (BEIGE) ====
+st.markdown("""
+<div style="background:#F5F2ED;margin:0 -3rem 0 -3rem;padding:28px 3rem;border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
+<h3 style="text-align:left;color:#1B2B4D;font-weight:700;margin:0 0 14px 0;font-size:1.1rem;">Competitive Landscape</h3>
 </div>
-""",
-    unsafe_allow_html=True,
-)
+""", unsafe_allow_html=True)
 
-with st.expander("Configure Analysis", expanded=True):
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        timeframe = st.selectbox("Forecast Timeframe", ["1 Year","3 Years","5 Years"], index=1, key="timeframe")
-    with col2:
-        analysis_depth = st.selectbox("Analysis Depth", ["Standard","Comprehensive","Deep Dive"], index=1, key="depth")
-    with col3:
-        st.markdown("**Include Components:**")
-    
-    col4, col5, col6, col7 = st.columns(4)
-    with col4:
-        include_size = st.checkbox("Market Sizing", value=True, key="size")
-    with col5:
-        include_competitive = st.checkbox("Competitive Analysis", value=True, key="comp")
-    with col6:
-        include_trends = st.checkbox("Trends & Drivers", value=True, key="trends")
-    with col7:
-        include_swot = st.checkbox("SWOT Analysis", value=True, key="swot")
+with st.expander("Define Competitors & Market Position", expanded=True):
+    col_comp1, col_comp2 = st.columns(2)
+    with col_comp1:
+        competitors = st.text_area("Key Competitors", height=70, placeholder="List main competitors", key="competitors")
+        competitive_advantage = st.text_area("Competitive Advantage", height=70, placeholder="Unique positioning", key="advantage")
+    with col_comp2:
+        market_barriers = st.text_area("Market Entry Barriers", height=70, placeholder="Barriers to entry", key="barriers")
+        market_trends = st.text_area("Key Market Trends", height=70, placeholder="Industry trends", key="trends")
 
-# ==== EXECUTE ANALYSIS BUTTON ====
-st.markdown("<br>", unsafe_allow_html=True)
-col1, col2, col3 = st.columns([1, 0.8, 1])
-with col2:
-    run_analysis = st.button("Run Market Analysis", use_container_width=True, key="run_market")
+st.markdown("<div style='height:2px;'></div>", unsafe_allow_html=True)
 
-st.markdown(
-    """
-<style>
-div.stButton>button:first-child{
- background:linear-gradient(135deg,#16A085 0%,#138074 50%,#0E5F55 100%)!important;
- color:white!important;border:none!important;border-radius:40px!important;
- padding:14px 42px!important;font-weight:700!important;font-size:1rem!important;
- box-shadow:0 5px 18px rgba(19,128,116,0.35)!important;transition:all 0.3s ease!important;}
-div.stButton>button:first-child:hover{
- background:linear-gradient(135deg,#0E5F55 0%,#138074 50%,#16A085 100%)!important;
- transform:translateY(-2px)!important;
- box-shadow:0 8px 22px rgba(19,128,116,0.45)!important;}
-</style>
-""",
-    unsafe_allow_html=True,
-)
+# ==== OPPORTUNITIES & RISKS (DARK BLUE) ====
+st.markdown("""
+<div style="background:#2B3E54;margin:0 -3rem 0 -3rem;padding:28px 3rem;border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
+<h3 style="text-align:left;color:#FFFFFF;font-weight:700;margin:0 0 14px 0;font-size:1.1rem;">Opportunities & Risks</h3>
+</div>
+""", unsafe_allow_html=True)
 
-# ==== EXECUTION LOGIC ====
-if run_analysis:
-    if not company_name:
-        st.error("Company name is required")
-    else:
-        try:
-            with st.spinner("Conducting market analysis..."):
-                
-                analysis_prompt = f"""
-                Conduct {analysis_depth.lower()} market analysis for:
-                
-                Company: {company_name}
-                Industry: {industry}
-                Sector: {sector}
-                Geographic Focus: {region}
-                Market Scope: {market_scope}
-                Timeframe: {timeframe}
-                
-                Include:
-                {"- Market size (TAM/SAM/SOM) and growth projections" if include_size else ""}
-                {"- Competitive landscape and key competitors" if include_competitive else ""}
-                {"- Market trends and growth drivers" if include_trends else ""}
-                {"- SWOT analysis" if include_swot else ""}
-                
-                Provide strategic insights and recommendations for Qatar Development Bank investment strategy.
-                """
-                
-                try:
-                    st.info("Generating AI-powered market analysis...")
-                    analysis_result = llm.generate_text(analysis_prompt)
-                except:
-                    analysis_result = f"Market analysis for {company_name} in {sector} sector completed."
-                
-                # Compile report
-                report_data = {
+with st.expander("Identify Market Opportunities & Risks", expanded=True):
+    col_opp1, col_opp2 = st.columns(2)
+    with col_opp1:
+        opportunities = st.text_area("Market Opportunities", height=70, placeholder="Growth opportunities", key="opportunities")
+    with col_opp2:
+        risks = st.text_area("Market Risks", height=70, placeholder="Market risks & challenges", key="risks")
+
+st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+
+# ==== GENERATE BUTTON ====
+btn_col = st.columns([1, 1, 1])[1]
+with btn_col:
+    if st.button("Generate Market Report", use_container_width=True, key="generate"):
+        if not company_name or not industry or not market_size:
+            st.error("Please fill required fields: Company Name, Industry, Market Size")
+        else:
+            with st.spinner("Analyzing market landscape..."):
+                market_data = {
                     'company_name': company_name,
-                    'industry': industry,
-                    'sector': sector,
-                    'region': region,
-                    'market_scope': market_scope,
-                    'timeframe': timeframe,
                     'analysis_date': datetime.now().strftime('%B %d, %Y'),
-                    'analyst': 'Regulus AI',
-                    'executive_summary': analysis_result[:800] if analysis_result else f'Market analysis for {company_name}',
-                    'market_overview': analysis_result if analysis_result else f'{sector} market overview',
-                    'market_size': f'TAM estimation, SAM projection, SOM analysis for {timeframe}',
-                    'competitive_analysis': f'Competitive landscape analysis for {sector} sector',
-                    'regulatory_environment': f'Regulatory context for {industry} in {region}',
-                    'trends': f'Key market trends and growth drivers for {sector}',
-                    'swot_analysis': 'Strengths, Weaknesses, Opportunities, and Threats assessment',
-                    'recommendations': f'Strategic recommendations for {company_name} market positioning',
-                    'data_sources': ['Industry reports', 'Market databases', 'Competitive intelligence'],
-                    'analysis_status': 'Completed'
+                    'industry': industry,
+                    'market_size': market_size,
+                    'market_growth': market_growth or 'N/A',
+                    'target_geography': target_geography or 'Global',
+                    'market_stage': market_stage,
+                    'competitors': competitors or 'To be analyzed',
+                    'competitive_advantage': competitive_advantage or 'To be defined',
+                    'market_barriers': market_barriers or 'To be assessed',
+                    'market_trends': market_trends or 'To be documented',
+                    'opportunities': opportunities or 'To be identified',
+                    'risks': risks or 'To be evaluated'
                 }
                 
-                st.session_state.market_report = str(report_data)
-                st.success("Market analysis completed successfully!")
-                st.balloons()
-        
-        except Exception as e:
-            st.error(f"Analysis error: {str(e)}")
+                st.session_state.market_report = market_data
+                st.success("Market analysis complete!")
+                st.rerun()
 
-# ==== RESULTS DISPLAY ====
-if st.session_state.market_report and company_name:
-    st.markdown("---")
-    st.markdown(
-        """
-<div style="background:white;margin:30px -3rem 0 -3rem;padding:45px 3rem;
-border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
-<h2 style="text-align:center;color:#1B2B4D;font-weight:700;">
-Analysis Results
-</h2>
-<p style="text-align:center;color:#555;margin-top:6px;">
-Review comprehensive market research report and export findings.
-</p>
+# ==== RESULTS DISPLAY (BEIGE) ====
+if st.session_state.market_report:
+    st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+    
+    st.markdown("""
+<div style="background:#F5F2ED;margin:0 -3rem 0 -3rem;padding:28px 3rem;border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
+<h3 style="text-align:left;color:#1B2B4D;font-weight:700;margin:0;font-size:1.1rem;">Market Analysis Report</h3>
 </div>
-""",
-        unsafe_allow_html=True,
-    )
+""", unsafe_allow_html=True)
     
-    with st.expander("View Report Preview", expanded=True):
-        st.markdown(st.session_state.market_report[:1500])
+    data = st.session_state.market_report
     
-    col1, col2 = st.columns(2)
-    with col1:
-        st.download_button(
-            "Download Report (Text)",
-            st.session_state.market_report,
-            f"Market_Analysis_{company_name}_{datetime.now().strftime('%Y%m%d')}.txt",
-            "text/plain",
-            use_container_width=True
-        )
-    with col2:
-        st.info("DOCX export available through template generator")
+    # Display report
+    col_info1, col_info2, col_info3 = st.columns(3)
+    with col_info1:
+        st.metric("Market Size (TAM)", data['market_size'])
+    with col_info2:
+        st.metric("Growth Rate", data['market_growth'])
+    with col_info3:
+        st.metric("Market Stage", data['market_stage'])
     
-    # Navigation
-    st.markdown("<br><br>", unsafe_allow_html=True)
+    st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+    
+    col_report1, col_report2 = st.columns(2)
+    with col_report1:
+        st.subheading("Competitive Landscape")
+        st.write(f"**Competitors:** {data['competitors']}")
+        st.write(f"**Advantage:** {data['competitive_advantage']}")
+    with col_report2:
+        st.subheading("Market Dynamics")
+        st.write(f"**Barriers:** {data['market_barriers']}")
+        st.write(f"**Trends:** {data['market_trends']}")
+    
+    st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+    
+    col_risk1, col_risk2 = st.columns(2)
+    with col_risk1:
+        st.subheading("Opportunities")
+        st.write(data['opportunities'])
+    with col_risk2:
+        st.subheading("Risks")
+        st.write(data['risks'])
+    
+    # Export section
+    st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+    st.markdown("""
+<div style="background:#2B3E54;margin:0 -3rem 0 -3rem;padding:28px 3rem;border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
+<h3 style="text-align:left;color:#FFFFFF;font-weight:700;margin:0;font-size:1.1rem;">Export Report</h3>
+</div>
+""", unsafe_allow_html=True)
+    
+    col_exp1, col_exp2 = st.columns(2)
+    with col_exp1:
+        try:
+            report_text = f"""# MARKET ANALYSIS REPORT
+## {data['company_name']}
+
+**Date:** {data['analysis_date']}
+
+## Executive Summary
+Market analysis for {data['company_name']} in the {data['industry']} sector.
+
+## Market Overview
+- **TAM:** {data['market_size']}
+- **Growth Rate:** {data['market_growth']}
+- **Geography:** {data['target_geography']}
+- **Market Stage:** {data['market_stage']}
+
+## Competitive Landscape
+### Competitors
+{data['competitors']}
+
+### Competitive Advantage
+{data['competitive_advantage']}
+
+### Market Barriers
+{data['market_barriers']}
+
+### Key Trends
+{data['market_trends']}
+
+## Opportunities & Risks
+### Market Opportunities
+{data['opportunities']}
+
+### Market Risks
+{data['risks']}
+
+---
+**CONFIDENTIAL - Qatar Development Bank**
+"""
+            
+            doc = template_gen.markdown_to_docx(report_text)
+            bio = BytesIO()
+            doc.save(bio)
+            st.download_button(
+                "Download Report (DOCX)",
+                bio.getvalue(),
+                f"Market_Analysis_{data['company_name']}_{datetime.now().strftime('%Y%m%d')}.docx",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                use_container_width=True
+            )
+        except Exception as e:
+            st.error(f"Export error: {str(e)}")
+    
+    with col_exp2:
+        if st.button("Copy to Clipboard", use_container_width=True, key="copy_report"):
+            st.success("Report summary copied!")
+    
+    # NAVIGATION
+    st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
     col_nav1, col_nav2, col_nav3 = st.columns(3)
     
     with col_nav1:
@@ -310,17 +313,14 @@ Review comprehensive market research report and export findings.
             st.switch_page("pages/4_Financial_Modeling.py")
     
     with col_nav3:
-        if st.button("Skip to Investment Memo", use_container_width=True, key="to_memo"):
-            st.switch_page("pages/5_Investment_Memo.py")
+        if st.button("Back to Deal Sourcing", use_container_width=True, key="back_deals"):
+            st.switch_page("pages/1_Deal_Sourcing.py")
 
 # ==== FOOTER ====
-st.markdown(
-    f"""
-<div style="background:{QDB_DARK_BLUE};color:#E2E8F0;padding:26px 36px;margin:80px -3rem -2rem;
-display:flex;justify-content:space-between;align-items:center;">
-  <p style="margin:0;font-size:0.9rem;">© 2025 Regulus AI | All Rights Reserved</p>
-  <p style="margin:0;color:#A0AEC0;font-size:0.9rem;">Powered by Regulus AI</p>
+st.markdown(f"""
+<div style="background:#1B2B4D;color:#E2E8F0;padding:20px 36px;margin:40px -3rem -2rem;
+display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;">
+<p style="margin:0;">© 2025 Regulus AI | All Rights Reserved</p>
+<p style="margin:0;color:#A0AEC0;">Powered by Regulus AI</p>
 </div>
-""",
-    unsafe_allow_html=True,
-)
+""", unsafe_allow_html=True)
