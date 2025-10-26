@@ -1,6 +1,6 @@
 """
 Investment Analyst AI – Regulus Edition
-Enhanced Dashboard with Compact Smart Layout
+Fixed: Full-width curve + Larger text + Grey cards
 """
 import streamlit as st
 import base64
@@ -32,16 +32,16 @@ def encode_image(path):
 qdb_logo = encode_image("QDB_Logo.png")
 regulus_logo = encode_image("regulus_logo.png")
 
-# ===== HERO SECTION (COMPACT) =====
+# ===== HERO SECTION (COMPACT WITH FULL-WIDTH CURVE) =====
 st.markdown(f"""
 <div style="
     background: linear-gradient(135deg,#1B2B4D 0%,#2C3E5E 100%);
     color: white;
     text-align: center;
     margin: 0 -3rem;
-    padding: 60px 20px 55px 20px;
+    padding: 60px 20px 80px 20px;
     position: relative;
-    overflow:hidden;">
+    overflow:visible;">
 
   <!-- Left: QDB -->
   <div style="position:absolute; top:18px; left:35px;">
@@ -60,7 +60,7 @@ st.markdown(f"""
       End‑to‑End AI Platform for Deal Sourcing, Due Diligence, Market Analysis & Investment Memoranda
     </p>
     <a href="#dashboard" style="
-        background-color:#16A085;
+        background-color:#A9A9A9;
         color:white;
         border-radius:40px;
         padding:12px 36px;
@@ -68,15 +68,15 @@ st.markdown(f"""
         font-size:0.93rem;
         text-decoration:none;
         display:inline-block;
-        box-shadow:0 5px 16px rgba(22,160,133,0.35);
+        box-shadow:0 5px 16px rgba(169,169,169,0.35);
         transition:all 0.3s ease;">
         View My Dashboard ↓
     </a>
   </div>
 
-  <!-- Decorative Divider -->
-  <svg viewBox="0 0 1440 120" xmlns="http://www.w3.org/2000/svg" style="position:absolute; bottom:-1px; left:0; width:100%; height:80px;">
-    <path fill="#F6F5F2" d="M0,32L80,42.7C160,53,320,75,480,80C640,85,800,75,960,69.3C1120,64,1280,75,1360,80L1440,85L1440,120L0,120Z"></path>
+  <!-- FULL-WIDTH Decorative Divider -->
+  <svg viewBox="0 0 1920 140" xmlns="http://www.w3.org/2000/svg" style="position:absolute; bottom:-1px; left:0; width:calc(100% + 6rem); margin-left:-3rem; height:100px; overflow:visible;">
+    <path fill="#F6F5F2" d="M0,40 Q480,20 960,40 T1920,40 L1920,140 L0,140 Z"></path>
   </svg>
 </div>
 """, unsafe_allow_html=True)
@@ -124,49 +124,51 @@ st.markdown("""
 
 div[data-testid="column"] {display:flex; justify-content:center;}
 
-/* Smart Compact Metric Boxes */
+/* Smart Compact Metric Boxes - GREY */
 .metric-pill {
-    background: linear-gradient(135deg, #16A085 0%, #138074 100%);
-    color: white;
+    background: linear-gradient(135deg, #D3D3D3 0%, #C0C0C0 100%);
+    color: #333;
     padding: 16px 20px;
     border-radius: 10px;
     text-align: center;
-    box-shadow: 0 2px 10px rgba(22,160,133,0.2);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     transition: all 0.25s ease;
 }
 
 .metric-pill:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(22,160,133,0.3);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
 }
 
 .metric-number {
     font-size: 1.8rem;
     font-weight: 800;
     margin: 4px 0;
-    color: white;
+    color: #1B2B4D;
 }
 
 .metric-label {
     font-size: 0.8rem;
-    opacity: 0.92;
+    opacity: 0.85;
     font-weight: 600;
+    color: #333;
 }
 
-/* Compact Activity Cards */
+/* Compact Activity Cards - GREY */
 .activity-card {
-    background: white;
+    background: #F5F5F5;
     border-radius: 10px;
     padding: 14px 16px;
     box-shadow: 0 1px 8px rgba(0,0,0,0.06);
-    border-left: 4px solid #16A085;
+    border-left: 4px solid #A9A9A9;
     margin-bottom: 10px;
     transition: all 0.2s ease;
 }
 
 .activity-card:hover {
     box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-    border-left-color: #0E5F55;
+    border-left-color: #808080;
+    background: #EFEFEF;
 }
 
 /* Task Priority Badges */
@@ -227,7 +229,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# ===== KPI METRICS ROW (SMALLER, SMARTER) =====
+# ===== KPI METRICS ROW (GREY) =====
 st.markdown("<div style='padding: 0 3rem;'>", unsafe_allow_html=True)
 
 metric_cols = st.columns([1, 1, 1, 1])
@@ -270,13 +272,13 @@ with metric_cols[3]:
 
 st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
 
-# ===== DASHBOARD CONTENT ROWS =====
+# ===== DASHBOARD CONTENT ROWS (GREY CARDS) =====
 dash_col1, dash_col2, dash_col3 = st.columns([1, 1, 1])
 
 # === ACTION REQUIRED ===
 with dash_col1:
     st.markdown("""
-    <div style="background:white; border-radius:10px; padding:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); border-top:3px solid #E74C3C;">
+    <div style="background:#F5F5F5; border-radius:10px; padding:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); border-top:3px solid #E74C3C;">
         <h4 style="color:#1B2B4D; margin:0 0 12px 0; font-size:1rem;">🔴 Action Required</h4>
     """, unsafe_allow_html=True)
     
@@ -321,7 +323,7 @@ with dash_col1:
 # === IN PROGRESS ===
 with dash_col2:
     st.markdown("""
-    <div style="background:white; border-radius:10px; padding:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); border-top:3px solid #F39C12;">
+    <div style="background:#F5F5F5; border-radius:10px; padding:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); border-top:3px solid #F39C12;">
         <h4 style="color:#1B2B4D; margin:0 0 12px 0; font-size:1rem;">🟡 In Progress</h4>
     """, unsafe_allow_html=True)
     
@@ -366,7 +368,7 @@ with dash_col2:
 # === RECENT ACTIVITY ===
 with dash_col3:
     st.markdown("""
-    <div style="background:white; border-radius:10px; padding:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); border-top:3px solid #16A085;">
+    <div style="background:#F5F5F5; border-radius:10px; padding:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); border-top:3px solid #16A085;">
         <h4 style="color:#1B2B4D; margin:0 0 12px 0; font-size:1rem;">📋 Recent Activity</h4>
     """, unsafe_allow_html=True)
     
@@ -412,14 +414,14 @@ st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("<div style='height:20px;'></div>", unsafe_allow_html=True)
 
-# ===== CHOOSE PATH SECTION =====
+# ===== CHOOSE PATH SECTION (LARGER SUBTITLE) =====
 qdb_section_start("light")
 st.markdown(f"""
 <div style="text-align:center; max-width:900px; margin:0 auto 32px auto;">
   <h2 style="color:{QDB_DARK_BLUE}; font-size:1.8rem; font-weight:800; margin-bottom:8px;">
     ➜ Start Your Analysis
   </h2>
-  <p style="color:#666; font-size:0.95rem; margin:0;">Choose a workflow to begin investment analysis</p>
+  <p style="color:#666; font-size:1.05rem; margin:0; font-weight:500;">Choose a workflow to begin investment analysis</p>
 </div>
 """, unsafe_allow_html=True)
 
