@@ -46,6 +46,8 @@ def encode_image(path):
             return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
     return None
 qdb_logo = encode_image("QDB_Logo.png")
+regulus_logo = encode_image("regulus_logo.png")
+
 
 # ==== INIT HANDLERS ====
 @st.cache_resource
