@@ -1,6 +1,6 @@
 """
 Deal Discovery & Sourcing | Regulus AI × QDB
-Hero styled identical to main page, with ticket size investment filter.
+Fixed version - compatible with WebScraper method signature.
 """
 import streamlit as st
 import os, base64, pandas as pd
@@ -170,28 +170,57 @@ div.stButton>button:first-child:hover{
     unsafe_allow_html=True,
 )
 
-# ==== EXECUTION ====
+# ==== EXECUTION (FIXED) ====
 if discover:
-    scraper, llm, template = WebScraper(), LLMHandler(), TemplateGenerator()
-    st.info("Fetching startup deals...")
-    data=[]
-    for s in sources:
-        st.write(f"Scraping {s}...")
-        data+=scraper.search_startups(
-            s, industries, sectors, [stage], regions, 
-            min_ticket=min_investment, 
-            max_ticket=max_investment,
-            limit=int(deal_count/len(sources))
-        )
-    if not data:
-        st.warning("No results found matching your criteria.")
-    else:
-        df=pd.DataFrame(data)
-        st.success(f"{len(df)} deals found in your ticket size range.")
-        st.dataframe(df,use_container_width=True)
-        st.markdown("#### AI Summary")
-        filter_summary = f"{len(df)} deals for {', '.join(industries)} in {', '.join(regions)}, ticket size: ${min_investment}M-${max_investment}M"
-        st.info(llm.generate_text(f"Summarize: {filter_summary}"))
+    try:
+        scraper = WebScraper()
+        llm = LLMHandler()
+        
+        st.info("Fetching startup deals...")
+        all_data = []
+        
+        for src in sources:
+            st.write(f"Scraping {src}...")
+            try:
+                # Call scraper with correct parameters (no min_ticket/max_ticket)
+                src_data = scraper.search_startups(
+                    src, industries, sectors, [stage], regions, 
+                    limit=int(deal_count/len(sources))
+                )
+                all_data.extend(src_data)
+            except Exception as e:
+                st.warning(f"Error scraping {src}: {str(e)}")
+                continue
+        
+        # Filter by ticket size after retrieval
+        filtered_data = []
+        for deal in all_data:
+            try:
+                ticket = deal.get("funding_amount", 0)
+                if isinstance(ticket, str):
+                    ticket = float(ticket.replace("$", "").replace("M", "").strip())
+                if min_investment <= ticket <= max_investment:
+                    filtered_data.append(deal)
+            except:
+                filtered_data.append(deal)
+        
+        if not filtered_data:
+            st.warning(f"No deals found in ticket size range ${min_investment}M - ${max_investment}M")
+        else:
+            df = pd.DataFrame(filtered_data)
+            st.success(f"{len(df)} deals found in your ticket size range.")
+            st.dataframe(df, use_container_width=True)
+            
+            st.markdown("#### AI Summary")
+            filter_summary = f"{len(df)} deals for {', '.join(industries)} in {', '.join(regions)}, ticket size: ${min_investment}M-${max_investment}M"
+            try:
+                ai_insight = llm.generate_text(f"Summarize: {filter_summary}")
+                st.info(ai_insight)
+            except Exception as e:
+                st.warning(f"Could not generate AI summary: {str(e)}")
+    
+    except Exception as e:
+        st.error(f"Error during deal discovery: {str(e)}")
 
 # ==== FOOTER ====
 st.markdown(
@@ -202,5 +231,5 @@ display:flex;justify-content:space-between;align-items:center;">
   <p style="margin:0;color:#A0AEC0;font-size:0.9rem;">Powered by Regulus AI</p>
 </div>
 """,
-    unsafe_home_html=True,
+    unsafe_allow_html=True,
 )
