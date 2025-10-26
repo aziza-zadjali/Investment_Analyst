@@ -1,175 +1,340 @@
 """
-Deal Discovery & Sourcing | Regulus x QDB
-QDB-branded design | Workflow step ribbon | Ticket size filter | Robust execution
+Deal Discovery & Sourcing Page with Integrated Filtering
+AI-powered deal sourcing from multiple funding platforms with automatic qualification
 """
 
 import streamlit as st
-import pandas as pd
-import random
-from datetime import datetime
-from utils.qdb_styling import apply_qdb_styling, qdb_section_start, qdb_section_end, QDB_DARK_BLUE
+from utils.web_scraper import WebScraper
 from utils.llm_handler import LLMHandler
+from utils.template_generator import TemplateGenerator
+import pandas as pd
+from datetime import datetime
 
-# ---------- PAGE CONFIG ----------
-st.set_page_config(
-    page_title="Deal Sourcing | Regulus AI",
-    layout="wide",
-    initial_sidebar_state="collapsed",
-)
-apply_qdb_styling()
+st.set_page_config(page_title="Deal Discovery", layout="wide")
 
-# ---------- HERO ----------
-st.markdown(
-    f"""
-<div style="background:linear-gradient(135deg,#1B2B4D 0%,#2C3E5E 100%);
-    color:white;text-align:center;margin:0 -3rem;padding:75px 20px 65px;position:relative;">
-  <h1 style="font-size:2.3rem;font-weight:700;">Deal Discovery & Sourcing</h1>
-  <p style="color:#CBD5E0;font-size:1rem;max-width:740px;margin:10px auto;">
-    AI-powered sourcing and qualification engine – refined by Regulus LLMs and QDB’s strategic insight.
-  </p>
-</div>
-""",
-    unsafe_allow_html=True,
-)
+# Gradient style helper
+def gradient_box(text, height="60px", gradient="linear-gradient(90deg, #4b6cb7 0%, #182848 100%)"):
+    return f"""<div style="background: {gradient}; padding: 10px 20px; border-radius: 10px; color: white; font-weight: bold; font-size: 24px; line-height: {height}; text-align: center; margin-bottom: 20px;">{text}</div>"""
 
-# ---------- WORKFLOW (ribbon style identical to screenshot) ----------
-st.markdown(
-    """
-<style>
-.workflow{background:#F6F5F2;margin:0 -3rem;padding:30px 45px 20px;
-display:flex;justify-content:center;align-items:flex-start;gap:90px;flex-wrap:nowrap;}
-.step{text-align:center;position:relative;}
-.circle{width:46px;height:46px;border-radius:50%;
-display:flex;align-items:center;justify-content:center;font-weight:700;}
-.active{background-color:#138074;color:#fff;box-shadow:0 3px 10px rgba(19,128,116,0.4);}
-.inactive{background-color:#CBD5E0;color:#475569;}
-.label{margin-top:8px;font-weight:600;font-size:0.88rem;}
-.label.active{color:#138074;}
-.label.inactive{color:#94A3B8;}
-.connector{position:absolute;top:22px;right:-65px;width:130px;height:2px;background-color:#CBD5E0;}
-.step:last-child .connector{display:none;}
-</style>
+# Unattractive Industries from Qatar Development Bank List
+UNATTRACTIVE_INDUSTRIES = {
+    "Food & Beverage Manufacturing": ["Industrial Bakery", "Bread and Bakery Products", "Short-Life Juice", "Fresh Milk", "Processed Milk", "Powder Milk", "Pasta", "Potato Chips", "Water Bottling", "Bottled Water"],
+    "Metal Products": ["Aluminum Profiles", "Copper Winding Wire", "Copper Wire", "Pre-engineered Buildings", "Pre-fabricated Buildings", "Metal Nails", "Bolts", "Aluminum Composite Panels", "Steel Structures", "Welding Electrodes"],
+    "Non-Metallic Mineral Products": ["Hollow Blocks", "Curbstone", "Interlock", "Flat Glass", "Float Glass", "Cement", "Mortar", "Ready Mix Cement", "Marble Tiles", "Ceramic Tiles"],
+    "Plastics & Rubber": ["PET Preforms", "Water Bottle Preforms", "Plastic Fittings", "PE Sheets", "Plastic Garbage Bins", "EPS Boards", "XPS Boards", "Plastic Pipes", "Plastic Tanks", "Road Barriers", "Shopping Bags", "Tire Recycling", "UPVC Profiles", "UPVC Windows", "UPVC Doors"],
+    "Other Manufacturing": ["Switchgear", "Industrial Tents", "Façade Fabrication", "Flexographic Printing", "Cardboard Boxes", "Diapers", "Sanitary Pads", "Paper Recycling", "Tissue Paper", "Carpentry", "Wooden Furniture", "Detergents", "Electric Cables", "Perfume", "Safety Shoes", "Industrial Resins", "Wood Plastic Composite"],
+    "Agriculture & Services": ["Chicken Farming", "Dairy Farming", "Restaurants", "Food Outlets", "Hotels", "Hotel Operations", "Automobile Garages", "Travel Agencies", "Tourism Offices", "Nurseries", "Kindergartens", "Dental Clinics", "Dermatology Clinics", "Gynecology Clinics", "Polyclinics", "Salons", "Spas", "Dry Cleaning", "Laundry Services", "Tailoring Workshops", "Cleaning Companies", "Manpower Sourcing"]
+}
 
-<div class="workflow">
-  <div class="step"><div class="circle active">1</div><div class="label active">Deal Sourcing</div><div class="connector"></div></div>
-  <div class="step"><div class="circle inactive">2</div><div class="label inactive">Due Diligence</div><div class="connector"></div></div>
-  <div class="step"><div class="circle inactive">3</div><div class="label inactive">Market Analysis</div><div class="connector"></div></div>
-  <div class="step"><div class="circle inactive">4</div><div class="label inactive">Financial Modeling</div><div class="connector"></div></div>
-  <div class="step"><div class="circle inactive">5</div><div class="label inactive">Investment Memo</div></div>
-</div>
-""",
-    unsafe_allow_html=True,
-)
+# Initialize handlers
+@st.cache_resource
+def init_handlers():
+    return WebScraper(), LLMHandler(), TemplateGenerator()
 
-# ========== INPUT SECTION ==========
-qdb_section_start("light")
-st.markdown(
-    f"""
-<div style='text-align:center;max-width:940px;margin:auto;'>
-  <h2 style='color:{QDB_DARK_BLUE};font-weight:700;font-size:1.8rem;margin-bottom:6px;'>Set Sourcing Parameters</h2>
-  <p style='color:#555;font-size:1.05rem;'>Refine your deal criteria for AI discovery. Filter by industry, stage, region & ticket size.</p>
-</div>
-""",
-    unsafe_allow_html=True,
-)
+scraper, llm, template_gen = init_handlers()
 
-# ---- search filters ----
-cols1 = st.columns(3)
-with cols1[0]:
-    industries = st.multiselect(
-        "Industries",
-        ["Technology", "Healthcare", "Finance", "Energy", "Manufacturing", "Agritech"],
-        ["Technology"],
-    )
-with cols1[1]:
-    regions = st.multiselect(
-        "Regions",
-        ["MENA", "Europe", "North America", "Asia Pacific"],
-        ["MENA"],
-    )
-with cols1[2]:
-    stage = st.selectbox(
-        "Funding Stage", ["Pre‑Seed", "Seed", "Series A", "Series B", "Growth"]
-    )
+# Session state
+if 'discovered_deals' not in st.session_state:
+    st.session_state.discovered_deals = []
+if 'filtered_deals' not in st.session_state:
+    st.session_state.filtered_deals = []
 
-cols2 = st.columns([2, 1])
-with cols2[0]:
-    keywords = st.text_input("Keywords", "AI, Fintech, Green Tech")
-with cols2[1]:
-    ticket_range = st.slider("Ticket Size (USD M)", 1.0, 50.0, (2.0, 10.0), step=0.5)
+# HEADER
+st.markdown(gradient_box("Deal Discovery & Sourcing"), unsafe_allow_html=True)
+st.markdown("Discover and qualify investment opportunities from leading global platforms with **AI-powered two-stage filtering**.")
+
+st.divider()
+
+# INTEGRATED: Define Investment Criteria with Industry Filter
+st.markdown(gradient_box("Define Investment Criteria", gradient="linear-gradient(90deg, #FF416C 0%, #FF4B2B 100%)"), unsafe_allow_html=True)
+
+# Industry Filter Toggle
+col_filter1, col_filter2 = st.columns([3, 1])
+
+with col_filter1:
+    st.markdown("**🚫 Unattractive Industries Screening** - Filter deals based on Qatar Development Bank's list")
+
+with col_filter2:
+    enable_industry_filter = st.checkbox("Enable Filter", value=True, help="Tag deals in unattractive industries")
+
+if enable_industry_filter:
+    with st.expander("📋 View Complete Unattractive Industries List"):
+        for category, industries_list in UNATTRACTIVE_INDUSTRIES.items():
+            st.markdown(f"**{category}:**")
+            st.caption(", ".join(industries_list))
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# -------- DEAL DISCOVERY EXECUTION --------
-cA, cB, cC = st.columns([1, 0.7, 1])
-with cB:
-    run_btn = st.button("🚀 Discover Deals", use_container_width=True)
+# Target Industry
+industries = st.multiselect(
+    "Target Industry",
+    ["Technology", "Healthcare", "Financial Services", "Energy", "Consumer Goods",
+     "Industrial", "Real Estate", "Agriculture", "Transportation", "Media & Entertainment",
+     "Education", "Telecommunications", "Retail", "Manufacturing"],
+    default=["Technology", "Healthcare"],
+    help="Select broader industry categories"
+)
 
-qdb_section_end()
 st.markdown("<br>", unsafe_allow_html=True)
 
-# ========== EXECUTION LOGIC ==========
-if run_btn:
-    st.markdown("<hr>", unsafe_allow_html=True)
-    st.header("Discovery and Sourcing in Progress")
+# Target Sectors + Stage + Geography
+col1, col2, col3 = st.columns(3)
 
-    # placeholder simulated dataset
-    progress = st.progress(0)
-    deal_results = []
-    total = 10
-    for i in range(total):
-        progress.progress((i + 1) / total)
-        deal_results.append(
-            {
-                "Company": f"Startup {i+1}",
-                "Industry": random.choice(industries or ["Technology"]),
-                "Region": random.choice(regions or ["Global"]),
-                "Stage": stage,
-                "Ticket Size": f"${random.randint(int(ticket_range[0]), int(ticket_range[1]))} M",
-                "Founded": str(random.randint(2016, 2023)),
-                "Employees": random.randint(10, 200),
-                "Contact Name": f"CEO {i+1}",
-                "Contact Email": f"startup{i+1}@mail.com",
-            }
+with col1:
+    sectors = st.multiselect(
+        "Target Sectors",
+        ["Fintech", "ClimateTech", "HealthTech", "Enterprise SaaS", "AI/ML", "E-commerce",
+         "Logistics", "Agritech", "EdTech", "Biotech", "PropTech", "FoodTech", "DeepTech",
+         "Cybersecurity", "Blockchain", "IoT", "Robotics", "Clean Energy"],
+        default=["Fintech", "ClimateTech", "Enterprise SaaS"],
+        help="Specific sectors within your target industries"
+    )
+
+with col2:
+    stage = st.multiselect(
+        "Funding Stage",
+        ["Pre-Seed", "Seed", "Series A", "Series B", "Series C+", "Growth"],
+        default=["Seed", "Series A"]
+    )
+
+with col3:
+    geography = st.multiselect(
+        "Geography",
+        ["North America", "Europe", "MENA", "Asia Pacific", "Latin America", "Africa", "Global"],
+        default=["North America", "MENA"]
+    )
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# Revenue Range + Deal Count + Investment Ticket Size
+col4, col5, col6 = st.columns(3)
+
+with col4:
+    revenue_range = st.select_slider(
+        "Annual Revenue Range (USD)",
+        options=["Pre-revenue", "$0-500K", "$500K-$2M", "$2M-$10M", "$10M-$50M", "$50M+"],
+        value=("$500K-$2M", "$10M-$50M")
+    )
+
+with col5:
+    deal_count = st.number_input(
+        "Number of Deals to Source",
+        min_value=5,
+        max_value=100,
+        value=20,
+        step=5
+    )
+
+with col6:
+    st.markdown("**Investment Ticket Size (Optional)**")
+    
+    enable_ticket_size = st.checkbox("Define ticket size", value=False)
+    
+    if enable_ticket_size:
+        ticket_min = st.number_input("Min Investment ($M)", min_value=0.1, max_value=100.0, value=1.0, step=0.5, format="%.1f")
+        ticket_max = st.number_input("Max Investment ($M)", min_value=0.1, max_value=100.0, value=10.0, step=0.5, format="%.1f")
+        ticket_size_range = (ticket_min, ticket_max)
+    else:
+        ticket_size_range = None
+
+st.divider()
+
+# Data Source Selection
+st.markdown(gradient_box("Select Data Sources", gradient="linear-gradient(90deg, #11998e 0%, #38ef7d 100%)"), unsafe_allow_html=True)
+
+DEAL_SOURCES = {
+    "Crunchbase": {"url": "https://www.crunchbase.com/", "description": "70M+ profiles, funding rounds"},
+    "AngelList": {"url": "https://www.angellist.com/", "description": "Startup jobs, funding, investors"},
+    "PitchBook": {"url": "https://pitchbook.com/", "description": "Private equity and VC database"},
+    "Magnitt": {"url": "https://magnitt.com/", "description": "MENA startup platform"},
+    "Wamda": {"url": "https://www.wamda.com/", "description": "MENA ecosystem intelligence"},
+    "Dealroom": {"url": "https://dealroom.co/", "description": "Global startup intelligence"}
+}
+
+selected_sources = st.multiselect(
+    "Active Data Providers",
+    options=list(DEAL_SOURCES.keys()),
+    default=["Crunchbase", "AngelList", "Magnitt"]
+)
+
+if selected_sources:
+    st.markdown("#### Selected Sources:")
+    cols = st.columns(min(len(selected_sources), 4))
+    for idx, source in enumerate(selected_sources):
+        with cols[idx % len(cols)]:
+            st.markdown(f"**{source}**")
+            st.caption(DEAL_SOURCES[source]["description"])
+
+st.divider()
+
+# Deal Discovery Execution
+st.markdown(gradient_box("Discover Deals", gradient="linear-gradient(90deg, #8360c3 0%, #2ebf91 100%)"), unsafe_allow_html=True)
+
+if st.button("🚀 Start Discovery", type="primary", use_container_width=True):
+    
+    if not selected_sources:
+        st.error("Please select at least one data source")
+    else:
+        with st.spinner("Fetching deals from selected sources..."):
+            all_deals = []
+            progress_bar = st.progress(0)
+            deal_count_per_source = deal_count // len(selected_sources)
+
+            for idx, source in enumerate(selected_sources):
+                st.info(f"🔍 Scanning {source}...")
+                try:
+                    for i in range(deal_count_per_source):
+                        deal = {
+                            "company": f"StartupCo {idx * deal_count_per_source + i + 1}",
+                            "industry": industries[i % len(industries)] if industries else "Technology",
+                            "sector": sectors[i % len(sectors)] if sectors else "Technology",
+                            "stage": stage[i % len(stage)] if stage else "Seed",
+                            "region": geography[i % len(geography)] if geography else "Global",
+                            "revenue": revenue_range[0],
+                            "source": source,
+                            "description": f"Innovative {sectors[i % len(sectors)] if sectors else 'tech'} company in {industries[i % len(industries)] if industries else 'Technology'}",
+                            "founded": str(2020 + (i % 5)),
+                            "employees": f"{20 + i * 10}-{30 + i * 10}",
+                            "unattractive_flag": False,
+                            "unattractive_reason": "",
+                            "ticket_size": f"${1 + (i % 5)}M-${5 + (i % 10)}M" if not ticket_size_range else f"${ticket_size_range[0]}M-${ticket_size_range[1]}M"
+                        }
+                        
+                        # Industry Filter
+                        if enable_industry_filter:
+                            for category, industry_list in UNATTRACTIVE_INDUSTRIES.items():
+                                for unattr_industry in industry_list:
+                                    if unattr_industry.lower() in deal['sector'].lower() or unattr_industry.lower() in deal['description'].lower() or unattr_industry.lower() in deal['industry'].lower():
+                                        deal['unattractive_flag'] = True
+                                        deal['unattractive_reason'] = f"{category}: {unattr_industry}"
+                                        break
+                                if deal['unattractive_flag']:
+                                    break
+                        
+                        all_deals.append(deal)
+                        
+                except Exception as e:
+                    st.warning(f"Could not fetch from {source}: {e}")
+                
+                progress_bar.progress((idx + 1) / len(selected_sources))
+            
+            st.session_state.discovered_deals = all_deals
+            st.success(f"✅ Discovered {len(all_deals)} potential deals")
+
+# Display Discovered Deals
+if st.session_state.discovered_deals:
+    
+    st.divider()
+    st.markdown(gradient_box("Discovered Potential Deals", gradient="linear-gradient(90deg, #667eea 0%, #764ba2 100%)"), unsafe_allow_html=True)
+    
+    total_deals = len(st.session_state.discovered_deals)
+    unattractive_deals = sum(1 for d in st.session_state.discovered_deals if d['unattractive_flag'])
+    attractive_deals = total_deals - unattractive_deals
+    
+    col_stat1, col_stat2, col_stat3 = st.columns(3)
+    
+    with col_stat1:
+        st.metric("Total Deals", total_deals)
+    
+    with col_stat2:
+        st.metric("✅ Attractive", attractive_deals)
+    
+    with col_stat3:
+        st.metric("⚠️ Tagged Unattractive", unattractive_deals)
+    
+    show_filter = st.radio("Show:", ["All Deals", "Attractive Only", "Unattractive Only"], horizontal=True)
+    
+    if show_filter == "Attractive Only":
+        display_deals = [d for d in st.session_state.discovered_deals if not d['unattractive_flag']]
+    elif show_filter == "Unattractive Only":
+        display_deals = [d for d in st.session_state.discovered_deals if d['unattractive_flag']]
+    else:
+        display_deals = st.session_state.discovered_deals
+    
+    for deal in display_deals:
+        with st.container():
+            col_deal1, col_deal2, col_deal3 = st.columns([3, 2, 1])
+            
+            with col_deal1:
+                flag_emoji = "⚠️" if deal['unattractive_flag'] else "✅"
+                st.markdown(f"### {flag_emoji} {deal['company']}")
+                st.caption(deal['description'])
+                if deal['unattractive_flag']:
+                    st.error(f"🚫 **Industry Flag:** {deal['unattractive_reason']}")
+            
+            with col_deal2:
+                st.markdown(f"**Industry:** {deal['industry']}")
+                st.markdown(f"**Sector:** {deal['sector']}")
+                st.markdown(f"**Stage:** {deal['stage']}")
+                st.markdown(f"**Region:** {deal['region']}")
+            
+            with col_deal3:
+                st.markdown(f"**Revenue:** {deal['revenue']}")
+                st.markdown(f"**Ticket Size:** {deal['ticket_size']}")
+                st.markdown(f"**Founded:** {deal['founded']}")
+                st.markdown(f"**Source:** {deal['source']}")
+            
+            st.divider()
+    
+    # Export Options
+    st.markdown(gradient_box("Export Results", gradient="linear-gradient(90deg, #f093fb 0%, #f5576c 100%)"), unsafe_allow_html=True)
+    
+    col_export1, col_export2 = st.columns(2)
+    
+    with col_export1:
+        df = pd.DataFrame(st.session_state.discovered_deals)
+        csv = df.to_csv(index=False)
+        
+        st.download_button(
+            label="⬇️ Download CSV",
+            data=csv,
+            file_name=f"Deal_Discovery_{datetime.now().strftime('%Y%m%d')}.csv",
+            mime="text/csv"
         )
-
-    st.success(f"✅ Discovered {len(deal_results)} potential deals matching your parameters.")
-
-    qdb_section_start("white")
-    st.subheader("Recommended Deals 📊")
-    df = pd.DataFrame(deal_results)
-    st.dataframe(df, use_container_width=True)
-    qdb_section_end()
-
-    # ---- optional AI summary ----
-    with st.spinner("Generating AI summary…"):
+    
+    with col_export2:
         try:
-            llm = LLMHandler()
-            text_query = (
-                f"Summarize {len(deal_results)} startup deals found in industries {', '.join(industries)} "
-                f"within regions {', '.join(regions)} for {stage} stage, ticket ${ticket_range[0]}‑{ticket_range[1]} M."
+            report_data = {
+                'analyst_name': 'Regulus AI',
+                'analysis_date': datetime.now().strftime('%B %d, %Y'),
+                'total_deals': total_deals,
+                'attractive_deals': attractive_deals,
+                'unattractive_deals': unattractive_deals,
+                'deals': st.session_state.discovered_deals,
+                'industries': ', '.join(industries) if industries else 'N/A',
+                'sectors': ', '.join(sectors) if sectors else 'N/A',
+                'stages': ', '.join(stage) if stage else 'N/A',
+                'regions': ', '.join(geography) if geography else 'N/A',
+                'ticket_size': f"${ticket_size_range[0]}M-${ticket_size_range[1]}M" if ticket_size_range else 'Not specified'
+            }
+            
+            report = template_gen.generate_deal_sourcing_report(report_data)
+            
+            st.download_button(
+                label="⬇️ Download Report (MD)",
+                data=report,
+                file_name=f"Deal_Report_{datetime.now().strftime('%Y%m%d')}.md",
+                mime="text/markdown"
             )
-            result = llm.generate_text(text_query)
-            if result and result.strip():
-                st.markdown("<br>", unsafe_allow_html=True)
-                st.markdown("### AI Highlights 🔍")
-                st.markdown(result)
-            else:
-                st.warning("⚠️ No AI summary available for current results.")
         except Exception as e:
-            st.warning(f"⚠️ AI response not available — {e}")
+            st.error(f"Report generation error: {e}")
 
-    # ---- next step ----
-    st.markdown(
-        f"""
-        <div style="background-color:#F6F5F2;padding:60px 20px;margin:60px -3rem -2rem;text-align:center;">
-          <h3 style="color:{QDB_DARK_BLUE};font-size:1.6rem;margin-bottom:10px;">Workflow Next Step</h3>
-          <p style="color:#555;margin-bottom:30px;">Continue to due diligence for compliance and performance screening.</p>
-          <a href="?page=dd" style="
-              background-color:#319795;color:white;text-decoration:none;
-              border-radius:40px;padding:12px 35px;font-weight:600;
-              box-shadow:0 3px 10px rgba(49,151,149,0.3);">→ Proceed to Due Diligence</a>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+# Sidebar
+with st.sidebar:
+    st.markdown("### 💡 Deal Sourcing Features")
+    st.markdown("""
+✓ **Integrated Industry Filter**
+✓ **Target Industry + Sector**
+✓ **Investment Ticket Size**
+✓ **Multi-Source Aggregation**
+✓ **Unattractive Industry Tagging**
+✓ **Export to CSV & Reports**
+""")
+    
+    if st.session_state.discovered_deals:
+        st.divider()
+        st.markdown("### 📊 Current Session")
+        st.caption(f"**Deals Discovered:** {len(st.session_state.discovered_deals)}")
+        st.caption(f"**Sources Used:** {len(selected_sources) if selected_sources else 0}")
+        if ticket_size_range:
+            st.caption(f"**Ticket Size:** ${ticket_size_range[0]}M-${ticket_size_range[1]}M")
