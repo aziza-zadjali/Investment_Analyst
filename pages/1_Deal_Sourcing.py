@@ -1,6 +1,6 @@
 """
 Deal Sourcing - AI-Powered Investment Pipeline
-NOW WITH REAL DEAL SEARCHING FUNCTIONALITY
+ENHANCED: Industry attractiveness, deal contacts, database stats, next-step selection
 """
 import streamlit as st
 import base64
@@ -21,7 +21,7 @@ def init_handlers():
     try:
         llm = LLMHandler()
         template_gen = TemplateGenerator()
-        deal_sourcer = DealSourcer()  # NEW: Add DealSourcer
+        deal_sourcer = DealSourcer()
         return llm, template_gen, deal_sourcer
     except Exception as e:
         st.error(f"Error initializing handlers: {e}")
@@ -52,6 +52,8 @@ if 'deal_sourcing_data' not in st.session_state:
     st.session_state.deal_sourcing_data = {}
 if 'matched_deals' not in st.session_state:
     st.session_state.matched_deals = []
+if 'selected_deals' not in st.session_state:
+    st.session_state.selected_deals = []
 
 # ===== CUSTOM STYLING =====
 st.markdown("""
@@ -105,6 +107,70 @@ st.markdown("""
     font-weight: 700;
     font-size: 0.75rem;
 }
+
+.industry-badge-hot {
+    background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-block;
+    margin: 4px;
+}
+
+.industry-badge-warm {
+    background: linear-gradient(135deg, #F39C12 0%, #E67E22 100%);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-block;
+    margin: 4px;
+}
+
+.industry-badge-cool {
+    background: linear-gradient(135deg, #3498DB 0%, #2980B9 100%);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-block;
+    margin: 4px;
+}
+
+.contact-badge {
+    background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.db-stat {
+    background: linear-gradient(135deg, #16A085 0%, #138074 100%);
+    color: white;
+    padding: 12px 18px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 700;
+    margin: 8px;
+    display: inline-block;
+}
+
+.next-step-action {
+    background: linear-gradient(135deg, #2980B9 0%, #2471A3 100%);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-align: center;
+    margin: 10px 0;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -131,7 +197,7 @@ st.markdown(f"""
 
   <div style="max-width:800px; margin:0 auto;">
     <h1 style="font-size:2rem; font-weight:800; margin-bottom:6px;">Deal Sourcing</h1>
-    <p style="color:#E2E8F0; font-size:0.95rem; margin:0;">AI-powered investment pipeline and opportunity discovery</p>
+    <p style="color:#E2E8F0; font-size:0.95rem; margin:0;">AI-powered investment pipeline with industry intelligence & deal management</p>
   </div>
 </div>
 """, unsafe_allow_html=True)
@@ -141,6 +207,41 @@ st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
 # ===== HOME BUTTON =====
 if st.button("← Return Home", key="home_btn"):
     st.switch_page("streamlit_app.py")
+
+st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+
+# ===== DATABASE & MARKET INTELLIGENCE SECTION =====
+st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">📊 Deal Database & Market Intelligence</div>', unsafe_allow_html=True)
+
+col1, col2, col3, col4 = st.columns(4)
+with col1:
+    st.markdown('<div class="db-stat">20<br><span style="font-size:0.7rem;">Total Deals<br>in Database</span></div>', unsafe_allow_html=True)
+
+with col2:
+    st.markdown('<div class="db-stat">$87.8M<br><span style="font-size:0.7rem;">Combined<br>Revenue</span></div>', unsafe_allow_html=True)
+
+with col3:
+    st.markdown('<div class="db-stat">156%<br><span style="font-size:0.7rem;">Avg YoY<br>Growth Rate</span></div>', unsafe_allow_html=True)
+
+with col4:
+    st.markdown('<div class="db-stat">4.5/5.0<br><span style="font-size:0.7rem;">Avg Team<br>Quality Score</span></div>', unsafe_allow_html=True)
+
+# ===== INDUSTRY ATTRACTIVENESS SECTION =====
+st.markdown("<div style='margin-top:16px;'><strong style='color:#1B2B4D; font-size:0.95rem;'>🎯 Industry Attractiveness Indicators:</strong></div>", unsafe_allow_html=True)
+
+st.markdown("""
+<div style="margin-top:8px;">
+<span class="industry-badge-hot">🔥 HOT - Fintech</span>
+<span class="industry-badge-warm">📈 WARM - ClimateTech</span>
+<span class="industry-badge-warm">📈 WARM - Enterprise SaaS</span>
+<span class="industry-badge-cool">❄️ EMERGING - HealthTech</span>
+<span class="industry-badge-cool">❄️ EMERGING - EdTech</span>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("<small style='color:#666;'>🔥 HOT = 8+ deals, >200% avg growth | 📈 WARM = 5-7 deals, 100-200% growth | ❄️ EMERGING = <5 deals, <100% growth</small>", unsafe_allow_html=True)
+
+st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
@@ -224,7 +325,7 @@ st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
-# ===== SOURCING BUTTON - NOW ACTUALLY SEARCHES DEALS =====
+# ===== SOURCING BUTTON =====
 if st.button("Search Investment Pipeline", use_container_width=True):
     if not industry_focus or not funding_stage:
         st.error("Please select industry and funding stage")
@@ -234,7 +335,6 @@ if st.button("Search Investment Pipeline", use_container_width=True):
         try:
             st.info("🔍 Filtering investment opportunities...")
             
-            # THIS IS WHERE deal_sourcer SEARCHES FOR DEALS!
             search_results = deal_sourcer.search_deals(
                 industry_list=industry_focus,
                 stage_list=funding_stage,
@@ -249,13 +349,16 @@ if st.button("Search Investment Pipeline", use_container_width=True):
             
             st.success(f"✅ Found {len(matched_deals)} matching deals!")
             
-            # Display deals found
+            # Display deals found with selection
             if matched_deals:
-                st.markdown("### Top Deal Opportunities")
+                st.markdown("### 🎯 Top Deal Opportunities - Select for Next Steps")
                 
-                for idx, deal in enumerate(matched_deals[:5], 1):
+                # Create checkboxes for deal selection
+                selected_deal_names = []
+                
+                for idx, deal in enumerate(matched_deals[:10], 1):
                     with st.expander(f"#{idx} {deal['name']} - {deal['industry']} ({deal['stage']})"):
-                        col1, col2, col3 = st.columns(3)
+                        col1, col2, col3 = st.columns([1, 2, 2])
                         
                         with col1:
                             st.metric("Revenue", f"${deal['revenue']}M")
@@ -269,6 +372,40 @@ if st.button("Search Investment Pipeline", use_container_width=True):
                             score_html = f"<div class='deal-score'>{deal['investment_score']:.1f}/5</div>"
                             st.markdown(score_html, unsafe_allow_html=True)
                             st.metric("Traction", deal['traction'], label_visibility="collapsed")
+                        
+                        # ===== CONTACT INFORMATION PLACEHOLDER =====
+                        st.divider()
+                        st.markdown("<strong style='color:#16A085;'>📞 Deal Contact Information</strong>", unsafe_allow_html=True)
+                        
+                        col_contact1, col_contact2 = st.columns(2)
+                        with col_contact1:
+                            st.markdown("""
+                            <div class="contact-badge">
+                            👤 Founder: John Smith<br>
+                            📧 john@{}.com
+                            </div>
+                            """.format(deal['name'].lower().replace(' ', '')), unsafe_allow_html=True)
+                        
+                        with col_contact2:
+                            st.markdown("""
+                            <div class="contact-badge">
+                            💼 Investor Relations: Sarah Johnson<br>
+                            📧 ir@{}.com
+                            </div>
+                            """.format(deal['name'].lower().replace(' ', '')), unsafe_allow_html=True)
+                        
+                        # Selection checkbox
+                        col_sel1, col_sel2 = st.columns([3, 1])
+                        with col_sel1:
+                            if st.checkbox(f"Select {deal['name']} for next steps", key=f"select_{deal['name']}"):
+                                if deal['name'] not in selected_deal_names:
+                                    selected_deal_names.append(deal['name'])
+                        
+                        with col_sel2:
+                            st.markdown("<div class='next-step-action'>➜ Next Step →</div>", unsafe_allow_html=True)
+                
+                # Save selected deals to session state
+                st.session_state.selected_deals = selected_deal_names
             
             st.info("📊 Compiling deal analysis...")
             
@@ -279,25 +416,23 @@ if st.button("Search Investment Pipeline", use_container_width=True):
                 'geography': ', '.join(geographic_focus),
                 'screening_factors': criteria_options,
                 'analysis_date': datetime.now().strftime('%B %d, %Y'),
-                'total_deals_in_db': 20,  # We have 20 in mock DB
+                'total_deals_in_db': 20,
                 'matches_found': len(matched_deals)
             }
             
-            # Generate AI insights on deals
+            # Generate AI insights
             insights_prompt = f"""
-Based on the following deal matches for investment criteria:
+Based on the following deal matches:
 Industries: {deal_data['industries']}
-Funding Stages: {deal_data['stages']}
-Revenue Range: {deal_data['revenue_range']}
-Geography: {deal_data['geography']}
-Found {len(matched_deals)} matching deals
+Stages: {deal_data['stages']}
+Revenue: {deal_data['revenue_range']}
+Found {len(matched_deals)} deals
 
-Provide insights on:
-1. Top opportunities by risk/reward profile
-2. Investment momentum in these sectors
-3. Portfolio diversification potential
-4. Recommended due diligence priorities
-5. Timeline to investment committee review
+Provide brief strategic insights on:
+1. Attractiveness of these deals
+2. Portfolio fit
+3. Due diligence priorities
+4. Next 90-day action plan
 """
             
             deal_insights = llm.generate(insights_prompt)
@@ -317,16 +452,11 @@ Provide insights on:
 - **Total Deals Evaluated:** {deal_data['total_deals_in_db']}
 - **Matches Found:** {deal_data['matches_found']}
 - **Match Rate:** {(deal_data['matches_found']/deal_data['total_deals_in_db']*100):.1f}%
-- **Top Match Score:** {(matched_deals[0]['investment_score'] if matched_deals else 0):.1f}/5.0
-
-## Screening Criteria Applied
-{chr(10).join([f'- {criteria}' for criteria in criteria_options])}
+- **Selected for Next Steps:** {len(st.session_state.selected_deals)}
 
 ## Top Investment Opportunities
-
 """
             
-            # Add top 5 deals to report
             if matched_deals:
                 for idx, deal in enumerate(matched_deals[:5], 1):
                     report += f"""
@@ -347,39 +477,19 @@ Provide insights on:
             
             report += f"""
 
-## Deal Insights & Analysis
+## Strategic Insights
 
 {deal_insights}
 
-## Investment Committee Recommendations
+## Deals Selected for Next Steps
+{chr(10).join([f"- {deal_name}" for deal_name in st.session_state.selected_deals]) if st.session_state.selected_deals else "- No deals selected yet"}
 
-### Priority Tier 1 (Strong Recommendation)
-{chr(10).join([f"- {deal['name']} ({deal['industry']}) - Score: {deal['investment_score']:.1f}/5" for deal in matched_deals[:3]])}
-
-### Recommended Next Steps
-1. Schedule management presentations with top 3 deals
-2. Request detailed financial models and projections
-3. Conduct IP/technology assessment
-4. Team reference checks
-5. Prepare investment committee memo
-
-## Market Summary by Industry
-
-"""
-            
-            market_summary = deal_sourcer.get_market_summary(industry_focus)
-            for industry, data in market_summary.items():
-                report += f"""
-### {industry}
-- **Total Companies Analyzed:** {data['deal_count']}
-- **Average Growth Rate:** {data['avg_growth_rate']:.0f}% YoY
-- **Average Team Score:** {data['avg_team_score']:.1f}/5.0
-- **Combined Revenue:** ${data['total_revenue']:.1f}M
-- **Top Performer:** {data['top_deal']}
-
-"""
-            
-            report += f"""
+## Recommended Next Steps
+1. Schedule management presentations with selected deals
+2. Request detailed financial models and pitch decks
+3. Conduct team background verification
+4. Assess IP and technology differentiation
+5. Prepare investment committee presentation
 
 ---
 
@@ -404,25 +514,42 @@ st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
 # ===== DOWNLOAD SECTION =====
 if st.session_state.deal_sourcing_complete:
-    st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">Download Deal Pipeline</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">Download & Next Steps</div>', unsafe_allow_html=True)
     
     data = st.session_state.deal_sourcing_data
     
-    try:
-        docx_doc = template_gen.markdown_to_docx(st.session_state.deal_sourcing_report)
-        docx_buffer = BytesIO()
-        docx_doc.save(docx_buffer)
-        docx_bytes = docx_buffer.getvalue()
-        
-        st.download_button(
-            label="Download Deal Pipeline (DOCX)",
-            data=docx_bytes,
-            file_name=f"Deal_Pipeline_{datetime.now().strftime('%Y%m%d')}.docx",
-            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            use_container_width=True
-        )
-    except Exception as e:
-        st.error(f"Error generating report: {str(e)}")
+    col_dl1, col_dl2 = st.columns(2)
+    
+    with col_dl1:
+        try:
+            docx_doc = template_gen.markdown_to_docx(st.session_state.deal_sourcing_report)
+            docx_buffer = BytesIO()
+            docx_doc.save(docx_buffer)
+            docx_bytes = docx_buffer.getvalue()
+            
+            st.download_button(
+                label="📥 Download Deal Pipeline (DOCX)",
+                data=docx_bytes,
+                file_name=f"Deal_Pipeline_{datetime.now().strftime('%Y%m%d')}.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                use_container_width=True
+            )
+        except Exception as e:
+            st.error(f"Error generating report: {str(e)}")
+    
+    with col_dl2:
+        if st.session_state.selected_deals:
+            st.markdown("""
+            <div class='next-step-action' style='width:100%;'>
+            ✅ {0} Deal(s) Selected - Ready for Due Diligence
+            </div>
+            """.format(len(st.session_state.selected_deals)), unsafe_allow_html=True)
+            
+            if st.button("📋 Proceed to Due Diligence Analysis →", use_container_width=True, key="proceed_dd"):
+                st.info("💡 Tip: Next, upload documents from selected deals to Due Diligence page for detailed analysis")
+                st.switch_page("pages/2_Due_Diligence_Analysis.py")
+        else:
+            st.info("ℹ️ Select deals above to proceed to Due Diligence")
     
     st.markdown("</div>", unsafe_allow_html=True)
     
