@@ -1,225 +1,280 @@
 """
-Financial Modeling Page
-QDB-branded with auto-fill from workflow and Excel export
+Financial Modeling | Regulus AI × QDB
+Standalone financial projections with Excel/CSV export. Step 4 of 5.
 """
-
 import streamlit as st
+import os, base64, io
 from datetime import datetime
 import pandas as pd
 import numpy as np
-from utils.llm_handler import LLMHandler
-from utils.financial_analyzer import FinancialAnalyzer
-import io
 from openpyxl import Workbook
-from openpyxl.styles import Font, PatternFill, Alignment
-from openpyxl.utils.dataframe import dataframe_to_rows
-from utils.qdb_styling import apply_qdb_styling, QDB_PURPLE, QDB_GOLD, QDB_DARK_BLUE, qdb_header, qdb_divider
+from openpyxl.styles import Font, PatternFill
+from utils.qdb_styling import apply_qdb_styling, QDB_DARK_BLUE, QDB_NAVY
 
-st.set_page_config(page_title="Financial Modeling - QDB", layout="wide", initial_sidebar_state="collapsed")
-apply_qdb_styling()  # ✅ QDB styling
+st.set_page_config(page_title="Financial Modeling – Regulus AI", layout="wide")
+apply_qdb_styling()
 
-@st.cache_resource
-def init_handlers():
-    return LLMHandler(), FinancialAnalyzer()
+def encode_image(path):
+    if os.path.exists(path):
+        with open(path, "rb") as f:
+            return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
+    return None
+qdb_logo = encode_image("QDB_Logo.png")
 
-llm, fin_analyzer = init_handlers()
+# ==== HERO SECTION ====
+st.markdown(f"""
+<div style="
+background:linear-gradient(135deg,{QDB_DARK_BLUE} 0%, {QDB_NAVY} 100%);
+color:white;margin:0 -3rem;padding:100px 0 80px;text-align:center;">
+<div style="position:absolute;left:50px;top:48px;">
+{'<img src="'+qdb_logo+'" style="max-height:80px;">' if qdb_logo else '<b>QDB</b>'}
+</div>
+<h1 style="font-size:2.8rem;font-weight:800;">Financial Modeling & Projections</h1>
+<p style="font-size:1.35rem;color:#E2E8F0;">Build Comprehensive Financial Models and Forecasts</p>
+<p style="color:#CBD5E0;font-size:1.1rem;max-width:750px;margin:auto;">
+AI-powered 3-5 year financial projections, revenue forecasting, and profitability analysis. Export models in Excel and CSV formats.
+</p>
+</div>
+""", unsafe_allow_html=True)
 
-if 'financial_model' not in st.session_state:
-    st.session_state.financial_model = None
+# ==== RETURN HOME ====
+col1, col2, col3 = st.columns([1, 0.6, 1])
+with col2:
+    if st.button("Return Home", use_container_width=True, key="home_btn"):
+        st.switch_page("streamlit_app.py")
 
-# Top Navigation
-col_nav1, col_nav2, col_nav3 = st.columns([1, 2, 1])
-with col_nav1:
-    if st.button("← Back to Market"):
-        st.switch_page("pages/3_Market_Analysis.py")
-with col_nav2:
-    st.markdown(f"<p style='text-align: center; color:{QDB_DARK_BLUE}; font-weight: 600;'>Step 4 of 5: Financial Modeling</p>", unsafe_allow_html=True)
-with col_nav3:
-    st.markdown("<p style='text-align: right; color: #999;'>QDB Analyst</p>", unsafe_allow_html=True)
+st.markdown("""
+<style>
+button[key="home_btn"]{
+ background:linear-gradient(135deg,#16A085 0%,#138074 80%,#0E5F55 100%)!important;
+ color:white!important;border:none!important;border-radius:44px!important;
+ padding:14px 44px!important;font-weight:700!important;font-size:1.05rem!important;
+ box-shadow:0 8px 34px rgba(19,128,116,.25)!important;
+transition:all .2s!important;}
+button[key="home_btn"]:hover{transform:translateY(-2px);}
+</style>""", unsafe_allow_html=True)
 
-qdb_divider()
+# ==== WORKFLOW TRACKER ====
+st.markdown("""
+<style>
+.track{background:#F6F5F2;margin:-2px -3rem;padding:34px 0;
+display:flex;justify-content:space-evenly;align-items:center;}
+.circle{width:54px;height:54px;border-radius:50%;display:flex;
+align-items:center;justify-content:center;font-weight:700;
+background:#CBD5E0;color:#475569;font-size:0.95rem;}
+.circle.active{background:linear-gradient(135deg,#138074 0%,#0E5F55 100%);
+color:white;box-shadow:0 5px 15px rgba(19,128,116,0.4);}
+.label{margin-top:7px;font-size:0.9rem;font-weight:600;color:#708090;}
+.label.active{color:#138074;}
+.pipe{height:3px;width:70px;background:#CBD5E0;}
+</style>
+<div class="track">
+ <div><div class="circle">1</div><div class="label">Deal Sourcing</div></div>
+ <div class="pipe"></div>
+ <div><div class="circle">2</div><div class="label">Due Diligence</div></div>
+ <div class="pipe"></div>
+ <div><div class="circle">3</div><div class="label">Market Analysis</div></div>
+ <div class="pipe"></div>
+ <div><div class="circle active">4</div><div class="label active">Financial Modeling</div></div>
+ <div class="pipe"></div>
+ <div><div class="circle">5</div><div class="label">Investment Memo</div></div>
+</div>
+""", unsafe_allow_html=True)
 
-# HEADER
-qdb_header("Financial Modeling & Projections", "Build comprehensive financial models and forecasts")
+# ==== COMPANY INFO SECTION ====
+st.markdown("""
+<div style="background:white;margin:50px -3rem 0 -3rem;padding:45px 3rem;
+border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
+<h2 style="text-align:center;color:#1B2B4D;font-weight:700;">Company & Model Setup</h2>
+</div>
+""", unsafe_allow_html=True)
 
-# Auto-fill from selected deal
-selected_deal = st.session_state.get('selected_deal')
+with st.expander("Enter Company and Financial Assumptions", expanded=True):
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        company_name = st.text_input("Company Name", placeholder="Enter company name", key="company_name")
+    with col2:
+        sector = st.text_input("Sector", placeholder="e.g., Fintech, AI/ML", key="sector")
+    with col3:
+        currency = st.selectbox("Currency", ["USD","EUR","GBP","QAR","AED"], index=0, key="currency")
 
-if selected_deal:
-    st.success(f"📊 Financial Model for: **{selected_deal['company']}** ({selected_deal['sector']})")
-    company_name = selected_deal['company']
-    sector = selected_deal['sector']
-else:
-    st.warning("⚠️ No company selected")
-    company_name = st.text_input("Company Name", value="")
-    sector = "Technology"
+# ==== MODEL PARAMETERS ====
+st.markdown("""
+<div style="background:white;margin:50px -3rem 0 -3rem;padding:45px 3rem;
+border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
+<h2 style="text-align:center;color:#1B2B4D;font-weight:700;">Financial Assumptions</h2>
+</div>
+""", unsafe_allow_html=True)
 
-qdb_divider()
+with st.expander("Set Financial Parameters and Drivers", expanded=True):
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        forecast_years = st.selectbox("Forecast Period", [3,5,7], index=1, key="forecast_years")
+        revenue_start = st.number_input("Current Annual Revenue (Millions)", min_value=0.0, value=5.0, step=0.5, key="revenue")
+    with col2:
+        growth_rate = st.slider("Annual Revenue Growth Rate (%)", 0, 150, 30, key="growth")
+        gross_margin = st.slider("Gross Margin (%)", 0, 100, 70, key="gross_margin")
+    with col3:
+        opex_percent = st.slider("OpEx (% of Revenue)", 0, 100, 40, key="opex")
+        tax_rate = st.slider("Tax Rate (%)", 0, 50, 20, key="tax")
 
-# Model Parameters
-qdb_header("Model Parameters", "Configure financial assumptions and projections")
-
-col_param1, col_param2, col_param3 = st.columns(3)
-
-with col_param1:
-    currency = st.selectbox("Currency", ["USD", "EUR", "GBP", "QAR", "AED"], index=0)
-    forecast_years = st.selectbox("Forecast Period", [3, 5, 7], index=1)
-
-with col_param2:
-    revenue_start = st.number_input("Current Revenue (M)", min_value=0.0, value=5.0, step=0.5)
-    growth_rate = st.slider("Annual Growth Rate (%)", 0, 100, 30)
-
-with col_param3:
-    gross_margin = st.slider("Gross Margin (%)", 0, 100, 70)
-    opex_percent = st.slider("OpEx (% of Revenue)", 0, 100, 40)
-
+# ==== ACTION BUTTON ====
 st.markdown("<br>", unsafe_allow_html=True)
-
-# Generate Model Button
-if st.button("🚀 Generate Financial Model", type="primary", use_container_width=True):
-    
-    with st.spinner("Building financial model..."):
-        
-        # Generate projections
+if st.button("Generate Financial Model", use_container_width=True, key="generate"):
+    try:
+        # Build projections
         years = list(range(datetime.now().year, datetime.now().year + forecast_years))
         revenue = [revenue_start * ((1 + growth_rate/100) ** i) for i in range(forecast_years)]
         cogs = [r * (1 - gross_margin/100) for r in revenue]
         gross_profit = [r - c for r, c in zip(revenue, cogs)]
         opex = [r * opex_percent/100 for r in revenue]
-        ebitda = [gp - op for gp, op in zip(gross_profit, opex)]
+        ebit = [gp - op for gp, op in zip(gross_profit, opex)]
+        tax = [e * tax_rate/100 for e in ebit]
+        net_income = [e - t for e, t in zip(ebit, tax)]
         
-        # Create DataFrame
-        df = pd.DataFrame({
+        # Create model
+        model_df = pd.DataFrame({
             'Year': years,
             'Revenue': revenue,
             'COGS': cogs,
             'Gross Profit': gross_profit,
+            'Gross Margin %': [(gp/r)*100 for gp, r in zip(gross_profit, revenue)],
             'OpEx': opex,
-            'EBITDA': ebitda,
-            'EBITDA Margin %': [(e/r)*100 for e, r in zip(ebitda, revenue)]
+            'EBIT': ebit,
+            'EBIT Margin %': [(e/r)*100 for e, r in zip(ebit, revenue)],
+            'Tax': tax,
+            'Net Income': net_income,
+            'Net Margin %': [(n/r)*100 for n, r in zip(net_income, revenue)]
         })
         
-        st.session_state.financial_model = df
-        st.success("✅ Financial model generated!")
+        st.session_state.financial_model = model_df
+        st.success("Financial model generated successfully!")
+        
+    except Exception as e:
+        st.error(f"Error: {str(e)}")
 
-# Display Model
-if st.session_state.financial_model is not None:
-    qdb_divider()
-    qdb_header("Financial Projections", "Review and analyze projected financial performance")
-    
+# ==== RESULTS DISPLAY ====
+if st.session_state.get("financial_model") is not None and company_name:
+    st.markdown("---")
+    st.markdown("""
+<div style="background:white;margin:30px -3rem 0 -3rem;padding:45px 3rem;
+border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
+<h2 style="text-align:center;color:#1B2B4D;font-weight:700;">Financial Projections</h2>
+</div>
+""", unsafe_allow_html=True)
+
     df = st.session_state.financial_model
     
-    # Format display
+    # Display table
     df_display = df.copy()
-    for col in ['Revenue', 'COGS', 'Gross Profit', 'OpEx', 'EBITDA']:
-        df_display[col] = df_display[col].apply(lambda x: f"{currency} {x:,.2f}M")
-    df_display['EBITDA Margin %'] = df_display['EBITDA Margin %'].apply(lambda x: f"{x:.1f}%")
+    for col in ['Revenue','COGS','Gross Profit','OpEx','EBIT','Tax','Net Income']:
+        df_display[col] = df_display[col].apply(lambda x: f"{currency} {x:,.1f}M")
+    for col in ['Gross Margin %','EBIT Margin %','Net Margin %']:
+        df_display[col] = df_display[col].apply(lambda x: f"{x:.1f}%")
     
     st.dataframe(df_display, use_container_width=True)
     
     # Charts
     col_chart1, col_chart2 = st.columns(2)
-    
     with col_chart1:
-        st.markdown("### Revenue Growth")
-        st.line_chart(df.set_index('Year')['Revenue'])
-    
+        st.markdown("**Revenue & Profitability Trend**")
+        st.line_chart(df.set_index('Year')[['Revenue','EBIT','Net Income']])
     with col_chart2:
-        st.markdown("### EBITDA Trend")
-        st.line_chart(df.set_index('Year')['EBITDA'])
+        st.markdown("**Margin Analysis**")
+        st.line_chart(df.set_index('Year')[['Gross Margin %','EBIT Margin %','Net Margin %']])
     
-    # Key Metrics
+    # Key metrics
     st.markdown("<br>", unsafe_allow_html=True)
-    col_metric1, col_metric2, col_metric3, col_metric4 = st.columns(4)
-    
-    with col_metric1:
+    col_m1, col_m2, col_m3, col_m4 = st.columns(4)
+    with col_m1:
         st.metric("Year 1 Revenue", f"{currency} {df.iloc[0]['Revenue']:.1f}M")
-    with col_metric2:
+    with col_m2:
         st.metric("Year End Revenue", f"{currency} {df.iloc[-1]['Revenue']:.1f}M")
-    with col_metric3:
-        st.metric("CAGR", f"{growth_rate}%")
-    with col_metric4:
-        st.metric("Avg EBITDA Margin", f"{df['EBITDA Margin %'].mean():.1f}%")
+    with col_m3:
+        cagr = ((df.iloc[-1]['Revenue'] / df.iloc[0]['Revenue']) ** (1/(forecast_years-1)) - 1) * 100
+        st.metric("CAGR", f"{cagr:.1f}%")
+    with col_m4:
+        st.metric("Avg Net Margin", f"{df['Net Margin %'].mean():.1f}%")
     
-    # Export Excel
-    qdb_divider()
+    # EXPORT SECTION
+    st.markdown("---")
+    st.markdown("""
+<div style="background:white;margin:30px -3rem 0 -3rem;padding:45px 3rem;
+border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
+<h2 style="text-align:center;color:#1B2B4D;font-weight:700;">Export Model</h2>
+</div>
+""", unsafe_allow_html=True)
+
+    # CSV Export
+    csv_data = df.to_csv(index=False)
     
-    def create_excel():
+    # Excel Export
+    def create_excel(data):
         output = io.BytesIO()
         wb = Workbook()
         ws = wb.active
         ws.title = "Financial Model"
         
-        # Header
-        ws['A1'] = f"{company_name} - Financial Projections"
-        ws['A1'].font = Font(bold=True, size=14, color="5E2A84")
+        # Title
+        ws['A1'] = f"{company_name} - {sector} | Financial Projections"
+        ws['A1'].font = Font(bold=True, size=12, color="FFFFFF")
+        ws['A1'].fill = PatternFill(start_color="1B2B4D", end_color="1B2B4D", fill_type="solid")
+        
+        # Headers
+        for col_num, header in enumerate(data.columns, 1):
+            cell = ws.cell(row=3, column=col_num, value=header)
+            cell.font = Font(bold=True, color="FFFFFF")
+            cell.fill = PatternFill(start_color="138074", end_color="138074", fill_type="solid")
         
         # Data
-        for r_idx, row in enumerate(dataframe_to_rows(df, index=False, header=True), 3):
+        for r_idx, row in enumerate(data.values, 4):
             for c_idx, value in enumerate(row, 1):
-                cell = ws.cell(row=r_idx, column=c_idx, value=value)
-                if r_idx == 3:
-                    cell.font = Font(bold=True, color="FFFFFF")
-                    cell.fill = PatternFill(start_color="5E2A84", end_color="5E2A84", fill_type="solid")
+                ws.cell(row=r_idx, column=c_idx, value=value)
         
         wb.save(output)
         return output.getvalue()
     
-    col_export1, col_export2 = st.columns(2)
+    excel_bytes = create_excel(df)
     
-    with col_export1:
-        csv = df.to_csv(index=False)
+    col_exp1, col_exp2 = st.columns(2)
+    with col_exp1:
         st.download_button(
-            "📥 Download CSV",
-            csv,
+            "Download Excel (XLSX)",
+            excel_bytes,
+            f"Financial_Model_{company_name}_{datetime.now().strftime('%Y%m%d')}.xlsx",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True
+        )
+    with col_exp2:
+        st.download_button(
+            "Download CSV",
+            csv_data,
             f"Financial_Model_{company_name}_{datetime.now().strftime('%Y%m%d')}.csv",
             "text/csv",
             use_container_width=True
         )
     
-    with col_export2:
-        excel_data = create_excel()
-        st.download_button(
-            "📥 Download Excel",
-            excel_data,
-            f"Financial_Model_{company_name}_{datetime.now().strftime('%Y%m%d')}.xlsx",
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            use_container_width=True
-        )
-    
-    # WORKFLOW NAVIGATION
+    # NAVIGATION
     st.markdown("<br><br>", unsafe_allow_html=True)
-    st.markdown(
-        f"""
-        <div style='
-            background: linear-gradient(135deg, {QDB_PURPLE} 0%, {QDB_DARK_BLUE} 100%);
-            border-radius: 12px;
-            padding: 25px;
-            color: white;
-            text-align: center;
-        '>
-            <h3 style='margin: 0 0 10px 0;'>Financial Model Complete!</h3>
-            <p style='margin: 0; font-size: 1.1rem;'>Proceed to generate Investment Memorandum</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    col_nav1, col_nav2, col_nav3 = st.columns(3)
     
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    col_nav_btn1, col_nav_btn2, col_nav_btn3 = st.columns([1, 2, 1])
-    
-    with col_nav_btn1:
-        if st.button("← Back to Market", use_container_width=True):
+    with col_nav1:
+        if st.button("Back to Market Analysis", use_container_width=True, key="back_market"):
             st.switch_page("pages/3_Market_Analysis.py")
     
-    with col_nav_btn2:
-        if st.button("Proceed to Investment Memo →", type="primary", use_container_width=True):
+    with col_nav2:
+        if st.button("Go to Investment Memo", use_container_width=True, key="to_memo"):
             st.switch_page("pages/5_Investment_Memo.py")
     
-    with col_nav_btn3:
-        if st.button("Back to Home", use_container_width=True):
-            st.switch_page("Main_Page.py")
+    with col_nav3:
+        if st.button("Back to Deal Sourcing", use_container_width=True, key="back_deals"):
+            st.switch_page("pages/1_Deal_Sourcing.py")
 
-st.markdown("<br><br>", unsafe_allow_html=True)
-st.markdown(f"<div style='text-align: center; color:{QDB_GOLD}; font-size: 0.9rem;'>Financial Modeling | Powered by Regulus AI</div>", unsafe_allow_html=True)
+# ==== FOOTER ====
+st.markdown(f"""
+<div style="background:{QDB_DARK_BLUE};color:#E2E8F0;padding:26px 36px;margin:80px -3rem -2rem;
+display:flex;justify-content:space-between;align-items:center;">
+<p style="margin:0;font-size:0.9rem;">© 2025 Regulus AI | All Rights Reserved</p>
+<p style="margin:0;color:#A0AEC0;font-size:0.9rem;">Powered by Regulus AI</p>
+</div>
+""", unsafe_allow_html=True)
