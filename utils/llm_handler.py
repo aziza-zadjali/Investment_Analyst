@@ -1,230 +1,113 @@
 """
-LLM Handler for Investment Analysis
-Handles all AI/LLM interactions using LangChain
+Regulus AI – LLM Handler
+Unified intelligent interface for all LLM-assisted modules (Deal Sourcing, Due Diligence, Market Analysis, etc.)
 """
 
 import os
-from typing import Optional
-from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage, SystemMessage
+import openai
+from datetime import datetime
 
 
 class LLMHandler:
-    """Handle LLM interactions for investment analysis"""
-    
-    def __init__(self, model: str = "gpt-4o-mini", temperature: float = 0.7):
+    """
+    Core LLM Handler for the QDB × Regulus Analyst Platform.
+    Provides standardized text generation & summarization utilities.
+    """
+
+    def __init__(self, 
+                 model_name: str = "gpt-4-turbo",
+                 temperature: float = 0.4,
+                 system_prompt: str = (
+                     "You are Regulus AI, an expert financial analyst working "
+                     "for Qatar Development Bank. Your style is concise, "
+                     "structured, and analytical."
+                 )):
         """
-        Initialize LLM handler
-        
-        Args:
-            model: OpenAI model to use (default: gpt-4o-mini for cost efficiency)
-            temperature: Temperature for generation (0.0 - 1.0)
+        Initialize the model and environment.
+        Reads `OPENAI_API_KEY` from environment variables securely.
         """
-        self.model = model
+        self.model_name = model_name
         self.temperature = temperature
-        
-        # Get API key from environment
-        api_key = os.getenv('OPENAI_API_KEY')
-        if not api_key:
-            raise ValueError("OPENAI_API_KEY environment variable not set")
-        
-        # Initialize ChatOpenAI
-        self.llm = ChatOpenAI(
-            model=model,
-            temperature=temperature,
-            api_key=api_key
-        )
-    
-    def generate(self, prompt: str, system_message: Optional[str] = None) -> str:
+        self.system_prompt = system_prompt
+
+        if "OPENAI_API_KEY" not in os.environ:
+            raise EnvironmentError("⚠️ OPENAI_API_KEY is not set in your environment variables.")
+        openai.api_key = os.getenv("OPENAI_API_KEY")
+
+    # ----------------------------------------------------------------------
+    # PUBLIC METHODS
+    # ----------------------------------------------------------------------
+
+    def generate_text(self, user_input: str, max_tokens: int = 800) -> str:
         """
-        Generate text response from LLM
-        
-        Args:
-            prompt: User prompt/question
-            system_message: Optional system message to set context
-            
-        Returns:
-            Generated text response
+        Generate human‑readable analytical text output for any task.
+        Usage example:
+            handler = LLMHandler()
+            result = handler.generate_text("Summarize Qatar’s SME growth opportunities.")
         """
-        
-        messages = []
-        
-        # Add system message if provided
-        if system_message:
-            messages.append(SystemMessage(content=system_message))
-        else:
-            # Default system message for investment analysis
-            messages.append(SystemMessage(content="""You are a professional investment analyst with expertise in due diligence, 
-financial analysis, market research, and risk assessment. Provide detailed, accurate, and actionable insights based on the data provided. 
-Be specific with numbers, dates, and concrete recommendations. Highlight both opportunities and risks."""))
-        
-        # Add user prompt
-        messages.append(HumanMessage(content=prompt))
-        
         try:
-            # Generate response
-            response = self.llm.invoke(messages)
-            return response.content
-        
+            response = openai.ChatCompletion.create(
+                model=self.model_name,
+                messages=[
+                    {"role": "system", "content": self.system_prompt},
+                    {"role": "user", "content": user_input},
+                ],
+                temperature=self.temperature,
+                max_tokens=max_tokens,
+            )
+            message = response["choices"][0]["message"]["content"].strip()
+            return message
+
         except Exception as e:
-            print(f"Error generating LLM response: {e}")
-            return f"Analysis could not be completed due to an error: {str(e)}"
-    
-    def analyze_document(self, document_text: str, analysis_type: str = "general") -> str:
+            return f"⚠️ LLM generation error: {str(e)}"
+
+    # ----------------------------------------------------------------------
+
+    def summarize_deals(self, deals: list) -> str:
         """
-        Analyze a document with specific focus
-        
-        Args:
-            document_text: Text content of document
-            analysis_type: Type of analysis (financial, legal, operational, etc.)
-            
-        Returns:
-            Analysis results
+        Summarize a list of discovered deals into an executive overview.
+        Expected deal format:
+            [{"Company": ..., "Industry": ..., "Stage": ..., "Region": ...}, ...]
         """
-        
-        analysis_prompts = {
-            "financial": """Analyze the financial aspects of this document:
-- Revenue and profitability trends
-- Cash flow and liquidity
-- Key financial ratios
-- Financial risks and concerns
-- Overall financial health assessment""",
-            
-            "legal": """Analyze the legal aspects of this document:
-- Corporate structure and governance
-- Compliance status
-- Legal risks and liabilities
-- Contractual obligations
-- Regulatory concerns""",
-            
-            "operational": """Analyze the operational aspects of this document:
-- Business model and operations
-- Operational efficiency
-- Technology and systems
-- Human resources
-- Scalability assessment""",
-            
-            "market": """Analyze the market aspects of this document:
-- Market size and growth
-- Competitive landscape
-- Market trends
-- Company positioning
-- Market opportunities and threats""",
-            
-            "general": """Provide a comprehensive analysis of this document covering key insights, 
-risks, opportunities, and recommendations."""
-        }
-        
-        prompt = f"""{analysis_prompts.get(analysis_type, analysis_prompts['general'])}
+        try:
+            if not deals:
+                return "No deals available to summarize."
 
-Document content:
-{document_text[:6000]}
+            text_block = "\n".join(
+                [f"{d.get('Company','N/A')} – {d.get('Industry','N/A')} "
+                 f"({d.get('Stage','N/A')} • {d.get('Region','N/A')})"
+                 for d in deals]
+            )
+            prompt = (
+                f"Provide a one‑page executive analysis of the following investment opportunities:\n\n{text_block}\n\n"
+                "Highlight potential standouts, macro trends, and risks in a professional tone."
+            )
+            return self.generate_text(prompt, max_tokens=700)
 
-Provide detailed analysis with specific insights."""
-        
-        return self.generate(prompt)
-    
-    def compare_documents(self, doc1_text: str, doc2_text: str, comparison_focus: str = "general") -> str:
+        except Exception as e:
+            return f"⚠️ Summary failed: {e}"
+
+    # ----------------------------------------------------------------------
+
+    def generate_due_diligence_checklist(self, industry: str) -> str:
         """
-        Compare two documents
-        
-        Args:
-            doc1_text: First document text
-            doc2_text: Second document text
-            comparison_focus: What to compare (financials, terms, etc.)
-            
-        Returns:
-            Comparison analysis
+        Produce a QDB‑standard Due Diligence checklist for a given industry.
         """
-        
-        prompt = f"""Compare and contrast these two documents focusing on {comparison_focus}:
+        checklist_prompt = (
+            f"Generate a concise Due Diligence checklist for investments in the {industry} sector. "
+            "Structure under Legal, Financial, Operational, and Market aspects."
+        )
+        return self.generate_text(checklist_prompt, max_tokens=600)
 
-DOCUMENT 1:
-{doc1_text[:3000]}
+    # ----------------------------------------------------------------------
 
-DOCUMENT 2:
-{doc2_text[:3000]}
-
-Provide detailed comparison highlighting:
-1. Key similarities
-2. Important differences
-3. Implications of differences
-4. Recommendations"""
-        
-        return self.generate(prompt)
-    
-    def summarize(self, text: str, max_length: str = "medium") -> str:
+    def generate_investment_summary(self, company: str, highlights: str) -> str:
         """
-        Summarize text content
-        
-        Args:
-            text: Text to summarize
-            max_length: Summary length (short/medium/long)
-            
-        Returns:
-            Summary
+        Create a short investment memo summary for a given company and highlights.
         """
-        
-        length_instructions = {
-            "short": "in 3-5 bullet points",
-            "medium": "in 1-2 paragraphs with key points",
-            "long": "in detailed paragraphs covering all major aspects"
-        }
-        
-        instruction = length_instructions.get(max_length, length_instructions["medium"])
-        
-        prompt = f"""Summarize the following text {instruction}:
-
-{text[:5000]}
-
-Provide a clear, comprehensive summary."""
-        
-        return self.generate(prompt)
-    
-    def extract_key_info(self, text: str, info_type: str) -> str:
-        """
-        Extract specific information from text
-        
-        Args:
-            text: Source text
-            info_type: Type of information to extract
-            
-        Returns:
-            Extracted information
-        """
-        
-        prompt = f"""Extract and list all {info_type} from the following text:
-
-{text[:5000]}
-
-Provide the information in a clear, structured format."""
-        
-        return self.generate(prompt)
-    
-    def generate_recommendations(self, analysis_text: str, context: str = "") -> str:
-        """
-        Generate actionable recommendations based on analysis
-        
-        Args:
-            analysis_text: Analysis results
-            context: Additional context
-            
-        Returns:
-            Recommendations
-        """
-        
-        prompt = f"""Based on the following analysis, provide specific, actionable recommendations:
-
-ANALYSIS:
-{analysis_text[:4000]}
-
-{f'CONTEXT: {context}' if context else ''}
-
-Provide:
-1. Clear recommendation (Proceed/Caution/Decline)
-2. Key reasons for recommendation
-3. Specific actions to take
-4. Risk mitigation strategies
-5. Timeline considerations"""
-        
-        return self.generate(prompt)
+        memo_prompt = (
+            f"Prepare an investment summary for {company}. "
+            f"Use this information:\n\n{highlights}\n\n"
+            "Include key selling points and potential risks in executive tone."
+        )
+        return self.generate_text(memo_prompt, max_tokens=700)
