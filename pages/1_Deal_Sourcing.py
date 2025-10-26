@@ -1,6 +1,7 @@
 """
-Deal Sourcing - Enhanced
+Deal Sourcing - Enhanced & Fixed
 Features: Industry tagging, web search, deal listing, selection workflow
+FIXED: Session state management & page switching
 """
 import streamlit as st
 import base64
@@ -21,13 +22,13 @@ def encode_image(path):
 qdb_logo = encode_image("QDB_Logo.png")
 regulus_logo = encode_image("regulus_logo.png")
 
-# ===== Session State =====
+# ===== Session State - FIXED =====
 if 'search_results' not in st.session_state:
     st.session_state.search_results = []
 if 'selected_deals' not in st.session_state:
     st.session_state.selected_deals = {}
-if 'deal_db' not in st.session_state:
-    st.session_state.deal_db = []
+if 'current_selected_deal' not in st.session_state:
+    st.session_state.current_selected_deal = None
 
 # ===== DEAL DATABASE =====
 ATTRACTIVE_INDUSTRIES = [
@@ -42,7 +43,6 @@ UNATTRACTIVE_INDUSTRIES = [
     "Gambling", "Weapons Manufacturing", "Fast Fashion"
 ]
 
-# Pre-populated deal database
 SAMPLE_DEALS = [
     {
         "id": "DS-001",
@@ -165,18 +165,11 @@ st.markdown("""
     border-radius: 10px;
     padding: 15px;
     margin: 10px 0;
-    cursor: pointer;
     transition: all 0.3s;
 }
 .deal-card:hover {
     box-shadow: 0 4px 12px rgba(22,160,133,0.3);
     transform: translateY(-2px);
-}
-.deal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
 }
 .attraction-attractive {
     background-color: #d4edda;
@@ -272,18 +265,15 @@ st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
 # ===== SEARCH BUTTON =====
 if st.button("Search Deals", use_container_width=True, key="search_btn"):
-    with st.spinner("Searching deal databases and web sources..."):
+    with st.spinner("Searching deal databases..."):
         filtered_deals = []
         for deal in SAMPLE_DEALS:
-            # Filter by industry
             if industry_search and deal['industry'] not in industry_search:
                 continue
             
-            # Filter by stage
             if stage_search and deal['stage'] not in stage_search:
                 continue
             
-            # Filter by revenue (simplified)
             if min_revenue != "Any":
                 deal_revenue = deal['revenue'].replace("$", "").replace("M ARR", "")
                 try:
@@ -310,28 +300,30 @@ if st.session_state.search_results:
     
     attractive = sum(1 for d in st.session_state.search_results if d['attraction'] == 'ATTRACTIVE')
     unattractive = sum(1 for d in st.session_state.search_results if d['attraction'] == 'UNATTRACTIVE')
+    quality = int((attractive / len(st.session_state.search_results) * 100)) if st.session_state.search_results else 0
     
     with col_stat1:
         st.metric("Total Deals", len(st.session_state.search_results))
     
     with col_stat2:
-        st.metric("Attractive", attractive, f"+{attractive}")
+        st.metric("Attractive", attractive)
     
     with col_stat3:
-        st.metric("Unattractive", unattractive, f"-{unattractive}")
+        st.metric("Unattractive", unattractive)
     
     with col_stat4:
-        st.metric("Quality Score", f"{(attractive / len(st.session_state.search_results) * 100):.0f}%")
+        st.metric("Quality Score", f"{quality}%")
     
     st.markdown("</div>", unsafe_allow_html=True)
     st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
-# ===== DEAL LISTING =====
+# ===== DEAL LISTING - FIXED =====
 if st.session_state.search_results:
     st.markdown('<div class="section-beige"><div class="section-header">Available Deals</div>', unsafe_allow_html=True)
     
     for idx, deal in enumerate(st.session_state.search_results):
         attraction_class = "attraction-attractive" if deal['attraction'] == 'ATTRACTIVE' else "attraction-unattractive"
+        deal_id = deal['id']
         
         with st.container():
             st.markdown(f"""
@@ -362,20 +354,31 @@ if st.session_state.search_results:
             
             col_action1, col_action2, col_action3 = st.columns([2, 1, 1])
             
+            # FIXED: Use proper checkbox state management
             with col_action1:
-                if st.checkbox("Select for due diligence", key=f"select_{deal['id']}"):
-                    st.session_state.selected_deals[deal['id']] = deal
+                is_selected = st.checkbox(
+                    "Select for due diligence",
+                    value=(deal_id in st.session_state.selected_deals),
+                    key=f"checkbox_{deal_id}"
+                )
+                
+                if is_selected:
+                    st.session_state.selected_deals[deal_id] = deal
+                else:
+                    if deal_id in st.session_state.selected_deals:
+                        del st.session_state.selected_deals[deal_id]
             
             with col_action2:
-                if st.button("View Details", key=f"details_{deal['id']}", use_container_width=True):
-                    st.session_state[f"show_detail_{deal['id']}"] = True
+                if st.button("Details", key=f"details_{deal_id}", use_container_width=True):
+                    st.session_state[f"show_detail_{deal_id}"] = True
             
             with col_action3:
-                if st.button("Proceed", key=f"proceed_{deal['id']}", use_container_width=True):
-                    st.info(f"Ready to proceed with {deal['company']}. Navigate to Due Diligence to start analysis.")
+                if st.button("DD Now", key=f"proceed_{deal_id}", use_container_width=True):
+                    st.session_state.current_selected_deal = deal
+                    st.session_state.should_navigate = True
             
             # Show details if expanded
-            if st.session_state.get(f"show_detail_{deal['id']}", False):
+            if st.session_state.get(f"show_detail_{deal_id}", False):
                 with st.expander(f"Details - {deal['company']}", expanded=True):
                     st.markdown(f"""
                     **Company:** {deal['company']}  
@@ -408,23 +411,32 @@ if st.session_state.selected_deals:
     st.markdown(f"**{len(st.session_state.selected_deals)} deal(s) selected:**")
     
     for deal_id, deal in st.session_state.selected_deals.items():
-        st.markdown(f"""
-        - **{deal['company']}** ({deal['industry']}) - {deal['stage']} - {deal['attraction']}
-        """)
+        st.markdown(f"- **{deal['company']}** ({deal['industry']}) - {deal['stage']} - {deal['attraction']}")
     
-    col_proc1, col_proc2 = st.columns(2)
+    col_proc1, col_proc2, col_proc3 = st.columns(3)
     
     with col_proc1:
-        if st.button("Proceed to Due Diligence", use_container_width=True):
-            st.info("Navigating to Due Diligence Analysis...")
-            st.switch_page("pages/2_Due_Diligence_Analysis.py")
+        if st.button("Proceed to DD (Selected)", use_container_width=True, key="proceed_selected"):
+            first_deal = list(st.session_state.selected_deals.values())[0]
+            st.session_state.current_selected_deal = first_deal
+            st.session_state.should_navigate = True
     
     with col_proc2:
+        if st.button("View All Selected", use_container_width=True):
+            st.info(f"Processing {len(st.session_state.selected_deals)} deals...")
+    
+    with col_proc3:
         if st.button("Clear Selections", use_container_width=True):
             st.session_state.selected_deals = {}
             st.rerun()
     
     st.markdown("</div>", unsafe_allow_html=True)
+
+# ===== NAVIGATION LOGIC - FIXED =====
+if st.session_state.get('should_navigate', False):
+    st.session_state.should_navigate = False
+    st.info(f"Navigating to Due Diligence for {st.session_state.current_selected_deal['company']}...")
+    st.switch_page("pages/2_Due_Diligence_Analysis.py")
 
 # ===== DATABASE INFO =====
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
