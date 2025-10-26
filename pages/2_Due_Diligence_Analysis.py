@@ -1,7 +1,6 @@
 """
 Due Diligence Analysis | Regulus AI × QDB
-Enhanced: Financial + Legal + Operational + AML/Compliance + Web Extraction
-Styled to match Investment Analyst AI design system
+Enhanced: Financial + Legal + Operational + AML/Compliance
 """
 import streamlit as st
 from datetime import datetime
@@ -239,8 +238,9 @@ if run_analysis:
 
 Provide: Revenue trends, profitability, cash flow, liquidity, leverage ratios, red flags."""
             analysis_results['financial'] = llm.generate(fin_prompt)
-        except:
-            analysis_results['financial'] = "Analysis unavailable"
+        except Exception as e:
+            st.warning(f"Financial analysis error: {str(e)}")
+            analysis_results['financial'] = "Analysis unavailable - LLM error"
         
         # Legal Analysis
         st.info("⚖️ Reviewing legal & compliance...")
@@ -250,7 +250,7 @@ Provide: Revenue trends, profitability, cash flow, liquidity, leverage ratios, r
 
 Cover: Corporate structure, compliance, disputes, IP, contracts."""
             analysis_results['legal'] = llm.generate(legal_prompt)
-        except:
+        except Exception as e:
             analysis_results['legal'] = "Analysis unavailable"
         
         # Operational Analysis
@@ -261,7 +261,7 @@ Cover: Corporate structure, compliance, disputes, IP, contracts."""
 
 Analyze: Business model, supply chain, technology, team, efficiency."""
             analysis_results['operational'] = llm.generate(op_prompt)
-        except:
+        except Exception as e:
             analysis_results['operational'] = "Analysis unavailable"
         
         # Risk Assessment
@@ -272,7 +272,7 @@ Analyze: Business model, supply chain, technology, team, efficiency."""
 
 Identify: Market, financial, operational, legal, strategic risks."""
             analysis_results['risks'] = llm.generate(risk_prompt)
-        except:
+        except Exception as e:
             analysis_results['risks'] = "Assessment unavailable"
         
         # AML Screening
@@ -283,8 +283,8 @@ Identify: Market, financial, operational, legal, strategic risks."""
 
 Check: Sanctions, PEP, FATCA, adverse media."""
             analysis_results['aml'] = llm.generate(aml_prompt)
-        except:
-            analysis_results['aml'] = "Screening pending"
+        except Exception as e:
+            analysis_results['aml'] = "Screening unavailable"
         
         # Recommendations
         st.info("💡 Generating recommendations...")
@@ -294,18 +294,20 @@ Check: Sanctions, PEP, FATCA, adverse media."""
 
 Provide: Recommendation, strengths, concerns, required actions."""
             analysis_results['recommendations'] = llm.generate(rec_prompt)
-        except:
-            analysis_results['recommendations'] = "Pending"
+        except Exception as e:
+            analysis_results['recommendations'] = "Recommendations pending"
         
         # Generate Report
         st.info("📝 Generating report...")
-        markdown_report = template_gen.generate_due_diligence_report(analysis_results)
-        
-        st.session_state.dd_complete = True
-        st.session_state.dd_report = markdown_report
-        st.session_state.dd_data = analysis_results
-        
-        st.success("✅ Due Diligence Analysis Complete!")
+        try:
+            markdown_report = template_gen.generate_due_diligence_report(analysis_results)
+            st.session_state.dd_complete = True
+            st.session_state.dd_report = markdown_report
+            st.session_state.dd_data = analysis_results
+            st.success("✅ Due Diligence Analysis Complete!")
+        except Exception as e:
+            st.error(f"❌ Report generation error: {str(e)}")
+            st.stop()
 
 # === RESULTS DISPLAY ===
 if st.session_state.dd_complete:
@@ -322,13 +324,16 @@ if st.session_state.dd_complete:
     col_dl1, col_dl2 = st.columns(2)
     
     with col_dl1:
-        st.download_button(
-            "📄 Download Markdown",
-            st.session_state.dd_report,
-            f"{data['company_name']}_DD_{datetime.now().strftime('%Y%m%d')}.md",
-            "text/markdown",
-            use_container_width=True
-        )
+        try:
+            st.download_button(
+                "📄 Download Markdown",
+                st.session_state.dd_report,
+                f"{data['company_name']}_DD_{datetime.now().strftime('%Y%m%d')}.md",
+                "text/markdown",
+                use_container_width=True
+            )
+        except Exception as e:
+            st.error(f"Markdown export error: {e}")
     
     with col_dl2:
         try:
@@ -345,7 +350,7 @@ if st.session_state.dd_complete:
                 use_container_width=True
             )
         except Exception as e:
-            st.error(f"DOCX error: {e}")
+            st.error(f"DOCX export error: {str(e)}")
     
     st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
     
@@ -356,11 +361,6 @@ if st.session_state.dd_complete:
     st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
     
     # Navigation
-    st.markdown("""
-    <div style="background:#F6F5F2;margin:0 -3rem;padding:16px 0;text-align:center;">
-    </div>
-    """, unsafe_allow_html=True)
-    
     col_nav1, col_nav2, col_nav3 = st.columns(3)
     with col_nav1:
         if st.button("← Back to Deal Sourcing", use_container_width=True):
