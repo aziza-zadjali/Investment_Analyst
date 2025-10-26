@@ -1,179 +1,175 @@
 """
 Deal Discovery & Sourcing | Regulus x QDB
-Elegant teal workflow tracker | Filters with ticket size | Robust LLM handler
+QDB-branded design | Workflow step ribbon | Ticket size filter | Robust execution
 """
 
 import streamlit as st
 import pandas as pd
-import os, base64
+import random
 from datetime import datetime
 from utils.qdb_styling import apply_qdb_styling, qdb_section_start, qdb_section_end, QDB_DARK_BLUE
 from utils.llm_handler import LLMHandler
 
-# ---------- PAGE CONFIGURATION ----------
-st.set_page_config(page_title="Deal Sourcing — Regulus AI", layout="wide", initial_sidebar_state="collapsed")
+# ---------- PAGE CONFIG ----------
+st.set_page_config(
+    page_title="Deal Sourcing | Regulus AI",
+    layout="wide",
+    initial_sidebar_state="collapsed",
+)
 apply_qdb_styling()
 
-# ---------- UTILITY ----------
-def encode_image(path):
-    if os.path.exists(path):
-        with open(path, "rb") as f:
-            return "data:image/png;base64," + base64.b64encode(f.read()).decode()
-    return None
-
-qdb_logo = encode_image("QDB_Logo.png")
-
-# ========== HERO ==========
+# ---------- HERO ----------
 st.markdown(
     f"""
 <div style="background:linear-gradient(135deg,#1B2B4D 0%,#2C3E5E 100%);
-    color:white;text-align:center;margin:0 -3rem;
-    padding:75px 20px 70px;position:relative;">
-  <div style="position:absolute;top:25px;left:35px;">
-    {"<img src='"+qdb_logo+"' style='max-height:65px;'/>" if qdb_logo else "<b>QDB</b>"}
-  </div>
-  <h1 style="font-size:2.2rem;font-weight:700;">Deal Discovery & Sourcing</h1>
-  <p style="color:#CBD5E0;font-size:1rem;max-width:720px;margin:10px auto;">
-    Identify and qualify high‑potential investment opportunities with AI automation and Regulus LLM intelligence.
+    color:white;text-align:center;margin:0 -3rem;padding:75px 20px 65px;position:relative;">
+  <h1 style="font-size:2.3rem;font-weight:700;">Deal Discovery & Sourcing</h1>
+  <p style="color:#CBD5E0;font-size:1rem;max-width:740px;margin:10px auto;">
+    AI-powered sourcing and qualification engine – refined by Regulus LLMs and QDB’s strategic insight.
   </p>
 </div>
 """,
     unsafe_allow_html=True,
 )
 
-# ========== WORKFLOW BAR (matches screenshot UI) ==========
+# ---------- WORKFLOW (ribbon style identical to screenshot) ----------
 st.markdown(
     """
 <style>
-.workflow{
-  background:#F6F5F2;margin:0 -3rem;
-  padding:22px 60px;display:flex;
-  justify-content:space-between;align-items:center;
-  flex-wrap:wrap;
-}
-.stage{display:flex;flex-direction:column;align-items:center;font-weight:600;text-align:center;}
-.circle{
-  width:46px;height:46px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-size:1.1rem;font-weight:700;margin-bottom:5px;
-}
-.active{background-color:#138074;color:#fff;box-shadow:0px 3px 12px rgba(19,128,116,0.35);}
+.workflow{background:#F6F5F2;margin:0 -3rem;padding:30px 45px 20px;
+display:flex;justify-content:center;align-items:flex-start;gap:90px;flex-wrap:nowrap;}
+.step{text-align:center;position:relative;}
+.circle{width:46px;height:46px;border-radius:50%;
+display:flex;align-items:center;justify-content:center;font-weight:700;}
+.active{background-color:#138074;color:#fff;box-shadow:0 3px 10px rgba(19,128,116,0.4);}
 .inactive{background-color:#CBD5E0;color:#475569;}
-.label{font-size:0.85rem;font-weight:600;}
+.label{margin-top:8px;font-weight:600;font-size:0.88rem;}
 .label.active{color:#138074;}
-.label.inactive{color:#A0AEC0;}
-.line{flex-grow:1;height:2px;background-color:#CBD5E0;margin:0 5px;}
+.label.inactive{color:#94A3B8;}
+.connector{position:absolute;top:22px;right:-65px;width:130px;height:2px;background-color:#CBD5E0;}
+.step:last-child .connector{display:none;}
 </style>
 
 <div class="workflow">
-  <div class="stage"><div class="circle active">1</div><div class="label active">Deal Sourcing</div></div>
-  <div class="line"></div>
-  <div class="stage"><div class="circle inactive">2</div><div class="label inactive">Due Diligence</div></div>
-  <div class="line"></div>
-  <div class="stage"><div class="circle inactive">3</div><div class="label inactive">Market Analysis</div></div>
-  <div class="line"></div>
-  <div class="stage"><div class="circle inactive">4</div><div class="label inactive">Financial Modeling</div></div>
-  <div class="line"></div>
-  <div class="stage"><div class="circle inactive">5</div><div class="label inactive">Investment Memo</div></div>
+  <div class="step"><div class="circle active">1</div><div class="label active">Deal Sourcing</div><div class="connector"></div></div>
+  <div class="step"><div class="circle inactive">2</div><div class="label inactive">Due Diligence</div><div class="connector"></div></div>
+  <div class="step"><div class="circle inactive">3</div><div class="label inactive">Market Analysis</div><div class="connector"></div></div>
+  <div class="step"><div class="circle inactive">4</div><div class="label inactive">Financial Modeling</div><div class="connector"></div></div>
+  <div class="step"><div class="circle inactive">5</div><div class="label inactive">Investment Memo</div></div>
 </div>
 """,
     unsafe_allow_html=True,
 )
 
-# ========== FILTERS SECTION ==========
+# ========== INPUT SECTION ==========
 qdb_section_start("light")
-
 st.markdown(
     f"""
-<div style='text-align:center;max-width:950px;margin:auto;'>
-  <h2 style='color:{QDB_DARK_BLUE};font-weight:700;font-size:1.8rem;margin-bottom:6px;'>Intelligent Deal Discovery</h2>
-  <p style='color:#555;font-size:1.05rem;'>
-     Adjust filters to instantly detect aligned deals from trusted databases and market feeds.
-  </p>
+<div style='text-align:center;max-width:940px;margin:auto;'>
+  <h2 style='color:{QDB_DARK_BLUE};font-weight:700;font-size:1.8rem;margin-bottom:6px;'>Set Sourcing Parameters</h2>
+  <p style='color:#555;font-size:1.05rem;'>Refine your deal criteria for AI discovery. Filter by industry, stage, region & ticket size.</p>
 </div>
 """,
     unsafe_allow_html=True,
 )
 
-with st.form("filters", clear_on_submit=False):
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        industries = st.multiselect(
-            "Target Industries",
-            ["Technology", "Healthcare", "Finance", "Energy", "Manufacturing", "Agritech"],
-            default=["Technology"],
-        )
-    with c2:
-        regions = st.multiselect(
-            "Regions",
-            ["MENA", "Europe", "North America", "Asia Pacific"],
-            default=["MENA"],
-        )
-    with c3:
-        stage = st.selectbox("Funding Stage", ["Pre‑Seed", "Seed", "Series A", "Series B", "Growth"])
-    c4, c5 = st.columns([2, 1])
-    with c4:
-        keywords = st.text_input("Keywords (Optional)", "AI | Fintech | Sustainability")
-    with c5:
-        ticket = st.number_input("Ticket Size (USD M)", min_value=0.5, max_value=100.0, value=5.0, step=0.5)
-    submitted = st.form_submit_button("🔍 Discover Deals")
+# ---- search filters ----
+cols1 = st.columns(3)
+with cols1[0]:
+    industries = st.multiselect(
+        "Industries",
+        ["Technology", "Healthcare", "Finance", "Energy", "Manufacturing", "Agritech"],
+        ["Technology"],
+    )
+with cols1[1]:
+    regions = st.multiselect(
+        "Regions",
+        ["MENA", "Europe", "North America", "Asia Pacific"],
+        ["MENA"],
+    )
+with cols1[2]:
+    stage = st.selectbox(
+        "Funding Stage", ["Pre‑Seed", "Seed", "Series A", "Series B", "Growth"]
+    )
+
+cols2 = st.columns([2, 1])
+with cols2[0]:
+    keywords = st.text_input("Keywords", "AI, Fintech, Green Tech")
+with cols2[1]:
+    ticket_range = st.slider("Ticket Size (USD M)", 1.0, 50.0, (2.0, 10.0), step=0.5)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# -------- DEAL DISCOVERY EXECUTION --------
+cA, cB, cC = st.columns([1, 0.7, 1])
+with cB:
+    run_btn = st.button("🚀 Discover Deals", use_container_width=True)
 
 qdb_section_end()
+st.markdown("<br>", unsafe_allow_html=True)
 
-# ========== STYLE FOR BUTTON ==========
-st.markdown(
-    """
-<style>
-div.stButton>button:first-child{
-  background:linear-gradient(135deg,#138074,#0e5f55)!important;
-  color:#fff!important;border:none!important;border-radius:40px!important;
-  padding:12px 30px!important;font-weight:700!important;font-size:0.95rem!important;
-  box-shadow:0 4px 12px rgba(19,128,116,0.25)!important;transition:0.2s ease-in!important;}
-div.stButton>button:first-child:hover{
-  transform:translateY(-2px)!important;box-shadow:0 6px 16px rgba(19,128,116,0.35)!important;}
-</style>
-""",
-    unsafe_allow_html=True,
-)
+# ========== EXECUTION LOGIC ==========
+if run_btn:
+    st.markdown("<hr>", unsafe_allow_html=True)
+    st.header("Discovery and Sourcing in Progress")
 
-# ========== ACTION ==========
-if submitted:
+    # placeholder simulated dataset
+    progress = st.progress(0)
+    deal_results = []
+    total = 10
+    for i in range(total):
+        progress.progress((i + 1) / total)
+        deal_results.append(
+            {
+                "Company": f"Startup {i+1}",
+                "Industry": random.choice(industries or ["Technology"]),
+                "Region": random.choice(regions or ["Global"]),
+                "Stage": stage,
+                "Ticket Size": f"${random.randint(int(ticket_range[0]), int(ticket_range[1]))} M",
+                "Founded": str(random.randint(2016, 2023)),
+                "Employees": random.randint(10, 200),
+                "Contact Name": f"CEO {i+1}",
+                "Contact Email": f"startup{i+1}@mail.com",
+            }
+        )
+
+    st.success(f"✅ Discovered {len(deal_results)} potential deals matching your parameters.")
+
     qdb_section_start("white")
-    st.subheader("AI‑Generated Insights and Recommendations 📊")
-
-    with st.spinner("Analyzing deal flow and market signals … please wait a moment."):
-        try:
-            llm = LLMHandler()
-            query = (
-                f"Generate a curated list of investment opportunities in industries {', '.join(industries)} "
-                f"for {stage} stage startups in regions {', '.join(regions)}. "
-                f"Recommended ticket size ≈ ${ticket} M. "
-                f"Keywords: {keywords}. Provide summaries with metrics and contacts."
-            )
-            response = llm.generate_text(query)
-            if not response or response.strip() == "":
-                st.warning("⚠️ No results returned from AI sourcing engine.")
-            else:
-                st.markdown(response, unsafe_allow_html=True)
-        except Exception as e:
-            st.error(f"🔧 There was an issue processing your query: **{str(e)}**")
+    st.subheader("Recommended Deals 📊")
+    df = pd.DataFrame(deal_results)
+    st.dataframe(df, use_container_width=True)
     qdb_section_end()
 
-# ========== NAVIGATION TO NEXT STAGE ==========
-st.markdown(
-    f"""
-<div style="background-color:#F6F5F2;padding:60px 20px;margin:60px -3rem -2rem;text-align:center;">
-  <h3 style="color:{QDB_DARK_BLUE};font-size:1.6rem;margin-bottom:10px;">Workflow Next Step</h3>
-  <p style="color:#555;margin-bottom:25px;">
-    Proceed to Due Diligence to assess company fundamentals and compliance risks.
-  </p>
-  <a href="?page=dd" style="
-      background-color:#319795;color:white;text-decoration:none;
-      border-radius:40px;padding:12px 35px;font-weight:600;
-      box-shadow:0 3px 10px rgba(49,151,149,0.3);">
-      → Continue to Due Diligence
-  </a>
-</div>
-""",
-    unsafe_allow_html=True,
-)
+    # ---- optional AI summary ----
+    with st.spinner("Generating AI summary…"):
+        try:
+            llm = LLMHandler()
+            text_query = (
+                f"Summarize {len(deal_results)} startup deals found in industries {', '.join(industries)} "
+                f"within regions {', '.join(regions)} for {stage} stage, ticket ${ticket_range[0]}‑{ticket_range[1]} M."
+            )
+            result = llm.generate_text(text_query)
+            if result and result.strip():
+                st.markdown("<br>", unsafe_allow_html=True)
+                st.markdown("### AI Highlights 🔍")
+                st.markdown(result)
+            else:
+                st.warning("⚠️ No AI summary available for current results.")
+        except Exception as e:
+            st.warning(f"⚠️ AI response not available — {e}")
+
+    # ---- next step ----
+    st.markdown(
+        f"""
+        <div style="background-color:#F6F5F2;padding:60px 20px;margin:60px -3rem -2rem;text-align:center;">
+          <h3 style="color:{QDB_DARK_BLUE};font-size:1.6rem;margin-bottom:10px;">Workflow Next Step</h3>
+          <p style="color:#555;margin-bottom:30px;">Continue to due diligence for compliance and performance screening.</p>
+          <a href="?page=dd" style="
+              background-color:#319795;color:white;text-decoration:none;
+              border-radius:40px;padding:12px 35px;font-weight:600;
+              box-shadow:0 3px 10px rgba(49,151,149,0.3);">→ Proceed to Due Diligence</a>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
