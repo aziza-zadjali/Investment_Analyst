@@ -147,13 +147,12 @@ The opportunity presents significant strategic alignment with QDB's investment m
 """
     return memo
 
-# ==== RETURN HOME (TOP LEFT) ====
-col_home_left, col_home_right = st.columns([0.15, 9.85])
-with col_home_left:
-    if st.button("← Home", use_container_width=True, key="home_top_left"):
-        st.switch_page("streamlit_app.py")
+# ==== RETURN HOME (TOP LEFT - HORIZONTAL) ====
+if st.button("← Return Home", use_container_width=False, key="home_top_left"):
+    st.switch_page("streamlit_app.py")
 
-st.markdown("<div style='height:3px;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+
 
 # ==== HERO SECTION ====
 st.markdown(f"""
