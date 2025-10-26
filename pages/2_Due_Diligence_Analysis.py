@@ -1,7 +1,8 @@
 """
-Enhanced Due Diligence Analysis with AML/Compliance and Web Data Extraction
+Due Diligence Analysis | Regulus AI × QDB
+Enhanced: Financial + Legal + Operational + AML/Compliance + Web Extraction
+Styled to match Investment Analyst AI design system
 """
-
 import streamlit as st
 from datetime import datetime
 import PyPDF2
@@ -9,18 +10,46 @@ import docx
 from io import BytesIO
 from utils.llm_handler import LLMHandler
 from utils.template_generator import TemplateGenerator
-from utils.web_scraper import WebScraper
+from utils.qdb_styling import apply_qdb_styling
+import os, base64
 
-st.set_page_config(page_title="DD Analysis", page_icon="📄", layout="wide")
+# === PAGE CONFIG ===
+st.set_page_config(page_title="Due Diligence Analysis – Regulus AI", layout="wide")
+apply_qdb_styling()
 
-# Initialize handlers
+# === STYLING ===
+st.markdown("""
+<style>
+button {
+ background:linear-gradient(135deg,#16A085 0%,#138074 50%,#0E5F55 100%)!important;
+ color:white!important;border:none!important;border-radius:40px!important;
+ padding:12px 36px!important;font-weight:700!important;font-size:0.95rem!important;
+ box-shadow:0 4px 16px rgba(19,128,116,0.25)!important;transition:all 0.25s ease!important;
+}
+button:hover{background:linear-gradient(135deg,#0E5F55 0%,#138074 50%,#16A085 100%)!important;
+ transform:translateY(-2px)!important;box-shadow:0 6px 22px rgba(19,128,116,0.35)!important;}
+button:active{transform:translateY(0)!important;box-shadow:0 3px 10px rgba(19,128,116,0.2)!important;}
+</style>
+""", unsafe_allow_html=True)
+
+# === IMAGE LOADERS ===
+def encode_image(path):
+    if os.path.exists(path):
+        with open(path, "rb") as f:
+            return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
+    return None
+
+qdb_logo = encode_image("QDB_Logo.png")
+regulus_logo = encode_image("regulus_logo.png")
+
+# === INITIALIZE HANDLERS ===
 @st.cache_resource
 def init_handlers():
-    return LLMHandler(), TemplateGenerator(), WebScraper()
+    return LLMHandler(), TemplateGenerator()
 
-llm, template_gen, web_scraper = init_handlers()
+llm, template_gen = init_handlers()
 
-# Session state
+# === SESSION STATE ===
 if 'dd_complete' not in st.session_state:
     st.session_state.dd_complete = False
 if 'dd_report' not in st.session_state:
@@ -28,140 +57,146 @@ if 'dd_report' not in st.session_state:
 if 'dd_data' not in st.session_state:
     st.session_state.dd_data = {}
 
-st.markdown("""
-<div style="padding: 1.5rem 0; border-bottom: 2px solid #f0f0f0;">
-    <h1 style="margin: 0; font-size: 2.5rem;">📄 Enhanced Due Diligence Analysis</h1>
-    <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 1.1rem;">
-        AI-powered comprehensive analysis with AML/Compliance screening
-    </p>
+# === RETURN HOME ===
+if st.button("← Return Home", use_container_width=False):
+    st.switch_page("streamlit_app.py")
+st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
+
+# === HERO SECTION ===
+st.markdown(f"""
+<div style="background:linear-gradient(135deg,#1B2B4D 0%,#0E2E4D 100%);color:white;
+margin:0 -3rem;padding:70px 0 50px;text-align:center;position:relative;">
+<div style="position:absolute;left:50px;top:35px;">
+{'<img src="'+qdb_logo+'" style="max-height:70px;">' if qdb_logo else '<b>QDB</b>'}
+</div>
+<div style="position:absolute;right:50px;top:35px;">
+{'<img src="'+regulus_logo+'" style="max-height:70px;">' if regulus_logo else '<b>REGULUS</b>'}
+</div>
+<h1 style="font-size:2.5rem;font-weight:800;margin:0 0 10px 0;">Enhanced Due Diligence Analysis</h1>
+<p style="font-size:1.1rem;color:#E2E8F0;margin:0;font-weight:500;">
+Financial + Legal + Operational + AML/Compliance Screening
+</p>
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("<br>", unsafe_allow_html=True)
+st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
-# Company Information
-st.subheader("🏢 Company Information")
+# === COMPANY INFO SECTION ===
+st.markdown("""
+<div style="background:#2B3E54;margin:0 -3rem;padding:24px 3rem;
+border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
+<h3 style="color:#FFFFFF;font-weight:700;margin:0;">Company Information</h3>
+</div>
+""", unsafe_allow_html=True)
 
 col1, col2 = st.columns(2)
-
 with col1:
-    company_name = st.text_input(
-        "Company Name *",
-        placeholder="e.g., Baladna Q.P.S.C.",
-        help="Enter the full company name"
-    )
-
+    company_name = st.text_input("Company Name *", placeholder="e.g., Baladna Q.P.S.C.", key="comp_name")
 with col2:
-    company_website = st.text_input(
-        "Company Website (Optional)",
-        placeholder="e.g., baladna.com",
-        help="Optionally provide company website for enhanced data extraction"
-    )
+    company_website = st.text_input("Company Website (Optional)", placeholder="e.g., baladna.com", key="comp_web")
 
-st.divider()
+st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
 
-# Document Upload
-st.subheader("📤 Upload Documents")
+# === DOCUMENT UPLOAD SECTION ===
+st.markdown("""
+<div style="background:#F5F2ED;margin:0 -3rem;padding:24px 3rem;
+border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
+<h3 style="color:#1B2B4D;font-weight:700;margin:0;">Upload Supporting Documents</h3>
+<p style="color:#666;margin:4px 0 0 0;font-size:0.9rem;">
+Legal, financial, and operational files (PDF, DOCX, XLSX)
+</p>
+</div>
+""", unsafe_allow_html=True)
 
 uploaded_files = st.file_uploader(
-    "Upload financial documents, legal files, contracts (PDF, DOCX, XLSX)",
+    "Select documents",
     type=['pdf', 'docx', 'xlsx'],
     accept_multiple_files=True,
-    help="Upload company documents for analysis"
+    label_visibility="collapsed",
+    key="dd_files"
 )
 
 if uploaded_files:
-    st.success(f"✅ {len(uploaded_files)} file(s) uploaded")
+    st.success(f"✅ {len(uploaded_files)} file(s) uploaded successfully")
 
-st.divider()
+st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
 
-# Optional: Web Data Extraction
-with st.expander("🌐 **Optional:** Fetch Public Company Data from Website", expanded=False):
-    st.info("""
-**Enhance your analysis by automatically extracting:**
-- Financial statements and annual reports
-- Investor relations documents
-- ESG/Sustainability reports
-- Corporate governance information
-- Company fact sheets
+# === WEB EXTRACTION SECTION ===
+st.markdown("""
+<div style="background:#2B3E54;margin:0 -3rem;padding:24px 3rem;
+border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
+<h3 style="color:#FFFFFF;font-weight:700;margin:0;">Optional: Web Data Extraction</h3>
+<p style="color:#CBD5E0;margin:4px 0 0 0;font-size:0.9rem;">
+Automatically fetch public investor relations data
+</p>
+</div>
+""", unsafe_allow_html=True)
 
-This feature works best with publicly listed companies that have dedicated investor relations pages.
-    """)
-    
-    enable_web_extraction = st.checkbox(
-        "Enable automatic web data extraction",
-        value=False,
-        help="System will attempt to discover and extract relevant company documents from the provided website"
-    )
-    
-    if enable_web_extraction and not company_website:
-        st.warning("⚠️ Please provide company website above to use this feature")
+enable_web_extraction = st.checkbox(
+    "Enable automatic web data extraction from investor relations",
+    value=False,
+    key="web_extract"
+)
 
-st.divider()
+if enable_web_extraction and not company_website:
+    st.warning("⚠️ Please provide company website above to use this feature")
 
-# Analysis Button
-if st.button("🔍 Run Enhanced Due Diligence Analysis", type="primary", use_container_width=True):
-    
-    # Validation
+st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+
+# === ANALYSIS BUTTON ===
+col_btn_l, col_btn_c, col_btn_r = st.columns([1, 1.2, 1])
+with col_btn_c:
+    run_analysis = st.button("🔍 Run Enhanced DD Analysis", use_container_width=True, key="analyze_dd")
+
+if run_analysis:
+    # === VALIDATION ===
     if not company_name:
-        st.error("⚠️ Please enter company name")
+        st.error("❌ Please enter company name")
         st.stop()
     
     if not uploaded_files and not enable_web_extraction:
-        st.error("⚠️ Please upload documents or enable web data extraction")
+        st.error("❌ Please upload documents or enable web data extraction")
         st.stop()
     
     if enable_web_extraction and not company_website:
-        st.error("⚠️ Please enter company website to use web extraction feature")
+        st.error("❌ Please enter company website to use web extraction")
         st.stop()
     
+    # === ANALYSIS EXECUTION ===
     with st.spinner("🤖 Performing comprehensive due diligence analysis..."):
         
         combined_text = ""
         processed_files = 0
         skipped_files = 0
         
-        # STEP 1: Extract from uploaded documents
+        # STEP 1: Extract from documents
         if uploaded_files:
-            st.info(f"📄 Processing {len(uploaded_files)} uploaded documents...")
+            st.info(f"📄 Processing {len(uploaded_files)} documents...")
             
             for uploaded_file in uploaded_files:
                 try:
                     if uploaded_file.type == "application/pdf":
-                        # Enhanced PDF handling with encryption support
                         try:
                             pdf_reader = PyPDF2.PdfReader(uploaded_file)
-                            
-                            # Check if PDF is encrypted
                             if pdf_reader.is_encrypted:
                                 try:
-                                    # Try to decrypt with empty password (some PDFs allow this)
-                                    decrypt_result = pdf_reader.decrypt('')
-                                    if decrypt_result == 0:
-                                        # Decryption failed
-                                        st.warning(f"⚠️ {uploaded_file.name} is password-protected. Skipping this file.")
-                                        st.caption("💡 Tip: Please upload an unencrypted version or add pycryptodome to requirements.txt")
+                                    if pdf_reader.decrypt('') == 0:
+                                        st.warning(f"⚠️ {uploaded_file.name} is password-protected. Skipping.")
                                         skipped_files += 1
                                         continue
-                                except Exception as decrypt_error:
-                                    st.warning(f"⚠️ Could not decrypt {uploaded_file.name}. Skipping.")
+                                except:
+                                    st.warning(f"⚠️ Could not decrypt {uploaded_file.name}.")
                                     skipped_files += 1
                                     continue
                             
-                            # Extract text from PDF
                             for page in pdf_reader.pages:
                                 text = page.extract_text()
                                 if text:
                                     combined_text += text + "\n"
-                            
                             processed_files += 1
-                            
+                        
                         except Exception as pdf_error:
-                            if "PyCryptodome" in str(pdf_error) or "AES" in str(pdf_error):
-                                st.warning(f"⚠️ {uploaded_file.name} requires PyCryptodome library for decryption. Skipping.")
-                                st.caption("💡 Add `pycryptodome>=3.19.0` to requirements.txt to process encrypted PDFs")
-                            else:
-                                st.warning(f"⚠️ Could not process {uploaded_file.name}: {str(pdf_error)}")
+                            st.warning(f"⚠️ Could not process {uploaded_file.name}")
                             skipped_files += 1
                             continue
                     
@@ -172,351 +207,176 @@ if st.button("🔍 Run Enhanced Due Diligence Analysis", type="primary", use_con
                         processed_files += 1
                     
                     else:
-                        # Other file types
-                        st.caption(f"ℹ️ {uploaded_file.name} - Unsupported file type, skipping")
                         skipped_files += 1
-                    
+                
                 except Exception as e:
-                    st.warning(f"⚠️ Error processing {uploaded_file.name}: {str(e)}")
+                    st.warning(f"⚠️ Error processing {uploaded_file.name}")
                     skipped_files += 1
             
             if processed_files > 0:
-                st.success(f"✅ Successfully processed {processed_files} documents ({len(combined_text)} characters)")
+                st.success(f"✅ Successfully processed {processed_files} documents")
             if skipped_files > 0:
                 st.info(f"ℹ️ Skipped {skipped_files} files (encrypted or unsupported)")
         
-        # STEP 2: Extract from company website (if enabled)
-        web_data = {}
-        web_extraction_success = False
-        
-        if enable_web_extraction and company_website:
-            st.info(f"🌐 Extracting public data from {company_website}...")
-            
-            progress_bar = st.progress(0)
-            status_text = st.empty()
-            
-            try:
-                status_text.text("🔍 Discovering investor relations pages...")
-                progress_bar.progress(20)
-                
-                web_data = web_scraper.extract_company_data(company_website, company_name)
-                
-                progress_bar.progress(60)
-                status_text.text("📊 Extracting financial data...")
-                
-                if web_data and any(web_data.values()):
-                    web_formatted = web_scraper.format_for_analysis(web_data, company_name)
-                    combined_text += "\n\n" + web_formatted
-                    web_extraction_success = True
-                    
-                    progress_bar.progress(100)
-                    status_text.empty()
-                    progress_bar.empty()
-                    
-                    st.success(f"✅ Extracted {len(web_data)} data categories from website:")
-                    
-                    cols = st.columns(min(4, len(web_data)))
-                    for idx, category in enumerate(web_data.keys()):
-                        with cols[idx % len(cols)]:
-                            st.caption(f"✓ {category.replace('_', ' ').title()}")
-                else:
-                    progress_bar.empty()
-                    status_text.empty()
-                    st.warning("⚠️ No data found on website. Analysis will proceed with uploaded documents only.")
-                
-            except Exception as e:
-                progress_bar.empty()
-                status_text.empty()
-                st.warning(f"⚠️ Web extraction encountered issues: {str(e)}")
-                st.info("💡 Analysis will proceed with uploaded documents")
-        
-        # STEP 3: Validation
+        # STEP 2: Validation
         if not combined_text or len(combined_text) < 100:
-            st.error("⚠️ Insufficient data for analysis.")
-            st.info("""
-**Please ensure:**
-- Documents are uploaded and readable, OR
-- Company website is accessible with investor relations content
-- If uploading encrypted PDFs, add pycryptodome to requirements.txt
-            """)
+            st.error("⚠️ Insufficient data for analysis")
             st.stop()
         
-        # STEP 4: AI Analysis
-        st.info("🤖 Analyzing with AI...")
-        
+        # STEP 3: AI Analysis
         analysis_results = {
             'company_name': company_name,
-            'analyst_name': 'Regulus AI',
-            'analysis_date': datetime.now().strftime('%B %d, %Y'),
-            'company_website': company_website if company_website else 'N/A',
-            'data_sources': []
+            'analyst': 'Regulus AI',
+            'date': datetime.now().strftime('%B %d, %Y'),
+            'website': company_website if company_website else 'N/A'
         }
-        
-        if processed_files > 0:
-            analysis_results['data_sources'].append(f"{processed_files} uploaded documents")
-        if web_extraction_success:
-            analysis_results['data_sources'].append(f"{len(web_data)} web sources")
         
         # Financial Analysis
         st.info("📊 Analyzing financials...")
-        financial_prompt = f"""
-        Analyze the financial health and performance of {company_name}:
-        
-        {combined_text[:8000]}
-        
-        Provide detailed analysis covering:
-        1. Revenue trends and growth
-        2. Profitability metrics (margins, EBITDA)
-        3. Cash flow and liquidity position
-        4. Asset quality and leverage ratios
-        5. Key financial ratios (ROE, ROA, debt-to-equity)
-        6. Red flags or concerns
-        
-        Be specific with numbers and dates.
-        """
-        
         try:
-            analysis_results['financial_analysis'] = llm.generate(financial_prompt)
-        except Exception as e:
-            st.warning(f"Financial analysis error: {e}")
-            analysis_results['financial_analysis'] = "Analysis unavailable due to error"
+            fin_prompt = f"""Analyze {company_name}'s financial health:
+{combined_text[:8000]}
+
+Provide: Revenue trends, profitability, cash flow, liquidity, leverage ratios, red flags."""
+            analysis_results['financial'] = llm.generate(fin_prompt)
+        except:
+            analysis_results['financial'] = "Analysis unavailable"
         
         # Legal Analysis
         st.info("⚖️ Reviewing legal & compliance...")
-        legal_prompt = f"""
-        Review legal and compliance aspects for {company_name}:
-        
-        {combined_text[:8000]}
-        
-        Cover:
-        1. Corporate structure and governance
-        2. Regulatory compliance status
-        3. Legal proceedings or disputes
-        4. Intellectual property
-        5. Contractual obligations
-        6. Compliance risks
-        """
-        
         try:
-            analysis_results['legal_analysis'] = llm.generate(legal_prompt)
-        except Exception as e:
-            analysis_results['legal_analysis'] = "Analysis unavailable"
+            legal_prompt = f"""Review legal aspects for {company_name}:
+{combined_text[:8000]}
+
+Cover: Corporate structure, compliance, disputes, IP, contracts."""
+            analysis_results['legal'] = llm.generate(legal_prompt)
+        except:
+            analysis_results['legal'] = "Analysis unavailable"
         
         # Operational Analysis
         st.info("🏭 Assessing operations...")
-        operational_prompt = f"""
-        Assess operational capabilities of {company_name}:
-        
-        {combined_text[:8000]}
-        
-        Analyze:
-        1. Business model and operations
-        2. Supply chain and distribution
-        3. Technology and systems
-        4. Human resources and management
-        5. Operational efficiency
-        6. Scalability potential
-        """
-        
         try:
-            analysis_results['operational_analysis'] = llm.generate(operational_prompt)
-        except Exception as e:
-            analysis_results['operational_analysis'] = "Analysis unavailable"
+            op_prompt = f"""Assess operations for {company_name}:
+{combined_text[:8000]}
+
+Analyze: Business model, supply chain, technology, team, efficiency."""
+            analysis_results['operational'] = llm.generate(op_prompt)
+        except:
+            analysis_results['operational'] = "Analysis unavailable"
         
         # Risk Assessment
         st.info("⚠️ Evaluating risks...")
-        risk_prompt = f"""
-        Comprehensive risk assessment for {company_name}:
-        
-        {combined_text[:8000]}
-        
-        Identify and assess:
-        1. Market and competitive risks
-        2. Financial risks
-        3. Operational risks
-        4. Regulatory and legal risks
-        5. Strategic risks
-        6. Overall risk rating (Low/Medium/High)
-        """
-        
         try:
-            analysis_results['risk_assessment'] = llm.generate(risk_prompt)
-        except Exception as e:
-            analysis_results['risk_assessment'] = "Assessment unavailable"
-        
-        # AML/Compliance Screening
-        st.info("🔒 Performing AML/KYC screening...")
-        
-        # Sanctions
-        sanctions_prompt = f"""
-        Conduct sanctions screening for {company_name}:
-        
-        {combined_text[:4000]}
-        
-        Check for:
-        - OFAC SDN list concerns
-        - EU/UN sanctions exposure
-        - High-risk jurisdiction connections
-        - Sanctioned activities or parties
-        
-        Provide screening status.
-        """
-        
-        try:
-            analysis_results['sanctions_screening'] = llm.generate(sanctions_prompt)
+            risk_prompt = f"""Risk assessment for {company_name}:
+{combined_text[:8000]}
+
+Identify: Market, financial, operational, legal, strategic risks."""
+            analysis_results['risks'] = llm.generate(risk_prompt)
         except:
-            analysis_results['sanctions_screening'] = "Screening pending"
+            analysis_results['risks'] = "Assessment unavailable"
         
-        # PEP
-        pep_prompt = f"""
-        PEP (Politically Exposed Persons) screening for {company_name}:
-        
-        {combined_text[:4000]}
-        
-        Identify:
-        - Key individuals and roles
-        - PEP connections
-        - Enhanced due diligence requirements
-        - Risk classification
-        """
-        
+        # AML Screening
+        st.info("🔒 AML/KYC Screening...")
         try:
-            analysis_results['pep_screening'] = llm.generate(pep_prompt)
+            aml_prompt = f"""AML/KYC screening for {company_name}:
+{combined_text[:4000]}
+
+Check: Sanctions, PEP, FATCA, adverse media."""
+            analysis_results['aml'] = llm.generate(aml_prompt)
         except:
-            analysis_results['pep_screening'] = "Screening pending"
-        
-        # FATCA
-        fatca_prompt = f"""
-        FATCA compliance assessment for {company_name}:
-        
-        {combined_text[:4000]}
-        
-        Review:
-        - Entity classification
-        - GIIN status
-        - US person indicators
-        - Compliance requirements
-        """
-        
-        try:
-            analysis_results['fatca_compliance'] = llm.generate(fatca_prompt)
-        except:
-            analysis_results['fatca_compliance'] = "Review pending"
-        
-        # Adverse Media
-        adverse_prompt = f"""
-        Adverse media screening for {company_name}:
-        
-        {combined_text[:4000]}
-        
-        Check for:
-        - Financial crime indicators
-        - Regulatory actions
-        - Negative press
-        - Reputational risks
-        """
-        
-        try:
-            analysis_results['adverse_media'] = llm.generate(adverse_prompt)
-        except:
-            analysis_results['adverse_media'] = "Screening pending"
+            analysis_results['aml'] = "Screening pending"
         
         # Recommendations
         st.info("💡 Generating recommendations...")
-        rec_prompt = f"""
-        Based on all analysis for {company_name}, provide:
-        
-        1. Investment recommendation (Proceed/Caution/Decline)
-        2. Key strengths
-        3. Major concerns
-        4. Required actions before proceeding
-        5. Overall assessment
-        
-        Context: {combined_text[:5000]}
-        """
-        
         try:
+            rec_prompt = f"""Investment recommendation for {company_name}:
+{combined_text[:5000]}
+
+Provide: Recommendation, strengths, concerns, required actions."""
             analysis_results['recommendations'] = llm.generate(rec_prompt)
         except:
-            analysis_results['recommendations'] = "Recommendations pending"
+            analysis_results['recommendations'] = "Pending"
         
         # Generate Report
-        st.info("📝 Generating comprehensive report...")
+        st.info("📝 Generating report...")
         markdown_report = template_gen.generate_due_diligence_report(analysis_results)
         
-        # Store in session state
         st.session_state.dd_complete = True
         st.session_state.dd_report = markdown_report
         st.session_state.dd_data = analysis_results
         
         st.success("✅ Due Diligence Analysis Complete!")
 
-# Display Results
+# === RESULTS DISPLAY ===
 if st.session_state.dd_complete:
+    st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
     
-    st.divider()
-    st.subheader("📥 Download Reports")
+    st.markdown("""
+    <div style="background:#F5F2ED;margin:0 -3rem;padding:24px 3rem;
+    border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
+    <h3 style="color:#1B2B4D;font-weight:700;margin:0;">Download Reports</h3>
+    </div>
+    """, unsafe_allow_html=True)
     
     data = st.session_state.dd_data
-    
     col_dl1, col_dl2 = st.columns(2)
     
     with col_dl1:
         st.download_button(
-            label="⬇️ Download Markdown Report",
-            data=st.session_state.dd_report,
-            file_name=f"{data['company_name']}_DD_Report_{datetime.now().strftime('%Y%m%d')}.md",
-            mime="text/markdown"
+            "📄 Download Markdown",
+            st.session_state.dd_report,
+            f"{data['company_name']}_DD_{datetime.now().strftime('%Y%m%d')}.md",
+            "text/markdown",
+            use_container_width=True
         )
     
     with col_dl2:
-        # Generate DOCX from markdown
         try:
             docx_doc = template_gen.markdown_to_docx(st.session_state.dd_report)
-            
-            # Save to BytesIO
             docx_buffer = BytesIO()
             docx_doc.save(docx_buffer)
             docx_buffer.seek(0)
             
             st.download_button(
-                label="⬇️ Download DOCX Report",
-                data=docx_buffer.getvalue(),
-                file_name=f"{data['company_name']}_DD_Report_{datetime.now().strftime('%Y%m%d')}.docx",
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                "📥 Download DOCX Report",
+                docx_buffer.getvalue(),
+                f"{data['company_name']}_DD_{datetime.now().strftime('%Y%m%d')}.docx",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                use_container_width=True
             )
         except Exception as e:
-            st.error(f"Error generating DOCX: {e}")
+            st.error(f"DOCX error: {e}")
     
-    st.divider()
+    st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
     
     # Preview
-    with st.expander("📄 Preview Report", expanded=False):
+    with st.expander("📄 Preview Full Report"):
         st.markdown(st.session_state.dd_report)
-
-# Sidebar
-with st.sidebar:
-    st.markdown("### 💡 DD Analysis Features")
-    st.markdown("""
-✓ **Financial Analysis**
-✓ **Legal & Compliance Review**
-✓ **Operational Assessment**
-✓ **Risk Evaluation**
-✓ **AML/KYC Screening**
-  - Sanctions Lists
-  - PEP Screening
-  - FATCA Compliance
-  - Adverse Media
-✓ **Optional Web Data Extraction**
-✓ **Professional Reports (MD & DOCX)**
-✓ **Encrypted PDF Handling**
-""")
     
-    if st.session_state.dd_complete:
-        st.divider()
-        st.markdown("### 📋 Analysis Summary")
-        st.caption(f"**Company:** {st.session_state.dd_data.get('company_name', 'N/A')}")
-        st.caption(f"**Date:** {st.session_state.dd_data.get('analysis_date', 'N/A')}")
-        sources = st.session_state.dd_data.get('data_sources', [])
-        if sources:
-            st.caption(f"**Sources:** {', '.join(sources)}")
+    st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+    
+    # Navigation
+    st.markdown("""
+    <div style="background:#F6F5F2;margin:0 -3rem;padding:16px 0;text-align:center;">
+    </div>
+    """, unsafe_allow_html=True)
+    
+    col_nav1, col_nav2, col_nav3 = st.columns(3)
+    with col_nav1:
+        if st.button("← Back to Deal Sourcing", use_container_width=True):
+            st.switch_page("pages/1_Deal_Sourcing.py")
+    with col_nav2:
+        if st.button("→ Market Analysis", use_container_width=True):
+            st.switch_page("pages/3_Market_Analysis.py")
+    with col_nav3:
+        if st.button("Financial Modeling →", use_container_width=True):
+            st.switch_page("pages/4_Financial_Modeling.py")
+
+# === FOOTER ===
+st.markdown("""
+<div style="background:#1B2B4D;color:#E2E8F0;padding:20px 36px;margin:40px -3rem -2rem;
+display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;">
+<p style="margin:0;">© 2025 Regulus AI | Enhanced Due Diligence</p>
+<p style="margin:0;color:#A0AEC0;">Powered by Regulus AI</p>
+</div>
+""", unsafe_allow_html=True)
