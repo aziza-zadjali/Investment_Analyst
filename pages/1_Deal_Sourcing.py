@@ -1,175 +1,158 @@
 """
 Deal Discovery & Sourcing | Regulus × QDB
-Teal theme • valid HTML • stunning step tracker • responsive centered layout
+AI‑Powered Real‑Time Startup Sourcing from Accelerator and Funding Platforms
 """
 
 import streamlit as st
 import pandas as pd
-from datetime import datetime
-import base64, os
 from utils.web_scraper import WebScraper
 from utils.llm_handler import LLMHandler
 from utils.template_generator import TemplateGenerator
 from utils.qdb_styling import apply_qdb_styling
+from datetime import datetime
+import base64, os
 
-# ---------- PAGE CONFIG ----------
-st.set_page_config(page_title="Deal Sourcing - Regulus AI", layout="wide", initial_sidebar_state="collapsed")
+# ============ PAGE CONFIG ============
+st.set_page_config(page_title="Deal Sourcing – Regulus AI", layout="wide")
 apply_qdb_styling()
 
-# ---------- IMAGE ENCODER ----------
-def encode_image(path):
-    if os.path.exists(path):
-        with open(path, "rb") as f:
-            return "data:image/png;base64," + base64.b64encode(f.read()).decode()
-    return None
+# ============ HEADER ============
+st.markdown(
+    """
+<div style="background:linear-gradient(135deg,#1B2B4D 0%,#2C3E5E 100%);
+color:white;text-align:center;margin:0 -3rem;padding:80px 20px 70px;position:relative;">
+  <h1 style="font-weight:700;font-size:2.3rem;">AI‑Powered Deal Discovery & Sourcing</h1>
+  <p style="color:#CBD5E0;font-size:1rem;max-width:750px;margin:auto;">
+    Identify qualified investment opportunities from global startup platforms with Regulus AI‑driven insights.
+  </p>
+</div>
 
-# ---------- INITIALIZE SESSION ----------
-for key in ["discovered_deals","selected_deals","saved_deals"]:
-    if key not in st.session_state:
-        st.session_state[key]=[]
-if "show_contact_form" not in st.session_state:
-    st.session_state.show_contact_form={}
+<!-- Curved SVG Section Separator -->
+<svg style="display:block;margin:0 -3rem;" viewBox="0 0 1440 150" xmlns="http://www.w3.org/2000/svg">
+  <path fill="#F6F5F2" d="M0,160L60,149.3C120,139,240,117,360,117.3C480,117,600,139,720,144C840,149,960,139,1080,128C1200,117,1320,107,1380,101.3L1440,96L1440,0L1380,0C1320,0,1200,0,1080,0C960,0,840,0,720,0C600,0,480,0,360,0C240,0,120,0,60,0L0,0Z"></path>
+</svg>
+""",
+    unsafe_allow_html=True,
+)
 
-# ---------- HANDLERS ----------
+# ============ STEP TRACKER ============
+st.markdown(
+    """
+<style>
+.track{background:#F6F5F2;margin:-2px -3rem 0 -3rem;padding:32px 40px;
+display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:1rem;}
+.step{display:flex;flex-direction:column;align-items:center;}
+.circle{
+  width:48px;height:48px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;background:#D1D5DB;color:#475569;transition:all 0.3s ease;
+}
+.circle.active{background:linear-gradient(135deg,#138074 0%,#0E5F55 100%);color:white;
+box-shadow:0 3px 12px rgba(19,128,116,0.35);transform:scale(1.05);}
+.label{font-size:0.85rem;font-weight:600;color:#94A3B8;margin-top:6px;}
+.label.active{color:#138074;}
+.connector{width:60px;height:2px;background:#CBD5E0;margin:0 12px;}
+</style>
+
+<div class="track">
+  <div class="step"><div class="circle active">1</div><div class="label active">Deal Sourcing</div></div>
+  <div class="connector"></div>
+  <div class="step"><div class="circle">2</div><div class="label">Due Diligence</div></div>
+  <div class="connector"></div>
+  <div class="step"><div class="circle">3</div><div class="label">Market Analysis</div></div>
+  <div class="connector"></div>
+  <div class="step"><div class="circle">4</div><div class="label">Financial Modeling</div></div>
+  <div class="connector"></div>
+  <div class="step"><div class="circle">5</div><div class="label">Investment Memo</div></div>
+</div>
+""",
+    unsafe_allow_html=True,
+)
+
+# ============ INITIALIZATION ============
 @st.cache_resource
 def init_handlers():
     return WebScraper(), LLMHandler(), TemplateGenerator()
 
-scraper,llm,templater=init_handlers()
+scraper, llm, template = init_handlers()
 
-# ---------- HEADER ----------
-st.markdown(
-    """
-<div style="background:linear-gradient(135deg,#1B2B4D 0%,#2C3E5E 100%);
-color:white;text-align:center;margin:0 -3rem;padding:70px 20px;">
-  <h1 style="font-weight:700;font-size:2rem;">Deal Discovery & Sourcing</h1>
-  <p style="color:#CBD5E0;">AI‑powered investment opportunity discovery from global platforms</p>
-</div>
-""",
-    unsafe_allow_html=True,
-)
-
-# ---------- STEP TRACKER (clean HTML) ----------
-st.markdown(
-    """
-<style>
-.tracker{
-  background-color:#F6F5F2;margin:0 -3rem;padding:25px 40px;
-  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;
-  font-family:'Segoe UI',sans-serif;
-}
-.steps{display:flex;justify-content:center;align-items:center;gap:12px;flex:1;}
-.step{display:flex;flex-direction:column;align-items:center;gap:6px;}
-.circle{
-  width:40px;height:40px;border-radius:50%;
-  display:flex;justify-content:center;align-items:center;
-  font-weight:700;font-size:0.95rem;
-}
-.circle.active{background:#138074;color:white;
-box-shadow:0 3px 8px rgba(19,128,116,0.4);}
-.circle.inactive{background:#D1D5DB;color:#9CA3AF;}
-.label{font-size:0.8rem;font-weight:600;}
-.label.active{color:#138074;}
-.label.inactive{color:#9CA3AF;}
-.line{height:2px;width:40px;background:#D1D5DB;}
-.navtext{color:#138074;text-decoration:none;font-weight:600;font-size:0.9rem;}
-</style>
-
-<div class="tracker">
-  <a href="streamlit_app.py" class="navtext">← Back to Home</a>
-  <div class="steps">
-    <div class="step"><div class="circle active">1</div><div class="label active">Deal Sourcing</div></div>
-    <div class="line"></div>
-    <div class="step"><div class="circle inactive">2</div><div class="label inactive">Due Diligence</div></div>
-    <div class="line"></div>
-    <div class="step"><div class="circle inactive">3</div><div class="label inactive">Market Analysis</div></div>
-    <div class="line"></div>
-    <div class="step"><div class="circle inactive">4</div><div class="label inactive">Financial Model</div></div>
-    <div class="line"></div>
-    <div class="step"><div class="circle inactive">5</div><div class="label inactive">Investment Memo</div></div>
-  </div>
-  <span style="color:#777;font-size:0.9rem;">Regulus AI</span>
-</div>
-""",
-    unsafe_allow_html=True,
-)
-
-# ---------- CRITERIA ----------
-with st.expander("Define Investment Criteria", expanded=True):
-    st.markdown("**Unattractive Industry Screening** – Exclude sectors as per QDB list.")
-    industries=st.multiselect(
-        "Industries",
-        ["Technology","Healthcare","Energy","Finance","Retail","Manufacturing"],
+# ============ INVESTMENT FILTERS ============
+with st.expander("🎯 Define Investment Criteria", expanded=True):
+    c1,c2,c3=st.columns(3)
+    industries=c1.multiselect("Industries",
+        ["Technology","Healthcare","Finance","Energy","Retail","Manufacturing"],
         ["Technology","Healthcare"])
-    sectors=st.multiselect(
-        "Sectors",
-        ["Fintech","HealthTech","AI/ML","SaaS","Cleantech"],
-        ["Fintech"]
-    )
-    stage=st.multiselect("Stage",["Pre‑Seed","Seed","Series A","Growth"],["Seed"])
-    regions=st.multiselect("Regions",["MENA","Europe","North America","Asia Pacific"],["MENA"])
-    deal_count=st.number_input("Deals to Source",5,50,15,5)
+    regions=c2.multiselect("Regions",
+        ["MENA","Europe","North America","Asia Pacific"],
+        ["MENA"])
+    stage=c3.selectbox("Funding Stage",["Pre‑Seed","Seed","Series A","Series B","Growth"],index=1)
+    c4,c5=st.columns([2,1])
+    sectors=c4.multiselect("Sectors",["Fintech","AI/ML","ClimateTech","HealthTech","SaaS"],["Fintech"])
+    deal_count=c5.slider("Deals per Search (Range)",5,50,15,5)
 
-# ---------- SOURCES ----------
-st.subheader("Select Data Sources")
-sources=st.multiselect("Providers",
-                       ["Crunchbase","AngelList","PitchBook","Magnitt","Dealroom"],
-                       ["Crunchbase","AngelList"])
-if sources:
-    cols=st.columns(len(sources))
-    for i,s in enumerate(sources):
-        with cols[i]:
-            st.markdown(f"**{s}**")
-            st.caption("Global startup and funding data")
+sources=st.multiselect(
+    "Active Data Sources",
+    ["Crunchbase","AngelList","Magnitt","Wamda","PitchBook"],
+    ["Crunchbase","AngelList","Magnitt"]
+)
 
-# ---------- BUTTON ----------
-c1,c2,c3=st.columns([1,0.8,1])
-with c2:
-    go=st.button("🚀 Discover Deals",use_container_width=True)
+# ============ DISCOVER BUTTON ============
+st.markdown("<br>",unsafe_allow_html=True)
+colA,colB,colC=st.columns([1,0.8,1])
+with colB:
+    discover_clicked=st.button("🚀 Discover Live Deals",use_container_width=True)
 
 st.markdown(
     """
 <style>
 div.stButton>button:first-child{
-  background:linear-gradient(135deg,#138074 0%,#0e5f55 100%)!important;
-  color:white!important;border:none!important;
-  border-radius:40px!important;padding:12px 30px!important;
-  font-weight:700!important;font-size:0.95rem!important;
-  box-shadow:0 4px 10px rgba(19,128,116,0.3)!important;
-  transition:all 0.2s ease!important;}
-div.stButton>button:first-child:hover{
-  transform:translateY(-2px)!important;
-  box-shadow:0 6px 14px rgba(19,128,116,0.35)!important;}
+  background:linear-gradient(135deg,#138074 0%,#0E5F55 100%)!important;color:white!important;
+  border:none!important;border-radius:40px!important;
+  padding:12px 30px!important;font-weight:700!important;font-size:0.95rem!important;
+  box-shadow:0 4px 12px rgba(19,128,116,0.35)!important;transition:0.2s ease;}
+div.stButton>button:first-child:hover{transform:translateY(-2px)!important;}
 </style>
 """,
     unsafe_allow_html=True,
 )
 
-# ---------- DISCOVER DEALS ----------
-if go:
-    deals=[]
-    for i in range(deal_count):
-        deals.append({
-            "Company":f"Startup {i+1}",
-            "Industry":industries[i%len(industries)],
-            "Sector":sectors[i%len(sectors)],
-            "Stage":stage[0],
-            "Region":regions[0],
-            "Ticket Size":f"${(i%5)+1} M"
-        })
-    st.session_state.discovered_deals=deals
-    st.success(f"✅ {len(deals)} potential deals discovered!")
+# ============ LIVE WEB SCRAPE SOURCING ============
+if discover_clicked:
+    st.info("Initiating Regulus AI deal scraper…")
+    results=[]
+    try:
+        for src in sources:
+            with st.spinner(f"Fetching {', '.join(industries)} deals from {src}…"):
+                data=scraper.search_startups(
+                    platform=src,
+                    industries=industries,
+                    sectors=sectors,
+                    stage=[stage],
+                    regions=regions,
+                    limit=int(deal_count/len(sources))
+                )
+                results.extend(data)
+                st.success(f"✔ Got {len(data)} results from {src}")
+        if not results:
+            st.warning("No matches found for your parameters.")
+        else:
+            st.session_state.discovered_deals=results
+            df=pd.DataFrame(results)
+            st.markdown("### Discovered Deals 📊")
+            st.dataframe(df,use_container_width=True)
 
-# ---------- SHOW RESULTS ----------
-if st.session_state.discovered_deals:
-    df=pd.DataFrame(st.session_state.discovered_deals)
-    st.markdown("### Discovered Deals")
-    st.dataframe(df,use_container_width=True)
+            # AI summary
+            question=f"Create a concise summary of {len(results)} recent startup deals discovered in {', '.join(industries)} across {', '.join(regions)}."
+            response=llm.generate_text(question)
+            st.markdown("#### Regulus AI Summary Report")
+            st.info(response)
+    except Exception as e:
+        st.error(f"⚠️ Scraping failed – {e}")
 
-# ---------- FOOTER ----------
+# ============ FOOTER ============
 st.markdown(
     """
-<div style="background:#1B2B4D;color:#E2E8F0;padding:25px 30px;margin:40px -3rem 0 -3rem;">
+<div style="background:#1B2B4D;color:#E2E8F0;padding:28px 30px;margin:60px -3rem 0;margin-bottom:-2rem;">
   <div style="display:flex;justify-content:space-between;align-items:center;max-width:1300px;margin:auto;">
     <p style="margin:0;font-size:0.9rem;">© 2025 Regulus AI | All Rights Reserved</p>
     <p style="margin:0;color:#A0AEC0;font-size:0.9rem;">Powered by Regulus AI</p>
