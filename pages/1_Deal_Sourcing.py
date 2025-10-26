@@ -140,7 +140,7 @@ div.stButton>button:first-child:hover{
 if discover_clicked:
     try:
         with st.spinner("Running live data discovery and AI qualification..."):
-            scraped = scraper.discover_deals(
+            scraped = scraper.scrape_startup_data(
                 industries=industries,
                 sectors=sectors,
                 stages=stage,
