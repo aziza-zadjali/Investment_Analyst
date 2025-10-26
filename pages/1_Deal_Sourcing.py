@@ -1,17 +1,13 @@
 """
 Deal Discovery & Sourcing | Regulus AI × QDB
-Hero style visually identical to your main page, with center-aligned CTA and full brand setup.
+Hero styled identical to main page, working home navigation, no icons.
 """
 import streamlit as st
 import os, base64, pandas as pd
 from utils.web_scraper import WebScraper
 from utils.llm_handler import LLMHandler
 from utils.template_generator import TemplateGenerator
-from utils.qdb_styling import (
-    apply_qdb_styling,
-    QDB_DARK_BLUE,
-    QDB_NAVY,
-)
+from utils.qdb_styling import apply_qdb_styling, QDB_DARK_BLUE, QDB_NAVY
 
 st.set_page_config(page_title="Deal Sourcing – Regulus AI", layout="wide")
 apply_qdb_styling()
@@ -23,7 +19,7 @@ def encode_image(path):
     return None
 qdb_logo = encode_image("QDB_Logo.png")
 
-# ==== HERO SECTION (EXACT MAIN PAGE STYLE) ====
+# ==== HERO SECTION ====
 st.markdown(
     f"""
 <div style="
@@ -32,7 +28,6 @@ st.markdown(
     position:relative;
     margin:0 -3rem; padding:100px 0 80px 0;
     min-height:390px; text-align:center; overflow:hidden;">
-  <!-- QDB LOGO LEFT -->
   <div style="position:absolute;left:50px;top:48px;">
     {'<img src="'+qdb_logo+'" style="max-height:80px;">' if qdb_logo else '<b>QDB</b>'}
   </div>
@@ -47,23 +42,36 @@ st.markdown(
       Daily AI-powered identification and curation of investment opportunities. <br>
       End-to-End Sourcing, Due Diligence, Market Analysis & Investment Memos.
     </p>
-    <div style="margin-top:30px;">
-      <button onclick="window.location.href='/'" style="
-        background:linear-gradient(135deg,#16A085 0%,#138074 80%,#0E5F55 100%);
-        color:white; border:none; border-radius:44px!important;
-        padding:19px 54px; font-weight:700; font-size:1.08rem;
-        letter-spacing:0.01em; box-shadow:0 8px 34px rgba(19,128,116,.20);
-        transition:all .19s; cursor:pointer;">
-        ⬅ Return Home
-      </button>
-    </div>
   </div>
 </div>
 """,
     unsafe_allow_html=True,
 )
 
-# ==== WORKFLOW TRACKER (no change needed) ====
+# ==== RETURN HOME BUTTON (PROPER STREAMLIT NAVIGATION) ====
+col1, col2, col3 = st.columns([1, 0.6, 1])
+with col2:
+    if st.button("Return Home", use_container_width=True, key="home_btn"):
+        st.switch_page("streamlit_app.py")
+
+st.markdown(
+    """
+<style>
+button[key="home_btn"]{
+ background:linear-gradient(135deg,#16A085 0%,#138074 80%,#0E5F55 100%)!important;
+ color:white!important; border:none!important; border-radius:44px!important;
+ padding:14px 44px!important; font-weight:700!important; font-size:1.08rem!important;
+ box-shadow:0 8px 34px rgba(19,128,116,.20)!important;
+ transition:all .19s!important; cursor:pointer!important;}
+button[key="home_btn"]:hover{
+ transform:translateY(-2px)!important;
+ box-shadow:0 10px 40px rgba(19,128,116,.30)!important;}
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
+# ==== WORKFLOW TRACKER ====
 st.markdown(
     """
 <style>
@@ -93,7 +101,7 @@ color:white;box-shadow:0 5px 15px rgba(19,128,116,0.4);}
     unsafe_allow_html=True,
 )
 
-# ==== MAIN CONTENT FILTERS & BUTTON ====
+# ==== FILTERS SECTION ====
 st.markdown(
     """
 <div style="background:white;margin:50px -3rem 0 -3rem;padding:45px 3rem;
@@ -108,7 +116,8 @@ Apply custom filters to identify pre-qualified, relevant startups fast.
 """,
     unsafe_allow_html=True,
 )
-with st.expander("🎯 Define Investment Criteria", expanded=True):
+
+with st.expander("Define Investment Criteria", expanded=True):
     c1, c2, c3 = st.columns(3)
     industries = c1.multiselect(
         "Industries",
@@ -118,20 +127,23 @@ with st.expander("🎯 Define Investment Criteria", expanded=True):
     regions = c2.multiselect(
         "Regions",["MENA","Europe","North America","Asia Pacific"],["MENA"]
     )
-    stage = c3.selectbox("Funding Stage",["Pre‑Seed","Seed","Series A","Series B","Growth"],index=1)
+    stage = c3.selectbox("Funding Stage",["Pre-Seed","Seed","Series A","Series B","Growth"],index=1)
     c4, c5 = st.columns([2,1])
     sectors = c4.multiselect("Sectors",["Fintech","AI/ML","ClimateTech","HealthTech","SaaS"],["Fintech"])
     deal_count = c5.slider("Deals per run",5,50,15,5)
+
 sources = st.multiselect(
     "Active Sources",
     ["Crunchbase","AngelList","Magnitt","Wamda","PitchBook"],
     ["Crunchbase","AngelList","Magnitt"],
 )
 
+# ==== ACTION BUTTON ====
 st.markdown("<br>", unsafe_allow_html=True)
 col1,col2,col3 = st.columns([1,0.8,1])
 with col2:
-    discover = st.button("🚀 Discover Live Deals", use_container_width=True)
+    discover = st.button("Discover Live Deals", use_container_width=True)
+
 st.markdown(
     """
 <style>
@@ -149,22 +161,24 @@ div.stButton>button:first-child:hover{
     unsafe_allow_html=True,
 )
 
+# ==== EXECUTION ====
 if discover:
     scraper, llm, template = WebScraper(), LLMHandler(), TemplateGenerator()
-    st.info("🔍 Fetching startup deals…")
+    st.info("Fetching startup deals...")
     data=[]
     for s in sources:
-        st.write(f"Scraping {s} …")
+        st.write(f"Scraping {s}...")
         data+=scraper.search_startups(s,industries,sectors,[stage],regions,limit=int(deal_count/len(sources)))
     if not data:
         st.warning("No results found.")
     else:
         df=pd.DataFrame(data)
-        st.success(f"✅ {len(df)} deals found.")
+        st.success(f"{len(df)} deals found.")
         st.dataframe(df,use_container_width=True)
         st.markdown("#### AI Summary")
         st.info(llm.generate_text(f"Summarize {len(df)} deals for {', '.join(industries)} in {', '.join(regions)}."))
 
+# ==== FOOTER ====
 st.markdown(
     f"""
 <div style="background:{QDB_DARK_BLUE};color:#E2E8F0;padding:26px 36px;margin:80px -3rem -2rem;
