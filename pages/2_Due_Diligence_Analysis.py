@@ -1,6 +1,6 @@
 """
 Due Diligence Analysis | Regulus AI × QDB
-Clean, compact styling with grey section headers
+Clean, compact styling with visible labels and mandatory indicators
 """
 import streamlit as st
 from datetime import datetime
@@ -28,6 +28,7 @@ button {
 button:hover{background:linear-gradient(135deg,#0E5F55 0%,#138074 50%,#16A085 100%)!important;
  transform:translateY(-2px)!important;box-shadow:0 6px 22px rgba(19,128,116,0.35)!important;}
 button:active{transform:translateY(0)!important;box-shadow:0 3px 10px rgba(19,128,116,0.2)!important;}
+.mandatory {color:#E74C3C;font-weight:700;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -80,7 +81,7 @@ Financial + Legal + Operational + AML/Compliance Screening
 
 st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
 
-# === SECTION 1: COMPANY INFO (GREY HEADER, COMPACT) ===
+# === SECTION 1: COMPANY INFO (GREY HEADER, COMPACT, WITH VISIBLE LABELS) ===
 st.markdown("""
 <div style="background:#E8E8E8;margin:0 -3rem;padding:14px 3rem;
 border-top:2px solid #16A085;">
@@ -88,11 +89,28 @@ border-top:2px solid #16A085;">
 </div>
 """, unsafe_allow_html=True)
 
+st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
+
+# Create two columns for company info
 col1, col2 = st.columns(2)
+
 with col1:
-    company_name = st.text_input("Company Name *", placeholder="e.g., Baladna Q.P.S.C.", key="comp_name", label_visibility="collapsed")
+    st.markdown("<label style='font-weight:700;color:#1B2B4D;font-size:0.95rem;'>Company Name <span class='mandatory'>*</span></label>", unsafe_allow_html=True)
+    company_name = st.text_input(
+        "Company Name",
+        placeholder="e.g., Baladna Q.P.S.C.",
+        key="comp_name",
+        label_visibility="collapsed"
+    )
+
 with col2:
-    company_website = st.text_input("Company Website (Optional)", placeholder="e.g., baladna.com", key="comp_web", label_visibility="collapsed")
+    st.markdown("<label style='font-weight:700;color:#1B2B4D;font-size:0.95rem;'>Company Website <span style='color:#999;'>(Optional)</span></label>", unsafe_allow_html=True)
+    company_website = st.text_input(
+        "Company Website",
+        placeholder="e.g., www.baladna.com",
+        key="comp_web",
+        label_visibility="collapsed"
+    )
 
 st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
 
@@ -104,7 +122,10 @@ border-top:2px solid #16A085;">
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("<div style='height:2px;'></div>", unsafe_allow_html=True)
+st.markdown("""
+<div style='height:4px;'></div>
+<label style='font-weight:600;color:#555;font-size:0.9rem;'>PDF, DOCX, or XLSX files (Legal, Financial, Operational)</label>
+""", unsafe_allow_html=True)
 
 uploaded_files = st.file_uploader(
     "Select documents",
@@ -127,10 +148,12 @@ border-top:2px solid #16A085;">
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("<div style='height:2px;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
+
+st.markdown("<p style='color:#666;font-size:0.9rem;margin:0 0 8px 0;'>Automatically fetch public investor relations data</p>", unsafe_allow_html=True)
 
 enable_web_extraction = st.checkbox(
-    "Automatically fetch public investor relations data",
+    "Enable automatic web data extraction",
     value=False,
     key="web_extract"
 )
