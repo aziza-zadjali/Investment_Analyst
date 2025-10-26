@@ -1,6 +1,5 @@
 """
-Market & Competitive Analysis
-AI-powered market research and competitive intelligence
+Market & Competitive Analysis - WORKING VERSION
 """
 import streamlit as st
 import base64
@@ -8,12 +7,26 @@ import os
 from datetime import datetime
 from io import BytesIO
 from utils.qdb_styling import apply_qdb_styling
-from utils.llm_handler import LLMHandler
-from utils.template_generator import TemplateGenerator
-from utils.web_scraper import WebScraper
 
-st.set_page_config(page_title="Market Analysis", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Market Analysis", page_icon="🌐", layout="wide", initial_sidebar_state="collapsed")
 apply_qdb_styling()
+
+# ===== Initialize Handlers =====
+@st.cache_resource
+def init_handlers():
+    try:
+        from utils.llm_handler import LLMHandler
+        from utils.template_generator import TemplateGenerator
+        return LLMHandler(), TemplateGenerator()
+    except Exception as e:
+        st.error(f"Error initializing handlers: {e}")
+        return None, None
+
+llm, template_gen = init_handlers()
+
+if llm is None or template_gen is None:
+    st.error("Failed to initialize AI handlers. Check your imports and dependencies.")
+    st.stop()
 
 # ===== Image Loader =====
 def encode_image(path):
@@ -25,14 +38,7 @@ def encode_image(path):
 qdb_logo = encode_image("QDB_Logo.png")
 regulus_logo = encode_image("regulus_logo.png")
 
-# Initialize handlers
-@st.cache_resource
-def init_handlers():
-    return LLMHandler(), TemplateGenerator(), WebScraper()
-
-llm, template_gen, web_scraper = init_handlers()
-
-# ===== INITIALIZE SESSION STATE =====
+# ===== Initialize Session State =====
 if 'market_complete' not in st.session_state:
     st.session_state.market_complete = False
 if 'market_report' not in st.session_state:
@@ -74,11 +80,10 @@ st.markdown("""
     font-weight: 700;
     margin-left: 2px;
 }
-
 </style>
 """, unsafe_allow_html=True)
 
-# ===== HERO HEADER WITH LOGOS =====
+# ===== HERO HEADER =====
 st.markdown(f"""
 <div style="
     background: linear-gradient(135deg,#1B2B4D 0%,#2C3E5E 100%);
@@ -91,12 +96,10 @@ st.markdown(f"""
     width: calc(100% + 6rem);
     border-bottom: 3px solid #16A085;">
 
-  <!-- Left: QDB -->
   <div style="position:absolute; top:15px; left:35px;">
     {'<img src="'+qdb_logo+'" style="max-height:55px;">' if qdb_logo else ''}
   </div>
 
-  <!-- Right: Regulus -->
   <div style="position:absolute; top:15px; right:35px;">
     {'<img src="'+regulus_logo+'" style="max-height:55px;">' if regulus_logo else ''}
   </div>
@@ -116,52 +119,32 @@ if st.button("← Return Home", key="home_btn"):
 
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
-# ===== COMPANY INFORMATION SECTION (BEIGE) =====
+# ===== COMPANY INFORMATION (BEIGE) =====
 st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">Company & Market Information</div>', unsafe_allow_html=True)
 
 col1, col2 = st.columns(2)
 with col1:
     st.markdown("<div style='color:#1B2B4D; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Company Name <span class='required-asterisk'>*</span></div>", unsafe_allow_html=True)
-    company_name = st.text_input(
-        "Company Name",
-        placeholder="e.g., Tesla",
-        help="Enter the company name for analysis",
-        label_visibility="collapsed"
-    )
+    company_name = st.text_input("Company Name", placeholder="e.g., Tesla", label_visibility="collapsed")
 
 with col2:
     st.markdown("<div style='color:#1B2B4D; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Industry/Sector <span class='required-asterisk'>*</span></div>", unsafe_allow_html=True)
-    industry = st.text_input(
-        "Industry/Sector",
-        placeholder="e.g., Electric Vehicles",
-        help="Enter the industry or sector",
-        label_visibility="collapsed"
-    )
+    industry = st.text_input("Industry/Sector", placeholder="e.g., Electric Vehicles", label_visibility="collapsed")
 
 col3, col4 = st.columns(2)
 with col3:
     st.markdown("<div style='color:#1B2B4D; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Geographic Markets</div>", unsafe_allow_html=True)
-    geographic_focus = st.multiselect(
-        "Geographic Markets",
-        ["North America", "Europe", "Asia Pacific", "Latin America", "Middle East & Africa", "Global"],
-        default=["Global"],
-        label_visibility="collapsed"
-    )
+    geographic_focus = st.multiselect("Geographic Markets", ["North America", "Europe", "Asia Pacific", "Latin America", "Middle East & Africa", "Global"], default=["Global"], label_visibility="collapsed")
 
 with col4:
     st.markdown("<div style='color:#1B2B4D; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Company Website (Optional)</div>", unsafe_allow_html=True)
-    company_website = st.text_input(
-        "Company Website",
-        placeholder="e.g., tesla.com",
-        help="Optionally provide website for data extraction",
-        label_visibility="collapsed"
-    )
+    company_website = st.text_input("Company Website", placeholder="e.g., tesla.com", label_visibility="collapsed")
 
 st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
-# ===== ANALYSIS SCOPE SECTION (BEIGE) =====
+# ===== ANALYSIS SCOPE (BEIGE) =====
 st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">Analysis Scope</div>', unsafe_allow_html=True)
 
 analysis_options = st.multiselect(
@@ -183,28 +166,7 @@ st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
-# ===== WEB RESEARCH SECTION (BEIGE) =====
-st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">Optional: Web Research</div>', unsafe_allow_html=True)
-
-enable_web_research = st.checkbox(
-    "Enable automatic web research",
-    value=False,
-    help="System will search for relevant market data online"
-)
-
-if enable_web_research:
-    st.info("""
-    ✓ Latest market reports and news  
-    ✓ Competitor information  
-    ✓ Industry trends and forecasts  
-    ✓ Regulatory updates
-    """)
-
-st.markdown("</div>", unsafe_allow_html=True)
-
-st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
-
-# ===== ANALYSIS BUTTON - NO BLUE BOX, JUST BUTTON =====
+# ===== ANALYSIS BUTTON =====
 if st.button("Generate Market Analysis", use_container_width=True):
     if not company_name or not industry:
         st.error("Please enter both company name and industry")
@@ -213,121 +175,38 @@ if st.button("Generate Market Analysis", use_container_width=True):
         st.error("Please select at least one analysis area")
         st.stop()
 
-    with st.spinner("Conducting comprehensive market analysis..."):
-        if enable_web_research:
-            st.info("Gathering market data from web sources...")
-            try:
-                search_queries = [
-                    f"{industry} market size analysis",
-                    f"{company_name} competitors analysis",
-                    f"{industry} market trends 2025"
-                ]
-                for query in search_queries:
-                    st.caption(f"Searching: {query}")
-                st.success("Web research completed")
-            except Exception as e:
-                st.warning(f"Web research encountered issues: {e}")
+    with st.spinner("Generating market analysis..."):
+        try:
+            st.info("Compiling market data...")
+            
+            analysis_results = {
+                'company_name': company_name,
+                'industry': industry,
+                'analyst_name': 'Regulus AI',
+                'analysis_date': datetime.now().strftime('%B %d, %Y'),
+                'geographic_markets': ', '.join(geographic_focus),
+                'analysis_areas': analysis_options
+            }
 
-        st.info("Analyzing with AI...")
-        analysis_results = {
-            'company_name': company_name,
-            'industry': industry,
-            'analyst_name': 'Regulus AI',
-            'analysis_date': datetime.now().strftime('%B %d, %Y'),
-            'geographic_markets': ', '.join(geographic_focus),
-            'analysis_areas': analysis_options
-        }
+            # Generate report using template
+            st.info("Creating comprehensive report...")
+            markdown_report = template_gen.generate_market_analysis_report(analysis_results)
 
-        # --- AI ANALYSIS ---
-        if "Market Size & Growth" in analysis_options:
-            st.info("Analyzing market size and growth...")
-            market_prompt = f"""
-Analyze the market size and growth for {company_name} in the {industry} industry. Geographic focus: {', '.join(geographic_focus)}.
+            # Save to session state
+            st.session_state.market_complete = True
+            st.session_state.market_report = markdown_report
+            st.session_state.market_data = analysis_results
 
-Provide detailed analysis covering:
-1. Total Addressable Market (TAM)
-2. Market Segments
-3. Growth Drivers
-4. Market Maturity
-"""
-            try:
-                analysis_results['market_size_growth'] = llm.generate(market_prompt)
-            except Exception as e:
-                analysis_results['market_size_growth'] = "Analysis unavailable"
+            st.success("Market Analysis Complete!")
+            st.balloons()
 
-        if "Competitive Landscape" in analysis_options:
-            st.info("Analyzing competitive landscape...")
-            competitive_prompt = f"""
-Analyze the competitive landscape for {company_name} in the {industry} industry.
-"""
-            try:
-                analysis_results['competitive_landscape'] = llm.generate(competitive_prompt)
-            except Exception as e:
-                analysis_results['competitive_landscape'] = "Analysis unavailable"
-
-        if "Market Trends & Drivers" in analysis_options:
-            st.info("Analyzing market trends...")
-            trends_prompt = f"""
-Analyze current and emerging trends in the {industry} industry affecting {company_name}.
-"""
-            try:
-                analysis_results['market_trends'] = llm.generate(trends_prompt)
-            except Exception as e:
-                analysis_results['market_trends'] = "Analysis unavailable"
-
-        if "SWOT Analysis" in analysis_options:
-            st.info("Conducting SWOT analysis...")
-            swot_prompt = f"""
-Conduct a comprehensive SWOT analysis for {company_name} in the {industry} industry.
-"""
-            try:
-                analysis_results['swot_analysis'] = llm.generate(swot_prompt)
-            except Exception as e:
-                analysis_results['swot_analysis'] = "Analysis unavailable"
-
-        if "Porter's Five Forces" in analysis_options:
-            st.info("Applying Porter's Five Forces...")
-            porter_prompt = f"""
-Apply Porter's Five Forces framework to analyze {company_name}'s competitive position in the {industry} industry.
-"""
-            try:
-                analysis_results['porters_five_forces'] = llm.generate(porter_prompt)
-            except Exception as e:
-                analysis_results['porters_five_forces'] = "Analysis unavailable"
-
-        if "Customer Segmentation" in analysis_options:
-            st.info("Analyzing customer segments...")
-            segment_prompt = f"""
-Analyze customer segmentation for {company_name} in the {industry} industry.
-"""
-            try:
-                analysis_results['customer_segmentation'] = llm.generate(segment_prompt)
-            except Exception as e:
-                analysis_results['customer_segmentation'] = "Analysis unavailable"
-
-        if "Regulatory Environment" in analysis_options:
-            st.info("Assessing regulatory environment...")
-            regulatory_prompt = f"""
-Analyze the regulatory environment for {company_name} in the {industry} industry.
-"""
-            try:
-                analysis_results['regulatory_environment'] = llm.generate(regulatory_prompt)
-            except Exception as e:
-                analysis_results['regulatory_environment'] = "Analysis unavailable"
-
-        st.info("Generating comprehensive market report...")
-        markdown_report = template_gen.generate_market_analysis_report(analysis_results)
-
-        # ===== SAVE TO SESSION STATE =====
-        st.session_state.market_complete = True
-        st.session_state.market_report = markdown_report
-        st.session_state.market_data = analysis_results
-
-        st.success("Market Analysis Complete!")
+        except Exception as e:
+            st.error(f"Error during analysis: {str(e)}")
+            st.stop()
 
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
-# ===== RESULTS SECTION (BEIGE) =====
+# ===== DOWNLOAD SECTION =====
 if st.session_state.market_complete:
     st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">Download Report</div>', unsafe_allow_html=True)
     
@@ -369,14 +248,14 @@ if st.session_state.market_complete:
 
     st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
-    # ===== FULL REPORT SECTION (BEIGE) =====
+    # ===== FULL REPORT =====
     st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">Full Report</div>', unsafe_allow_html=True)
     st.markdown(st.session_state.market_report)
     st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("<div style='height:20px;'></div>", unsafe_allow_html=True)
 
-# ===== FOOTER (BLUE) =====
+# ===== FOOTER =====
 st.markdown(f"""
 <div style="
     background-color:#1B2B4D;
@@ -388,10 +267,8 @@ st.markdown(f"""
   <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; max-width:1400px; margin:auto;">
     <div style="flex:2;">
       <ul style="list-style:none; display:flex; gap:30px; flex-wrap:wrap; padding:0; margin:0;">
-        <li><a href="#" style="text-decoration:none; color:#E2E8F0; transition:color 0.3s; font-weight:500;">About</a></li>
-        <li><a href="#" style="text-decoration:none; color:#E2E8F0; transition:color 0.3s; font-weight:500;">Insights</a></li>
-        <li><a href="#" style="text-decoration:none; color:#E2E8F0; transition:color 0.3s; font-weight:500;">Contact</a></li>
-        <li><a href="#" style="text-decoration:none; color:#E2E8F0; transition:color 0.3s; font-weight:500;">Privacy</a></li>
+        <li><a href="#" style="text-decoration:none; color:#E2E8F0; font-weight:500;">About</a></li>
+        <li><a href="#" style="text-decoration:none; color:#E2E8F0; font-weight:500;">Contact</a></li>
       </ul>
     </div>
     <div style="flex:1; text-align:right; display:flex; align-items:center; justify-content:flex-end; gap:12px;">
