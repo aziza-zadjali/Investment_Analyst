@@ -207,9 +207,9 @@ color:white;box-shadow:0 5px 15px rgba(19,128,116,0.4);}
 </div>
 """, unsafe_allow_html=True)
 
-# ==== COMPANY INFO SECTION ====
+# ==== COMPANY INFO SECTION (LIGHT BLUE) ====
 st.markdown("""
-<div style="background:white;margin:50px -3rem 0 -3rem;padding:45px 3rem;
+<div style="background:#EBF3F8;margin:50px -3rem 0 -3rem;padding:45px 3rem;
 border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
 <h2 style="text-align:center;color:#1B2B4D;font-weight:700;">Company & Deal Information</h2>
 </div>
@@ -235,9 +235,9 @@ with st.expander("Enter Company and Investment Details", expanded=True):
     with col6:
         ownership = st.text_input("Ownership %", placeholder="10", key="memo_own")
 
-# ==== BUSINESS DETAILS ====
+# ==== BUSINESS DETAILS (LIGHT BEIGE) ====
 st.markdown("""
-<div style="background:white;margin:50px -3rem 0 -3rem;padding:45px 3rem;
+<div style="background:#FAF7F2;margin:50px -3rem 0 -3rem;padding:45px 3rem;
 border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
 <h2 style="text-align:center;color:#1B2B4D;font-weight:700;">Business & Strategic Details</h2>
 </div>
@@ -260,9 +260,9 @@ with st.expander("Business Model, Thesis & Market Data", expanded=True):
     with col_m3:
         growth = st.text_input("Growth Rate", placeholder="150%", key="memo_growth")
 
-# ==== SCORING (OPTIONAL) ====
+# ==== SCORING (LIGHT BLUE) ====
 st.markdown("""
-<div style="background:white;margin:50px -3rem 0 -3rem;padding:45px 3rem;
+<div style="background:#EBF3F8;margin:50px -3rem 0 -3rem;padding:45px 3rem;
 border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
 <h2 style="text-align:center;color:#1B2B4D;font-weight:700;">Strategic Assessment Scoring (Optional)</h2>
 </div>
@@ -338,11 +338,11 @@ with btn_col:
                 st.success("Investment memo generated!")
                 st.rerun()
 
-# ==== RESULTS DISPLAY ====
+# ==== RESULTS DISPLAY (LIGHT BEIGE) ====
 if st.session_state.memo_complete and st.session_state.get('memo_data'):
     st.markdown("---")
     st.markdown("""
-<div style="background:white;margin:30px -3rem 0 -3rem;padding:45px 3rem;
+<div style="background:#FAF7F2;margin:30px -3rem 0 -3rem;padding:45px 3rem;
 border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
 <h2 style="text-align:center;color:#1B2B4D;font-weight:700;">Investment Memo Generated</h2>
 </div>
