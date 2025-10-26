@@ -76,11 +76,12 @@ AI-powered 3-5 year financial projections, revenue forecasting, and profitabilit
 </div>
 """, unsafe_allow_html=True)
 
-# ==== RETURN HOME ====
-col1, col2, col3 = st.columns([1, 0.6, 1])
-with col2:
-    if st.button("Return Home", use_container_width=True, key="home_btn"):
-        st.switch_page("streamlit_app.py")
+# ==== RETURN HOME (TOP LEFT - HORIZONTAL) ====
+if st.button("← Return Home", use_container_width=False, key="home_top_left"):
+    st.switch_page("streamlit_app.py")
+
+st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+
 
 # ==== WORKFLOW TRACKER ====
 st.markdown("""
