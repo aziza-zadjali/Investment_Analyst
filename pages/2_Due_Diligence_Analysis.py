@@ -1,6 +1,6 @@
 """
 Due Diligence Analysis | Regulus AI × QDB
-Enhanced: Financial + Legal + Operational + AML/Compliance
+Clean, consistent styling: Blue → White → Blue
 """
 import streamlit as st
 from datetime import datetime
@@ -61,7 +61,7 @@ if st.button("← Return Home", use_container_width=False):
     st.switch_page("streamlit_app.py")
 st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
 
-# === HERO SECTION ===
+# === HERO SECTION (BLUE) ===
 st.markdown(f"""
 <div style="background:linear-gradient(135deg,#1B2B4D 0%,#0E2E4D 100%);color:white;
 margin:0 -3rem;padding:70px 0 50px;text-align:center;position:relative;">
@@ -80,11 +80,11 @@ Financial + Legal + Operational + AML/Compliance Screening
 
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
-# === COMPANY INFO SECTION ===
+# === SECTION 1: COMPANY INFO (WHITE) ===
 st.markdown("""
-<div style="background:#2B3E54;margin:0 -3rem;padding:24px 3rem;
-border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
-<h3 style="color:#FFFFFF;font-weight:700;margin:0;">Company Information</h3>
+<div style="background:#FFFFFF;margin:0 -3rem;padding:24px 3rem;
+border-top:2px solid #16A085;">
+<h3 style="color:#1B2B4D;font-weight:700;margin:0;">Company Information</h3>
 </div>
 """, unsafe_allow_html=True)
 
@@ -96,10 +96,10 @@ with col2:
 
 st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
 
-# === DOCUMENT UPLOAD SECTION ===
+# === SECTION 2: DOCUMENT UPLOAD (WHITE) ===
 st.markdown("""
-<div style="background:#F5F2ED;margin:0 -3rem;padding:24px 3rem;
-border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
+<div style="background:#FFFFFF;margin:0 -3rem;padding:24px 3rem;
+border-top:2px solid #16A085;">
 <h3 style="color:#1B2B4D;font-weight:700;margin:0;">Upload Supporting Documents</h3>
 <p style="color:#666;margin:4px 0 0 0;font-size:0.9rem;">
 Legal, financial, and operational files (PDF, DOCX, XLSX)
@@ -120,12 +120,12 @@ if uploaded_files:
 
 st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
 
-# === WEB EXTRACTION SECTION ===
+# === SECTION 3: WEB EXTRACTION (WHITE) ===
 st.markdown("""
-<div style="background:#2B3E54;margin:0 -3rem;padding:24px 3rem;
-border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
-<h3 style="color:#FFFFFF;font-weight:700;margin:0;">Optional: Web Data Extraction</h3>
-<p style="color:#CBD5E0;margin:4px 0 0 0;font-size:0.9rem;">
+<div style="background:#FFFFFF;margin:0 -3rem;padding:24px 3rem;
+border-top:2px solid #16A085;">
+<h3 style="color:#1B2B4D;font-weight:700;margin:0;">Optional: Web Data Extraction</h3>
+<p style="color:#666;margin:4px 0 0 0;font-size:0.9rem;">
 Automatically fetch public investor relations data
 </p>
 </div>
@@ -314,8 +314,8 @@ if st.session_state.dd_complete:
     st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
     
     st.markdown("""
-    <div style="background:#F5F2ED;margin:0 -3rem;padding:24px 3rem;
-    border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
+    <div style="background:#FFFFFF;margin:0 -3rem;padding:24px 3rem;
+    border-top:2px solid #16A085;">
     <h3 style="color:#1B2B4D;font-weight:700;margin:0;">Download Reports</h3>
     </div>
     """, unsafe_allow_html=True)
@@ -372,7 +372,7 @@ if st.session_state.dd_complete:
         if st.button("Financial Modeling →", use_container_width=True):
             st.switch_page("pages/4_Financial_Modeling.py")
 
-# === FOOTER ===
+# === FOOTER (BLUE) ===
 st.markdown("""
 <div style="background:#1B2B4D;color:#E2E8F0;padding:20px 36px;margin:40px -3rem -2rem;
 display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;">
