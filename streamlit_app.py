@@ -1,6 +1,6 @@
 """
 Investment Analyst AI – Regulus Edition
-Fixed: Full-width curve + Larger text + Grey cards
+Dashboard with Toggle/Minimize Feature
 """
 import streamlit as st
 import base64
@@ -32,6 +32,10 @@ def encode_image(path):
 qdb_logo = encode_image("QDB_Logo.png")
 regulus_logo = encode_image("regulus_logo.png")
 
+# ===== SESSION STATE FOR DASHBOARD TOGGLE =====
+if 'dashboard_expanded' not in st.session_state:
+    st.session_state.dashboard_expanded = True
+
 # ===== HERO SECTION (COMPACT WITH FULL-WIDTH CURVE) =====
 st.markdown(f"""
 <div style="
@@ -59,19 +63,6 @@ st.markdown(f"""
     <p style="color:#CBD5E0; font-size:0.9rem; line-height:1.6; max-width:700px; margin:auto 0 24px;">
       End‑to‑End AI Platform for Deal Sourcing, Due Diligence, Market Analysis & Investment Memoranda
     </p>
-    <a href="#dashboard" style="
-        background-color:#A9A9A9;
-        color:white;
-        border-radius:40px;
-        padding:12px 36px;
-        font-weight:700;
-        font-size:0.93rem;
-        text-decoration:none;
-        display:inline-block;
-        box-shadow:0 5px 16px rgba(169,169,169,0.35);
-        transition:all 0.3s ease;">
-        View My Dashboard ↓
-    </a>
   </div>
 
   <!-- FULL-WIDTH Decorative Divider -->
@@ -120,6 +111,25 @@ st.markdown("""
 .stButton>button:active{
     transform:translateY(0)!important;
     box-shadow:0 3px 10px rgba(22,160,133,0.25)!important;
+}
+
+/* Toggle Button Style */
+.toggle-btn {
+    background: linear-gradient(135deg, #A9A9A9 0%, #999999 100%) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 10px 24px !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    cursor: pointer !important;
+    transition: all 0.25s ease !important;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.15) !important;
+}
+
+.toggle-btn:hover {
+    background: linear-gradient(135deg, #999999 0%, #808080 100%) !important;
+    transform: translateY(-1px) !important;
 }
 
 div[data-testid="column"] {display:flex; justify-content:center;}
@@ -218,201 +228,217 @@ for i, (label, path) in enumerate(buttons):
             st.switch_page(path)
 st.markdown('</div>', unsafe_allow_html=True)
 
-st.markdown("<div id='dashboard' style='height:8px;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
-# ===== DASHBOARD HEADER =====
-st.markdown(f"""
-<div style="margin: 0 -3rem; padding: 32px 3rem 24px; background: linear-gradient(135deg, #F8F7F5 0%, #F5F2ED 100%);">
-    <h2 style="color:#1B2B4D; font-size:1.6rem; font-weight:800; margin:0; text-align:center;">
-        📊 Your Analysis Dashboard
-    </h2>
-</div>
-""", unsafe_allow_html=True)
+# ===== DASHBOARD HEADER WITH TOGGLE BUTTON =====
+header_cols = st.columns([1, 0.15])
 
-# ===== KPI METRICS ROW (GREY) =====
-st.markdown("<div style='padding: 0 3rem;'>", unsafe_allow_html=True)
-
-metric_cols = st.columns([1, 1, 1, 1])
-
-with metric_cols[0]:
-    st.markdown("""
-    <div class="metric-pill">
-        <div style="font-size:1.05rem; opacity:0.88;">⏳ Pending</div>
-        <div class="metric-number">5</div>
-        <div class="metric-label">Due Diligence</div>
+with header_cols[0]:
+    st.markdown(f"""
+    <div style="display:flex; align-items:center; gap:12px; padding:16px 0;">
+        <h2 style="color:#1B2B4D; font-size:1.6rem; font-weight:800; margin:0;">
+            📊 Your Analysis Dashboard
+        </h2>
     </div>
     """, unsafe_allow_html=True)
 
-with metric_cols[1]:
-    st.markdown("""
-    <div class="metric-pill">
-        <div style="font-size:1.05rem; opacity:0.88;">📈 Active</div>
-        <div class="metric-number">12</div>
-        <div class="metric-label">In Pipeline</div>
-    </div>
-    """, unsafe_allow_html=True)
+with header_cols[1]:
+    if st.button(
+        f"{'▼ Hide' if st.session_state.dashboard_expanded else '▶ View'} Dashboard",
+        key="toggle_dashboard",
+        use_container_width=True
+    ):
+        st.session_state.dashboard_expanded = not st.session_state.dashboard_expanded
+        st.rerun()
 
-with metric_cols[2]:
-    st.markdown("""
-    <div class="metric-pill">
-        <div style="font-size:1.05rem; opacity:0.88;">✅ Complete</div>
-        <div class="metric-number">28</div>
-        <div class="metric-label">This Quarter</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-with metric_cols[3]:
-    st.markdown("""
-    <div class="metric-pill">
-        <div style="font-size:1.05rem; opacity:0.88;">⚡ Avg Time</div>
-        <div class="metric-number">2h</div>
-        <div class="metric-label">Per Analysis</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
-
-# ===== DASHBOARD CONTENT ROWS (GREY CARDS) =====
-dash_col1, dash_col2, dash_col3 = st.columns([1, 1, 1])
-
-# === ACTION REQUIRED ===
-with dash_col1:
-    st.markdown("""
-    <div style="background:#F5F5F5; border-radius:10px; padding:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); border-top:3px solid #E74C3C;">
-        <h4 style="color:#1B2B4D; margin:0 0 12px 0; font-size:1rem;">🔴 Action Required</h4>
-    """, unsafe_allow_html=True)
+# ===== DASHBOARD CONTENT (CONDITIONAL) =====
+if st.session_state.dashboard_expanded:
+    st.markdown("<div style='padding: 0 3rem;'>", unsafe_allow_html=True)
     
-    st.markdown("""
-    <div class="activity-card">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-            <div>
-                <strong style="color:#1B2B4D; font-size:0.9rem;">GreenTech</strong><br>
-                <span style="color:#666; font-size:0.8rem;">Financial review</span>
-            </div>
-            <span class="badge-red">Today</span>
+    # KPI METRICS ROW (GREY) 
+    metric_cols = st.columns([1, 1, 1, 1])
+
+    with metric_cols[0]:
+        st.markdown("""
+        <div class="metric-pill">
+            <div style="font-size:1.05rem; opacity:0.88;">⏳ Pending</div>
+            <div class="metric-number">5</div>
+            <div class="metric-label">Due Diligence</div>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div class="activity-card">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-            <div>
-                <strong style="color:#1B2B4D; font-size:0.9rem;">CloudFlow AI</strong><br>
-                <span style="color:#666; font-size:0.8rem;">Compliance check</span>
-            </div>
-            <span class="badge-red">Oct 28</span>
+        """, unsafe_allow_html=True)
+
+    with metric_cols[1]:
+        st.markdown("""
+        <div class="metric-pill">
+            <div style="font-size:1.05rem; opacity:0.88;">📈 Active</div>
+            <div class="metric-number">12</div>
+            <div class="metric-label">In Pipeline</div>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div class="activity-card">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-            <div>
-                <strong style="color:#1B2B4D; font-size:0.9rem;">SustainBox</strong><br>
-                <span style="color:#666; font-size:0.8rem;">Market analysis</span>
-            </div>
-            <span class="badge-red">Oct 29</span>
+        """, unsafe_allow_html=True)
+
+    with metric_cols[2]:
+        st.markdown("""
+        <div class="metric-pill">
+            <div style="font-size:1.05rem; opacity:0.88;">✅ Complete</div>
+            <div class="metric-number">28</div>
+            <div class="metric-label">This Quarter</div>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
+        """, unsafe_allow_html=True)
+
+    with metric_cols[3]:
+        st.markdown("""
+        <div class="metric-pill">
+            <div style="font-size:1.05rem; opacity:0.88;">⚡ Avg Time</div>
+            <div class="metric-number">2h</div>
+            <div class="metric-label">Per Analysis</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
+
+    # DASHBOARD CONTENT ROWS (GREY CARDS)
+    dash_col1, dash_col2, dash_col3 = st.columns([1, 1, 1])
+
+    # === ACTION REQUIRED ===
+    with dash_col1:
+        st.markdown("""
+        <div style="background:#F5F5F5; border-radius:10px; padding:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); border-top:3px solid #E74C3C;">
+            <h4 style="color:#1B2B4D; margin:0 0 12px 0; font-size:1rem;">🔴 Action Required</h4>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="activity-card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                    <strong style="color:#1B2B4D; font-size:0.9rem;">GreenTech</strong><br>
+                    <span style="color:#666; font-size:0.8rem;">Financial review</span>
+                </div>
+                <span class="badge-red">Today</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="activity-card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                    <strong style="color:#1B2B4D; font-size:0.9rem;">CloudFlow AI</strong><br>
+                    <span style="color:#666; font-size:0.8rem;">Compliance check</span>
+                </div>
+                <span class="badge-red">Oct 28</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="activity-card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                    <strong style="color:#1B2B4D; font-size:0.9rem;">SustainBox</strong><br>
+                    <span style="color:#666; font-size:0.8rem;">Market analysis</span>
+                </div>
+                <span class="badge-red">Oct 29</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # === IN PROGRESS ===
+    with dash_col2:
+        st.markdown("""
+        <div style="background:#F5F5F5; border-radius:10px; padding:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); border-top:3px solid #F39C12;">
+            <h4 style="color:#1B2B4D; margin:0 0 12px 0; font-size:1rem;">🟡 In Progress</h4>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="activity-card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                    <strong style="color:#1B2B4D; font-size:0.9rem;">DataFlow</strong><br>
+                    <span style="color:#666; font-size:0.8rem;">Awaiting review</span>
+                </div>
+                <span class="badge-yellow">75%</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="activity-card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                    <strong style="color:#1B2B4D; font-size:0.9rem;">FinTech Innov</strong><br>
+                    <span style="color:#666; font-size:0.8rem;">DD analysis</span>
+                </div>
+                <span class="badge-yellow">50%</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="activity-card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                    <strong style="color:#1B2B4D; font-size:0.9rem;">EcoEnergy</strong><br>
+                    <span style="color:#666; font-size:0.8rem;">Memo generation</span>
+                </div>
+                <span class="badge-yellow">90%</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # === RECENT ACTIVITY ===
+    with dash_col3:
+        st.markdown("""
+        <div style="background:#F5F5F5; border-radius:10px; padding:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); border-top:3px solid #16A085;">
+            <h4 style="color:#1B2B4D; margin:0 0 12px 0; font-size:1rem;">📋 Recent Activity</h4>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="activity-card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                    <strong style="color:#1B2B4D; font-size:0.9rem;">✅ DD Report</strong><br>
+                    <span style="color:#666; font-size:0.8rem;">Baladna Q.P.S.C</span>
+                </div>
+                <span style="color:#666; font-size:0.75rem;">Today</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="activity-card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                    <strong style="color:#1B2B4D; font-size:0.9rem;">📊 Financial Model</strong><br>
+                    <span style="color:#666; font-size:0.8rem;">Emirates Tech</span>
+                </div>
+                <span style="color:#666; font-size:0.75rem;">Yesterday</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="activity-card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                    <strong style="color:#1B2B4D; font-size:0.9rem;">📈 Market Analysis</strong><br>
+                    <span style="color:#666; font-size:0.8rem;">Aquaculture</span>
+                </div>
+                <span style="color:#666; font-size:0.75rem;">Oct 23</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("</div>", unsafe_allow_html=True)
+
     st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:20px;'></div>", unsafe_allow_html=True)
 
-# === IN PROGRESS ===
-with dash_col2:
-    st.markdown("""
-    <div style="background:#F5F5F5; border-radius:10px; padding:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); border-top:3px solid #F39C12;">
-        <h4 style="color:#1B2B4D; margin:0 0 12px 0; font-size:1rem;">🟡 In Progress</h4>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div class="activity-card">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-            <div>
-                <strong style="color:#1B2B4D; font-size:0.9rem;">DataFlow</strong><br>
-                <span style="color:#666; font-size:0.8rem;">Awaiting review</span>
-            </div>
-            <span class="badge-yellow">75%</span>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div class="activity-card">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-            <div>
-                <strong style="color:#1B2B4D; font-size:0.9rem;">FinTech Innov</strong><br>
-                <span style="color:#666; font-size:0.8rem;">DD analysis</span>
-            </div>
-            <span class="badge-yellow">50%</span>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div class="activity-card">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-            <div>
-                <strong style="color:#1B2B4D; font-size:0.9rem;">EcoEnergy</strong><br>
-                <span style="color:#666; font-size:0.8rem;">Memo generation</span>
-            </div>
-            <span class="badge-yellow">90%</span>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("</div>", unsafe_allow_html=True)
-
-# === RECENT ACTIVITY ===
-with dash_col3:
-    st.markdown("""
-    <div style="background:#F5F5F5; border-radius:10px; padding:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); border-top:3px solid #16A085;">
-        <h4 style="color:#1B2B4D; margin:0 0 12px 0; font-size:1rem;">📋 Recent Activity</h4>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div class="activity-card">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-            <div>
-                <strong style="color:#1B2B4D; font-size:0.9rem;">✅ DD Report</strong><br>
-                <span style="color:#666; font-size:0.8rem;">Baladna Q.P.S.C</span>
-            </div>
-            <span style="color:#666; font-size:0.75rem;">Today</span>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div class="activity-card">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-            <div>
-                <strong style="color:#1B2B4D; font-size:0.9rem;">📊 Financial Model</strong><br>
-                <span style="color:#666; font-size:0.8rem;">Emirates Tech</span>
-            </div>
-            <span style="color:#666; font-size:0.75rem;">Yesterday</span>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div class="activity-card">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-            <div>
-                <strong style="color:#1B2B4D; font-size:0.9rem;">📈 Market Analysis</strong><br>
-                <span style="color:#666; font-size:0.8rem;">Aquaculture</span>
-            </div>
-            <span style="color:#666; font-size:0.75rem;">Oct 23</span>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("</div>", unsafe_allow_html=True)
-
-st.markdown("</div>", unsafe_allow_html=True)
-
-st.markdown("<div style='height:20px;'></div>", unsafe_allow_html=True)
+else:
+    st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
 
 # ===== CHOOSE PATH SECTION (LARGER SUBTITLE) =====
 qdb_section_start("light")
