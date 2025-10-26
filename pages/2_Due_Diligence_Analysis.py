@@ -1,21 +1,44 @@
 """
-Due Diligence Analysis | Regulus AI × QDB
-Standalone version with DOCX report generation from Template Generator.
+Due Diligence Analysis Page | Regulus AI × QDB
+Comprehensive due diligence without linking to deal page.
 """
 import streamlit as st
-import os, base64, io
 from datetime import datetime
-import PyPDF2
-import docx
-from docx import Document
-from utils.llm_handler import LLMHandler
+from io import BytesIO
 from utils.template_generator import TemplateGenerator
-from utils.web_scraper import WebScraper
-from utils.qdb_styling import apply_qdb_styling, QDB_DARK_BLUE, QDB_NAVY
+from utils.llm_handler import LLMHandler
+from utils.qdb_styling import apply_qdb_styling, QDB_DARK_BLUE, QDB_NAVY, QDB_PURPLE, QDB_GOLD
+import os, base64
 
-# PAGE SETUP
-st.set_page_config(page_title="Due Diligence – Regulus AI", layout="wide")
+st.set_page_config(page_title="Due Diligence Analysis – Regulus AI", layout="wide")
 apply_qdb_styling()
+
+# ==== GLOBAL TEAL BUTTON STYLING ====
+st.markdown("""
+<style>
+button {
+ background:linear-gradient(135deg,#16A085 0%,#138074 50%,#0E5F55 100%)!important;
+ color:white!important;
+ border:none!important;
+ border-radius:40px!important;
+ padding:12px 36px!important;
+ font-weight:700!important;
+ font-size:0.95rem!important;
+ box-shadow:0 4px 16px rgba(19,128,116,0.25)!important;
+ transition:all 0.25s ease!important;
+ cursor:pointer!important;
+}
+button:hover{
+ background:linear-gradient(135deg,#0E5F55 0%,#138074 50%,#16A085 100%)!important;
+ transform:translateY(-2px)!important;
+ box-shadow:0 6px 22px rgba(19,128,116,0.35)!important;
+}
+button:active{
+ transform:translateY(0)!important;
+ box-shadow:0 3px 10px rgba(19,128,116,0.2)!important;
+}
+</style>
+""", unsafe_allow_html=True)
 
 def encode_image(path):
     if os.path.exists(path):
@@ -23,183 +46,340 @@ def encode_image(path):
             return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
     return None
 qdb_logo = encode_image("QDB_Logo.png")
+regulus_logo = encode_image("regulus_logo.png")
 
-# ==== HERO SECTION ====
+# ==== INIT HANDLERS ====
+@st.cache_resource
+def init_handlers():
+    return TemplateGenerator(), LLMHandler()
+template_gen, llm = init_handlers()
+
+# ==== SESSION STATE ====
+if 'dd_report' not in st.session_state:
+    st.session_state.dd_report = None
+
+# ==== RETURN HOME (TOP LEFT - HORIZONTAL) ====
+if st.button("← Return Home", use_container_width=False, key="home_btn"):
+    st.switch_page("streamlit_app.py")
+
+st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+
+# ==== HERO SECTION WITH DUAL LOGOS ====
 st.markdown(f"""
-<div style="
-background:linear-gradient(135deg,{QDB_DARK_BLUE} 0%, {QDB_NAVY} 100%);
-color:white;margin:0 -3rem;padding:100px 0 80px;text-align:center;">
-<div style="position:absolute;left:50px;top:48px;">
-{'<img src="'+qdb_logo+'" style="max-height:80px;">' if qdb_logo else '<b>QDB</b>'}
+<div style="background:linear-gradient(135deg,#1B2B4D 0%, #0E2E4D 100%);color:white;margin:0 -3rem;padding:70px 0 50px;text-align:center;position:relative;">
+<div style="position:absolute;left:50px;top:35px;">
+{'<img src="'+qdb_logo+'" style="max-height:70px;">' if qdb_logo else '<b>QDB</b>'}
 </div>
-<h1 style="font-size:2.8rem;font-weight:800;">Due Diligence Analysis</h1>
-<p style="font-size:1.35rem;color:#E2E8F0;">Comprehensive Investment Assessment and Risk Evaluation</p>
-<p style="color:#CBD5E0;font-size:1.1rem;max-width:750px;margin:auto;">
-AI-powered analysis of company financials, legal compliance, operations and management. Generate structured due diligence reports with actionable recommendations.
+<div style="position:absolute;right:50px;top:35px;">
+{'<img src="'+regulus_logo+'" style="max-height:70px;">' if regulus_logo else '<b>REGULUS</b>'}
+</div>
+<h1 style="font-size:2.5rem;font-weight:800;margin:0 0 10px 0;">Due Diligence Analysis</h1>
+<p style="font-size:1.2rem;color:#E2E8F0;margin:0 0 8px 0;font-weight:500;">Comprehensive Investment Due Diligence & Risk Assessment</p>
+<p style="color:#CBD5E0;font-size:0.95rem;max-width:700px;margin:0 auto;">
+Deep-dive analysis covering financial, operational, legal, and commercial assessments. Generate professional DOCX reports for analyst review.
 </p>
 </div>
 """, unsafe_allow_html=True)
 
-# ==== GLOBAL HANDLERS ====
-@st.cache_resource
-def init_handlers():
-    return LLMHandler(), TemplateGenerator(), WebScraper()
-llm, template_gen, scraper = init_handlers()
+st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
-# ==== SESSION SETUP ====
-if 'dd_report' not in st.session_state:
-    st.session_state.dd_report = None
-if 'dd_report_bytes' not in st.session_state:
-    st.session_state.dd_report_bytes = None
-
-# ==== TOP NAVIGATION ====
-col1, col2, col3 = st.columns([1, 0.6, 1])
-with col2:
-    if st.button("Return Home", use_container_width=True, key="home_btn"):
-        st.switch_page("streamlit_app.py")
-
+# ==== WORKFLOW TRACKER ====
 st.markdown("""
 <style>
-button[key="home_btn"]{
- background:linear-gradient(135deg,#16A085 0%,#138074 80%,#0E5F55 100%)!important;
- color:white!important;border:none!important;border-radius:44px!important;
- padding:14px 44px!important;font-weight:700!important;font-size:1.05rem!important;
- box-shadow:0 8px 34px rgba(19,128,116,.25)!important;
-transition:all .2s!important;}
-button[key="home_btn"]:hover{transform:translateY(-2px);}
-</style>""", unsafe_allow_html=True)
+.track{background:#F6F5F2;margin:0 -3rem;padding:24px 0;
+display:flex;justify-content:space-evenly;align-items:center;}
+.circle{width:48px;height:48px;border-radius:50%;display:flex;
+align-items:center;justify-content:center;font-weight:700;
+background:#CBD5E0;color:#475569;font-size:0.9rem;}
+.circle.active{background:linear-gradient(135deg,#16A085 0%,#0E5F55 100%);
+color:white;box-shadow:0 4px 12px rgba(19,128,116,0.3);}
+.label{margin-top:5px;font-size:0.8rem;font-weight:600;color:#708090;}
+.label.active{color:#0E5F55;font-weight:700;}
+.pipe{height:2px;width:60px;background:#CBD5E0;}
+</style>
+<div class="track">
+ <div><div class="circle">1</div><div class="label">Deal Sourcing</div></div>
+ <div class="pipe"></div>
+ <div><div class="circle active">2</div><div class="label active">Due Diligence</div></div>
+ <div class="pipe"></div>
+ <div><div class="circle">3</div><div class="label">Market Analysis</div></div>
+ <div class="pipe"></div>
+ <div><div class="circle">4</div><div class="label">Financial Modeling</div></div>
+ <div class="pipe"></div>
+ <div><div class="circle">5</div><div class="label">Investment Memo</div></div>
+</div>
+""", unsafe_allow_html=True)
 
-# ==== FORM SECTIONS ====
+st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+
+# ==== COMPANY INFO (DARK BLUE) ====
 st.markdown("""
-<div style="background:white;margin:50px -3rem 0 -3rem;padding:45px 3rem;
-border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
-<h2 style="text-align:center;color:#1B2B4D;font-weight:700;">Company Information</h2>
+<div style="background:#2B3E54;margin:0 -3rem 0 -3rem;padding:28px 3rem;border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
+<h3 style="text-align:left;color:#FFFFFF;font-weight:700;margin:0 0 14px 0;font-size:1.1rem;">Company Information</h3>
 </div>
 """, unsafe_allow_html=True)
 
 with st.expander("Enter Company Details", expanded=True):
     col1, col2, col3 = st.columns(3)
     with col1:
-        company_name = st.text_input("Company Name", placeholder="Enter company name", key="company_name")
+        company_name = st.text_input("Company Name *", key="company_name")
+        sector = st.text_input("Sector", placeholder="e.g., Fintech", key="sector")
     with col2:
-        industry = st.text_input("Industry", placeholder="e.g., Technology, Finance", key="industry")
+        industry = st.text_input("Industry *", key="industry")
+        stage = st.selectbox("Funding Stage *", ["Seed","Series A","Series B","Series C","Growth"], key="stage")
     with col3:
-        sector = st.text_input("Sector", placeholder="e.g., Fintech, AI/ML", key="sector")
+        location = st.text_input("Location", placeholder="e.g., MENA", key="location")
+        founded = st.text_input("Founded Year", placeholder="2020", key="founded")
 
-    col4, col5 = st.columns(2)
-    with col4:
-        stage = st.selectbox("Funding Stage", ["Pre-Seed","Seed","Series A","Series B","Growth"], key="stage")
-    with col5:
-        company_website = st.text_input("Company Website (optional)", placeholder="https://example.com", key="website")
+st.markdown("<div style='height:2px;'></div>", unsafe_allow_html=True)
 
-# ==== DATA INPUT SECTION ====
+# ==== FINANCIAL DD (BEIGE) ====
 st.markdown("""
-<div style="background:white;margin:50px -3rem 0 -3rem;padding:45px 3rem;
-border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
-<h2 style="text-align:center;color:#1B2B4D;font-weight:700;">Data & Configuration</h2>
+<div style="background:#F5F2ED;margin:0 -3rem 0 -3rem;padding:28px 3rem;border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
+<h3 style="text-align:left;color:#1B2B4D;font-weight:700;margin:0 0 14px 0;font-size:1.1rem;">Financial Due Diligence</h3>
 </div>
 """, unsafe_allow_html=True)
 
-with st.expander("Upload Documents and Define Parameters", expanded=True):
-    col1, col2 = st.columns(2)
-    with col1:
-        uploaded_files = st.file_uploader("Upload documents", accept_multiple_files=True, type=['pdf','docx','xlsx'])
-    with col2:
-        analysis_depth = st.selectbox("Analysis Depth", ["Standard","Comprehensive","Deep Dive"], index=1)
-        include_compliance = st.checkbox("Include AML/PEP/FATCA Screening", value=True)
-    fetch_public_data = st.checkbox("Fetch web data from company website", value=False)
+with st.expander("Financial Health Assessment", expanded=True):
+    col_f1, col_f2 = st.columns(2)
+    with col_f1:
+        revenue = st.text_input("Annual Revenue", placeholder="$10M", key="revenue")
+        revenue_growth = st.text_input("Revenue Growth Rate (%)", placeholder="50%", key="rev_growth")
+        profitability = st.text_input("Net Margin (%)", placeholder="20%", key="profit")
+    with col_f2:
+        cash_position = st.text_input("Cash Position", placeholder="$5M", key="cash")
+        burn_rate = st.text_input("Monthly Burn Rate", placeholder="$500K", key="burn")
+        runway = st.text_input("Runway (Months)", placeholder="12", key="runway")
 
-# ==== ACTION BUTTON ====
-st.markdown("<br>", unsafe_allow_html=True)
-btn_container = st.columns([1, 0.8, 1])[1]
-with btn_container:
-    analyze = st.button("Run Due Diligence Analysis", use_container_width=True, key="run_analysis")
+st.markdown("<div style='height:2px;'></div>", unsafe_allow_html=True)
 
-# ==== EXECUTION ====
-if analyze:
-    if not company_name:
-        st.error("Company name is required before analysis.")
-    else:
-        try:
-            with st.spinner("Conducting due diligence analysis..."):
-                text_content = ""
-                if uploaded_files:
-                    for f in uploaded_files:
-                        if f.type == "application/pdf":
-                            pdf = PyPDF2.PdfReader(f)
-                            for page in pdf.pages:
-                                text_content += page.extract_text() + "\n"
-                        elif "wordprocessingml" in f.type:
-                            d = docx.Document(f)
-                            text_content += "\n".join([p.text for p in d.paragraphs])
-
-                # AI + Web Fetch
-                web_data = scraper.scrape_company_data(company_website) if (fetch_public_data and company_website) else "No web data"
-                prompt = f"""
-Perform a {analysis_depth.lower()} due diligence analysis for:
-Company: {company_name}
-Industry: {industry} | Sector: {sector} | Stage: {stage}
-Website: {company_website or 'N/A'} 
-Documents uploaded: {len(uploaded_files)}
-
-Include:
-- Financial, legal, operational and management assessments
-- Key risks and mitigation
-{'- Compliance: AML, PEP, FATCA' if include_compliance else ''}
-Provide detailed analysis and recommendations.
-"""
-                try:
-                    llm_response = llm.generate_text(prompt)
-                except Exception:
-                    llm_response = "Due diligence successfully generated by Regulus AI."
-
-                # Prepare Data for Report
-                report_data = {
-                    "company_name": company_name,
-                    "industry": industry,
-                    "sector": sector,
-                    "stage": stage,
-                    "date": datetime.now().strftime("%B %d, %Y"),
-                    "summary": llm_response[:800],
-                    "details": llm_response,
-                    "documents_reviewed": len(uploaded_files),
-                    "compliance_done": include_compliance,
-                    "website": company_website or "Not provided",
-                }
-
-                # Generate DOCX via Template
-                try:
-                    report_doc = template_gen.generate_due_diligence_report(report_data)
-                    b = io.BytesIO()
-                    report_doc.save(b)
-                    st.session_state.dd_report_bytes = b.getvalue()
-                    st.success("✅ Due Diligence report generated!")
-                except Exception as e:
-                    st.error(f"Template generation issue: {e}")
-
-        except Exception as err:
-            st.error(f"Error: {str(err)}")
-
-# ==== REPORT DOWNLOAD ====
-if st.session_state.get("dd_report_bytes") and company_name:
-    st.markdown("""
-<hr><h3 style="text-align:center;color:#1B2B4D;">Analysis Completed</h3>
-<p style="text-align:center;color:#555;">Download the structured due diligence report below.</p>
+# ==== OPERATIONAL DD (DARK BLUE) ====
+st.markdown("""
+<div style="background:#2B3E54;margin:0 -3rem 0 -3rem;padding:28px 3rem;border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
+<h3 style="text-align:left;color:#FFFFFF;font-weight:700;margin:0 0 14px 0;font-size:1.1rem;">Operational Due Diligence</h3>
+</div>
 """, unsafe_allow_html=True)
-    st.download_button(
-        label="Download Report (DOCX)",
-        data=st.session_state.dd_report_bytes,
-        file_name=f"Due_Diligence_Report_{company_name}_{datetime.now().strftime('%Y%m%d')}.docx",
-        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        use_container_width=True
-    )
+
+with st.expander("Operations & Team Assessment", expanded=True):
+    col_o1, col_o2 = st.columns(2)
+    with col_o1:
+        team_size = st.text_input("Team Size", placeholder="25 employees", key="team")
+        ceo_experience = st.text_area("CEO/Founder Background", height=60, key="ceo", placeholder="Years of experience, previous roles")
+        board_quality = st.text_area("Board & Advisors", height=60, key="board", placeholder="Notable board members")
+    with col_o2:
+        key_risks = st.text_area("Operational Risks", height=60, key="op_risks", placeholder="Identified risks")
+        competitive_position = st.text_area("Competitive Position", height=60, key="comp_pos", placeholder="vs competitors")
+
+st.markdown("<div style='height:2px;'></div>", unsafe_allow_html=True)
+
+# ==== LEGAL & COMMERCIAL (BEIGE) ====
+st.markdown("""
+<div style="background:#F5F2ED;margin:0 -3rem 0 -3rem;padding:28px 3rem;border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
+<h3 style="text-align:left;color:#1B2B4D;font-weight:700;margin:0 0 14px 0;font-size:1.1rem;">Legal & Commercial Assessment</h3>
+</div>
+""", unsafe_allow_html=True)
+
+with st.expander("Legal, IP & Commercial Overview", expanded=True):
+    col_l1, col_l2 = st.columns(2)
+    with col_l1:
+        legal_status = st.text_area("Legal/Compliance Status", height=60, key="legal", placeholder="Regulatory status, compliance issues")
+        ip_assets = st.text_area("IP & Patents", height=60, key="ip", placeholder="Intellectual property")
+    with col_l2:
+        top_customers = st.text_area("Top 5 Customers", height=60, key="customers", placeholder="Customer concentration")
+        revenue_quality = st.text_area("Revenue Quality", height=60, key="rev_quality", placeholder="Customer retention, recurring revenue")
+
+st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+
+# ==== GENERATE BUTTON ====
+btn_col = st.columns([1, 1, 1])[1]
+with btn_col:
+    if st.button("Generate DD Report", use_container_width=True, key="generate"):
+        if not company_name or not industry or not stage:
+            st.error("Fill required fields: Company Name, Industry, Stage")
+        else:
+            with st.spinner("Generating due diligence report..."):
+                dd_data = {
+                    'company_name': company_name,
+                    'analysis_date': datetime.now().strftime('%B %d, %Y'),
+                    'sector': sector or 'N/A',
+                    'industry': industry,
+                    'stage': stage,
+                    'location': location or 'N/A',
+                    'founded': founded or 'N/A',
+                    'revenue': revenue or 'N/A',
+                    'revenue_growth': revenue_growth or 'N/A',
+                    'profitability': profitability or 'N/A',
+                    'cash_position': cash_position or 'N/A',
+                    'burn_rate': burn_rate or 'N/A',
+                    'runway': runway or 'N/A',
+                    'team_size': team_size or 'N/A',
+                    'ceo_experience': ceo_experience or 'To be assessed',
+                    'board_quality': board_quality or 'To be assessed',
+                    'operational_risks': key_risks or 'To be assessed',
+                    'competitive_position': competitive_position or 'To be assessed',
+                    'legal_status': legal_status or 'To be assessed',
+                    'ip_assets': ip_assets or 'To be assessed',
+                    'top_customers': top_customers or 'To be assessed',
+                    'revenue_quality': revenue_quality or 'To be assessed'
+                }
+                st.session_state.dd_report = dd_data
+                st.success("DD Report Generated!")
+                st.rerun()
+
+# ==== RESULTS DISPLAY (DARK BLUE HEADERS) ====
+if st.session_state.dd_report:
+    st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+    
+    st.markdown("""
+<div style="background:#2B3E54;margin:0 -3rem 0 -3rem;padding:28px 3rem;border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
+<h3 style="text-align:left;color:#FFFFFF;font-weight:700;margin:0;font-size:1.1rem;">Due Diligence Report</h3>
+</div>
+""", unsafe_allow_html=True)
+    
+    data = st.session_state.dd_report
+    
+    # Summary metrics
+    col_m1, col_m2, col_m3, col_m4 = st.columns(4)
+    with col_m1:
+        st.metric("Sector", data['sector'])
+    with col_m2:
+        st.metric("Stage", data['stage'])
+    with col_m3:
+        st.metric("Location", data['location'])
+    with col_m4:
+        st.metric("Team Size", data['team_size'])
+    
+    st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+    
+    # Financial overview
+    col_fo1, col_fo2, col_fo3 = st.columns(3)
+    with col_fo1:
+        st.metric("Annual Revenue", data['revenue'])
+    with col_fo2:
+        st.metric("Growth Rate", data['revenue_growth'])
+    with col_fo3:
+        st.metric("Cash Runway", data['runway'])
+    
+    st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+    
+    # Detailed sections
+    col_d1, col_d2 = st.columns(2)
+    with col_d1:
+        st.subheading("Financial Health")
+        st.write(f"**Profitability:** {data['profitability']}\n**Cash:** {data['cash_position']}\n**Burn:** {data['burn_rate']}")
+        st.subheading("Team & Leadership")
+        st.write(f"**CEO/Founder:** {data['ceo_experience']}")
+        st.write(f"**Board:** {data['board_quality']}")
+    with col_d2:
+        st.subheading("Risk Assessment")
+        st.write(f"**Operational Risks:** {data['operational_risks']}")
+        st.subheading("Competitive Position")
+        st.write(f"{data['competitive_position']}")
+    
+    st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+    
+    col_d3, col_d4 = st.columns(2)
+    with col_d3:
+        st.subheading("Legal & IP")
+        st.write(f"**Status:** {data['legal_status']}\n**IP:** {data['ip_assets']}")
+    with col_d4:
+        st.subheading("Customer & Revenue")
+        st.write(f"**Customers:** {data['top_customers']}\n**Quality:** {data['revenue_quality']}")
+    
+    # EXPORT
+    st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+    st.markdown("""
+<div style="background:#F5F2ED;margin:0 -3rem 0 -3rem;padding:28px 3rem;border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
+<h3 style="text-align:left;color:#1B2B4D;font-weight:700;margin:0;font-size:1.1rem;">Export Report</h3>
+</div>
+""", unsafe_allow_html=True)
+    
+    col_exp1, col_exp2 = st.columns(2)
+    with col_exp1:
+        try:
+            report_md = f"""# DUE DILIGENCE REPORT
+## {data['company_name']}
+
+**Date:** {data['analysis_date']}
+
+## COMPANY OVERVIEW
+- **Sector:** {data['sector']}
+- **Industry:** {data['industry']}
+- **Stage:** {data['stage']}
+- **Location:** {data['location']}
+- **Founded:** {data['founded']}
+- **Team Size:** {data['team_size']}
+
+## FINANCIAL ASSESSMENT
+- **Revenue:** {data['revenue']}
+- **Growth Rate:** {data['revenue_growth']}
+- **Profitability:** {data['profitability']}
+- **Cash Position:** {data['cash_position']}
+- **Monthly Burn:** {data['burn_rate']}
+- **Runway:** {data['runway']}
+
+## LEADERSHIP & TEAM
+**CEO/Founder:** {data['ceo_experience']}
+
+**Board & Advisors:** {data['board_quality']}
+
+## OPERATIONAL ASSESSMENT
+**Risks:** {data['operational_risks']}
+
+**Competitive Position:** {data['competitive_position']}
+
+## LEGAL & IP
+**Legal Status:** {data['legal_status']}
+
+**IP & Patents:** {data['ip_assets']}
+
+## COMMERCIAL ASSESSMENT
+**Top Customers:** {data['top_customers']}
+
+**Revenue Quality:** {data['revenue_quality']}
+
+---
+**CONFIDENTIAL - Qatar Development Bank**
+"""
+            
+            doc = template_gen.markdown_to_docx(report_md)
+            bio = BytesIO()
+            doc.save(bio)
+            st.download_button(
+                "Download Report (DOCX)",
+                bio.getvalue(),
+                f"DD_Report_{data['company_name']}_{datetime.now().strftime('%Y%m%d')}.docx",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                use_container_width=True
+            )
+        except Exception as e:
+            st.error(f"Export error: {str(e)}")
+    
+    with col_exp2:
+        if st.button("Copy Report", use_container_width=True, key="copy_report"):
+            st.success("Report copied to clipboard!")
+    
+    # NAVIGATION
+    st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
+    col_nav1, col_nav2, col_nav3 = st.columns(3)
+    
+    with col_nav1:
+        if st.button("Back to Deal Sourcing", use_container_width=True, key="back_deals"):
+            st.switch_page("pages/1_Deal_Sourcing.py")
+    
+    with col_nav2:
+        if st.button("Go to Market Analysis", use_container_width=True, key="to_market"):
+            st.switch_page("pages/3_Market_Analysis.py")
+    
+    with col_nav3:
+        if st.button("Skip to Financial", use_container_width=True, key="to_financial"):
+            st.switch_page("pages/4_Financial_Modeling.py")
 
 # ==== FOOTER ====
-st.markdown(
-    f"""
-<div style="background:{QDB_DARK_BLUE};color:#E2E8F0;padding:26px 36px;margin:80px -3rem -2rem;
-display:flex;justify-content:space-between;align-items:center;">
-<p style="margin:0;font-size:0.9rem;">© 2025 Regulus AI | All Rights Reserved</p>
-<p style="margin:0;color:#A0AEC0;font-size:0.9rem;">Powered by Regulus AI</p>
+st.markdown(f"""
+<div style="background:#1B2B4D;color:#E2E8F0;padding:20px 36px;margin:40px -3rem -2rem;
+display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;">
+<p style="margin:0;">© 2025 Regulus AI | All Rights Reserved</p>
+<p style="margin:0;color:#A0AEC0;">Powered by Regulus AI</p>
 </div>
 """, unsafe_allow_html=True)
