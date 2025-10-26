@@ -1,113 +1,107 @@
 """
-Regulus AI – LLM Handler
-Unified intelligent interface for all LLM-assisted modules (Deal Sourcing, Due Diligence, Market Analysis, etc.)
+QDB | Regulus AI – LLM Handler
+Unified large‑language‑model utility that powers all analytical pages
+(Deal Sourcing, Due Diligence, Market Analysis, Financial Modeling, Investment Memo).
 """
 
 import os
-import openai
 from datetime import datetime
+import openai
 
 
 class LLMHandler:
-    """
-    Core LLM Handler for the QDB × Regulus Analyst Platform.
-    Provides standardized text generation & summarization utilities.
-    """
+    """Central AI text generator for the Regulus Analyst Platform."""
 
-    def __init__(self, 
-                 model_name: str = "gpt-4-turbo",
-                 temperature: float = 0.4,
-                 system_prompt: str = (
-                     "You are Regulus AI, an expert financial analyst working "
-                     "for Qatar Development Bank. Your style is concise, "
-                     "structured, and analytical."
-                 )):
+    def __init__(self, model_name: str = "gpt-4-turbo", temperature: float = 0.5):
         """
-        Initialize the model and environment.
-        Reads `OPENAI_API_KEY` from environment variables securely.
+        Initialize the Regulus AI LLM handler.
+        Auto‑reads API key, and sets default model for financial analysis tasks.
         """
         self.model_name = model_name
         self.temperature = temperature
-        self.system_prompt = system_prompt
 
         if "OPENAI_API_KEY" not in os.environ:
-            raise EnvironmentError("⚠️ OPENAI_API_KEY is not set in your environment variables.")
+            raise EnvironmentError(
+                "⚠️ Environment variable OPENAI_API_KEY not set. Please configure your OpenAI key."
+            )
         openai.api_key = os.getenv("OPENAI_API_KEY")
 
-    # ----------------------------------------------------------------------
-    # PUBLIC METHODS
-    # ----------------------------------------------------------------------
+    # ------------------------------------------------------------------
+    # CORE FUNCTION ----------------------------------------------------
+    # ------------------------------------------------------------------
 
-    def generate_text(self, user_input: str, max_tokens: int = 800) -> str:
+    def generate_text(self, prompt: str, max_tokens: int = 900) -> str:
         """
-        Generate human‑readable analytical text output for any task.
-        Usage example:
-            handler = LLMHandler()
-            result = handler.generate_text("Summarize Qatar’s SME growth opportunities.")
+        Generate structured, contextual text for any workflow module.
+        Example:
+            llm = LLMHandler()
+            output = llm.generate_text("Summarize today’s MENA fintech funding activity.")
         """
         try:
-            response = openai.ChatCompletion.create(
+            completion = openai.ChatCompletion.create(
                 model=self.model_name,
                 messages=[
-                    {"role": "system", "content": self.system_prompt},
-                    {"role": "user", "content": user_input},
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are Regulus AI – a professional investment analyst at Qatar Development Bank (QDB). "
+                            "Write clear, concise, structured financial analysis, following institutional tone and report style."
+                        ),
+                    },
+                    {"role": "user", "content": prompt},
                 ],
                 temperature=self.temperature,
                 max_tokens=max_tokens,
             )
-            message = response["choices"][0]["message"]["content"].strip()
-            return message
+            return completion.choices[0].message.content.strip()
 
         except Exception as e:
-            return f"⚠️ LLM generation error: {str(e)}"
+            return f"⚠️ LLM Error – {str(e)}"
 
-    # ----------------------------------------------------------------------
+    # ------------------------------------------------------------------
+    # SPECIALIZED HELPERS ----------------------------------------------
+    # ------------------------------------------------------------------
 
     def summarize_deals(self, deals: list) -> str:
         """
-        Summarize a list of discovered deals into an executive overview.
-        Expected deal format:
-            [{"Company": ..., "Industry": ..., "Stage": ..., "Region": ...}, ...]
+        Summarize a list of deal dictionaries into AI‑curated highlights.
+        Each deal requires: Company, Industry, Stage, Region, and Ticket Size fields.
         """
-        try:
-            if not deals:
-                return "No deals available to summarize."
+        if not deals:
+            return "No deals available for summary."
 
-            text_block = "\n".join(
-                [f"{d.get('Company','N/A')} – {d.get('Industry','N/A')} "
-                 f"({d.get('Stage','N/A')} • {d.get('Region','N/A')})"
-                 for d in deals]
-            )
-            prompt = (
-                f"Provide a one‑page executive analysis of the following investment opportunities:\n\n{text_block}\n\n"
-                "Highlight potential standouts, macro trends, and risks in a professional tone."
-            )
-            return self.generate_text(prompt, max_tokens=700)
+        lines = []
+        for d in deals:
+            company = d.get("Company", "N/A")
+            sector = d.get("Industry", "N/A")
+            region = d.get("Region", "N/A")
+            stage = d.get("Stage", "N/A")
+            amount = d.get("Ticket Size (USD M)", "N/A")
+            lines.append(f"{company} – {sector} | {region} | Stage: {stage} | Ticket ≈ ${amount} M")
+        formatted = "\n".join(lines)
 
-        except Exception as e:
-            return f"⚠️ Summary failed: {e}"
-
-    # ----------------------------------------------------------------------
-
-    def generate_due_diligence_checklist(self, industry: str) -> str:
-        """
-        Produce a QDB‑standard Due Diligence checklist for a given industry.
-        """
-        checklist_prompt = (
-            f"Generate a concise Due Diligence checklist for investments in the {industry} sector. "
-            "Structure under Legal, Financial, Operational, and Market aspects."
+        summary_prompt = (
+            f"Below is a list of recent investment opportunities curated by Regulus AI:\n\n{formatted}\n\n"
+            "Please summarize in executive form – highlighting key sectors, regional trends, and AI‑based insights."
         )
-        return self.generate_text(checklist_prompt, max_tokens=600)
+        return self.generate_text(summary_prompt, max_tokens=800)
 
-    # ----------------------------------------------------------------------
-
-    def generate_investment_summary(self, company: str, highlights: str) -> str:
+    def generate_due_diligence_checklist(self, sector: str) -> str:
         """
-        Create a short investment memo summary for a given company and highlights.
+        Build a custom due diligence checklist for a specific sector or industry.
+        """
+        prompt = (
+            f"Create a QDB‑style Due Diligence Checklist for the {sector} sector. "
+            "Organize sections: Legal, Financial, Operational, Market, and ESG Considerations."
+        )
+        return self.generate_text(prompt, max_tokens=700)
+
+    def generate_investment_memo(self, company: str, context: str) -> str:
+        """
+        Generate a compact investment memo for a given company profile.
         """
         memo_prompt = (
-            f"Prepare an investment summary for {company}. "
-            f"Use this information:\n\n{highlights}\n\n"
-            "Include key selling points and potential risks in executive tone."
+            f"Prepare a summary investment memo for {company}. Include:\n\n{context}\n\n"
+            "Summarize thesis, risks, and recommendations using Regulus AI’s analytical framework."
         )
         return self.generate_text(memo_prompt, max_tokens=700)
