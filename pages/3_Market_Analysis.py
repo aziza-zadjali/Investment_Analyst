@@ -85,6 +85,12 @@ st.markdown("""
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
+.required-asterisk {
+    color: #E74C3C;
+    font-weight: 700;
+    margin-left: 2px;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -131,7 +137,7 @@ st.markdown('<div class="section-blue"><div class="section-title">🏢 Company &
 
 col1, col2 = st.columns(2)
 with col1:
-    st.markdown("<div style='color:#E2E8F0; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Company Name *</div>", unsafe_allow_html=True)
+    st.markdown("<div style='color:#E2E8F0; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Company Name <span class='required-asterisk'>*</span></div>", unsafe_allow_html=True)
     company_name = st.text_input(
         "Company Name",
         placeholder="e.g., Tesla",
@@ -140,7 +146,7 @@ with col1:
     )
 
 with col2:
-    st.markdown("<div style='color:#E2E8F0; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Industry/Sector *</div>", unsafe_allow_html=True)
+    st.markdown("<div style='color:#E2E8F0; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Industry/Sector <span class='required-asterisk'>*</span></div>", unsafe_allow_html=True)
     industry = st.text_input(
         "Industry/Sector",
         placeholder="e.g., Electric Vehicles",
@@ -350,28 +356,35 @@ if st.session_state.market_complete:
     
     with col_dl1:
         try:
+            # ✅ FIX: Generate DOCX FIRST and convert to bytes properly
             docx_doc = template_gen.markdown_to_docx(st.session_state.market_report)
             docx_buffer = BytesIO()
             docx_doc.save(docx_buffer)
-            docx_buffer.seek(0)
+            docx_bytes = docx_buffer.getvalue()  # ✅ Extract bytes from buffer
+            
             st.download_button(
                 label="📄 Download DOCX Report",
-                data=docx_buffer.getvalue(),
+                data=docx_bytes,  # ✅ Pass bytes, not BytesIO object
                 file_name=f"{data['company_name']}_Market_Analysis_{datetime.now().strftime('%Y%m%d')}.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
         except Exception as e:
-            st.error(f"Error generating DOCX: {e}")
+            st.error(f"❌ Error generating DOCX: {str(e)}")
 
     with col_dl2:
-        st.download_button(
-            label="📋 Preview Report",
-            data=st.session_state.market_report,
-            file_name=f"{data['company_name']}_Market_Analysis_{datetime.now().strftime('%Y%m%d')}.md",
-            mime="text/markdown",
-            use_container_width=True
-        )
+        try:
+            # ✅ Markdown download with bytes
+            markdown_bytes = st.session_state.market_report.encode('utf-8')
+            st.download_button(
+                label="📋 Preview Report",
+                data=markdown_bytes,  # ✅ Pass bytes
+                file_name=f"{data['company_name']}_Market_Analysis_{datetime.now().strftime('%Y%m%d')}.md",
+                mime="text/markdown",
+                use_container_width=True
+            )
+        except Exception as e:
+            st.error(f"❌ Error preparing markdown: {str(e)}")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
