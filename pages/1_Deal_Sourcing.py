@@ -1,6 +1,6 @@
 """
 Deal Discovery & Sourcing | Regulus AI × QDB
-Fixed version - compatible with WebScraper method signature.
+Fixed version with final scraping status summary.
 """
 import streamlit as st
 import os, base64, pandas as pd
@@ -170,29 +170,36 @@ div.stButton>button:first-child:hover{
     unsafe_allow_html=True,
 )
 
-# ==== EXECUTION (FIXED) ====
+# ==== EXECUTION WITH DETAILED STATUS ====
 if discover:
     try:
         scraper = WebScraper()
         llm = LLMHandler()
         
-        st.info("Fetching startup deals...")
-        all_data = []
+        progress_container = st.container()
+        status_message = progress_container.info("Starting deal discovery process...")
         
-        for src in sources:
-            st.write(f"Scraping {src}...")
+        all_data = []
+        source_stats = {}
+        total_retrieved = 0
+        
+        for idx, src in enumerate(sources):
+            status_message.info(f"Scraping {src}... (Step {idx+1} of {len(sources)})")
             try:
-                # Call scraper with correct parameters (no min_ticket/max_ticket)
                 src_data = scraper.search_startups(
                     src, industries, sectors, [stage], regions, 
                     limit=int(deal_count/len(sources))
                 )
-                all_data.extend(src_data)
+                src_count = len(src_data) if src_data else 0
+                all_data.extend(src_data if src_data else [])
+                source_stats[src] = src_count
+                total_retrieved += src_count
             except Exception as e:
+                source_stats[src] = 0
                 st.warning(f"Error scraping {src}: {str(e)}")
                 continue
         
-        # Filter by ticket size after retrieval
+        # Filter by ticket size
         filtered_data = []
         for deal in all_data:
             try:
@@ -204,11 +211,12 @@ if discover:
             except:
                 filtered_data.append(deal)
         
+        # Display results
         if not filtered_data:
             st.warning(f"No deals found in ticket size range ${min_investment}M - ${max_investment}M")
         else:
             df = pd.DataFrame(filtered_data)
-            st.success(f"{len(df)} deals found in your ticket size range.")
+            st.success(f"Success: {len(df)} deals found in your ticket size range.")
             st.dataframe(df, use_container_width=True)
             
             st.markdown("#### AI Summary")
@@ -218,9 +226,32 @@ if discover:
                 st.info(ai_insight)
             except Exception as e:
                 st.warning(f"Could not generate AI summary: {str(e)}")
+        
+        # === FINAL SCRAPING STATUS SUMMARY ===
+        st.markdown("---")
+        st.markdown("#### Scraping Completion Summary")
+        
+        summary_cols = st.columns(3)
+        with summary_cols[0]:
+            st.metric("Total Retrieved", f"{total_retrieved} deals")
+        with summary_cols[1]:
+            st.metric("Ticket Size Filtered", f"{len(filtered_data)} deals")
+        with summary_cols[2]:
+            st.metric("Scraping Status", "Completed")
+        
+        st.markdown("**Source Breakdown:**")
+        for src, count in source_stats.items():
+            st.write(f"- {src}: {count} deals")
+        
+        if total_retrieved == 0:
+            st.info("No deals retrieved from selected sources. Try adjusting filters or expanding source selection.")
+        elif len(filtered_data) == 0:
+            st.info(f"Retrieved {total_retrieved} deals total, but none match your ticket size range (${min_investment}M-${max_investment}M). Try adjusting the range.")
+        else:
+            st.success(f"Scraping complete. {len(filtered_data)} of {total_retrieved} deals matched your criteria.")
     
     except Exception as e:
-        st.error(f"Error during deal discovery: {str(e)}")
+        st.error(f"Critical error during deal discovery: {str(e)}")
 
 # ==== FOOTER ====
 st.markdown(
