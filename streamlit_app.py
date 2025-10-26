@@ -1,6 +1,6 @@
 """
 Investment Analyst AI – Regulus Edition
-Grey Dashboard Toggle Button - FIXED
+Nav Buttons: TEAL | Toggle Button: GREY
 """
 import streamlit as st
 import base64
@@ -73,7 +73,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# ===== STYLE: TEAL NAV BUTTONS + GREY TOGGLE BUTTON =====
+# ===== STYLE: TEAL NAV + GREY TOGGLE =====
 st.markdown("""
 <style>
 .nav-container {
@@ -83,7 +83,7 @@ st.markdown("""
     text-align: center;
 }
 
-/* TEAL buttons for navigation */
+/* ALL TEAL buttons by default */
 .stButton>button {
     background: linear-gradient(135deg,#16A085 0%,#138074 100%)!important;
     color:white!important;
@@ -115,22 +115,15 @@ st.markdown("""
     box-shadow:0 3px 10px rgba(22,160,133,0.25)!important;
 }
 
-/* GREY toggle button OVERRIDE */
-button[kind="secondary"] {
+/* GREY for toggle button only */
+button[aria-label*="Dashboard"] {
     background: linear-gradient(135deg, #A9A9A9 0%, #8B8B8B 100%)!important;
     color: white!important;
-    border: none!important;
-    border-radius: 8px!important;
-    padding: 11px 28px!important;
-    font-weight: 600!important;
-    font-size: 0.9rem!important;
     box-shadow: 0 3px 10px rgba(0,0,0,0.15)!important;
-    transition: all 0.25s ease!important;
 }
 
-button[kind="secondary"]:hover {
+button[aria-label*="Dashboard"]:hover {
     background: linear-gradient(135deg, #8B8B8B 0%, #707070 100%)!important;
-    transform: translateY(-1px)!important;
     box-shadow: 0 5px 14px rgba(0,0,0,0.2)!important;
 }
 
@@ -214,7 +207,7 @@ div[data-testid="column"] {display:flex; justify-content:center;}
 </style>
 """, unsafe_allow_html=True)
 
-# ===== NAVIGATION BAR =====
+# ===== NAVIGATION BAR (TEAL BUTTONS) =====
 st.markdown('<div class="nav-container">', unsafe_allow_html=True)
 nav_cols = st.columns(5)
 buttons = [
@@ -249,7 +242,6 @@ with col_c:
     if st.button(
         f"{'▼ Hide' if st.session_state.dashboard_expanded else '▶ View'} Dashboard",
         key="toggle_dashboard",
-        type="secondary",  # This makes it use the grey style!
         use_container_width=False
     ):
         st.session_state.dashboard_expanded = not st.session_state.dashboard_expanded
