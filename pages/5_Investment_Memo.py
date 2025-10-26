@@ -147,6 +147,14 @@ The opportunity presents significant strategic alignment with QDB's investment m
 """
     return memo
 
+# ==== RETURN HOME (TOP LEFT) ====
+col_home_left, col_home_right = st.columns([0.15, 9.85])
+with col_home_left:
+    if st.button("← Home", use_container_width=True, key="home_top_left"):
+        st.switch_page("streamlit_app.py")
+
+st.markdown("<div style='height:3px;'></div>", unsafe_allow_html=True)
+
 # ==== HERO SECTION ====
 st.markdown(f"""
 <div style="background:linear-gradient(135deg,#1B2B4D 0%, #0E2E4D 100%);color:white;margin:0 -3rem;padding:70px 0 50px;text-align:center;">
@@ -160,12 +168,6 @@ Generate professional investment memos (DOCX) and pitch decks (PPTX) for analyst
 </p>
 </div>
 """, unsafe_allow_html=True)
-
-# ==== RETURN HOME ====
-col1, col2, col3 = st.columns([1, 0.6, 1])
-with col2:
-    if st.button("Return Home", use_container_width=True, key="home_btn"):
-        st.switch_page("streamlit_app.py")
 
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
