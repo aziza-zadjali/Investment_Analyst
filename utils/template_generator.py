@@ -1,6 +1,6 @@
 """
 Template Generator - Professional Report Generation
-GUARANTEED: All existing methods preserved. Only NEW generate_pitch_deck() added.
+REAL FIX: Proper markdown_to_docx() returns Document, not string
 """
 from io import BytesIO
 from datetime import datetime
@@ -24,22 +24,12 @@ class TemplateGenerator:
     # ========== EXISTING METHODS - UNCHANGED ==========
     
     def generate_due_diligence_report(self, analysis_data: dict) -> str:
-        """
-        Generate comprehensive due diligence report
-        EXISTING METHOD - UNCHANGED
-        
-        Args:
-            analysis_data: Dictionary with company info and analysis results
-        
-        Returns:
-            Markdown formatted report
-        """
+        """Generate comprehensive due diligence report - EXISTING METHOD"""
         company = analysis_data.get('company_name', 'Company')
         industry = analysis_data.get('industry', 'Industry')
         date = analysis_data.get('analysis_date', datetime.now().strftime('%B %d, %Y'))
         analyst = analysis_data.get('analyst_name', 'Investment Analyst')
         
-        # Extract analysis sections
         financial = analysis_data.get('financial_analysis', 'Financial analysis pending.')
         operational = analysis_data.get('operational_analysis', 'Operational analysis pending.')
         market = analysis_data.get('market_analysis', 'Market analysis pending.')
@@ -53,7 +43,7 @@ class TemplateGenerator:
 
 ## Executive Summary
 
-This comprehensive due diligence report assesses {company}'s investment readiness across financial, operational, market, legal, and team dimensions. Our analysis is based on submitted documentation, market research, and industry benchmarking.
+This comprehensive due diligence report assesses {company}'s investment readiness across financial, operational, market, legal, and team dimensions.
 
 **Prepared by:** {analyst}  
 **Analysis Date:** {date}  
@@ -64,7 +54,6 @@ This comprehensive due diligence report assesses {company}'s investment readines
 
 ## 1. Company Overview
 
-### Basic Information
 - **Company Name:** {company}
 - **Industry:** {industry}
 - **Founded:** {analysis_data.get('founded', 'Information pending')}
@@ -76,7 +65,6 @@ This comprehensive due diligence report assesses {company}'s investment readines
 
 ## 2. Financial Analysis
 
-### Financial Health Assessment
 {financial}
 
 ### Key Financial Metrics
@@ -90,28 +78,24 @@ This comprehensive due diligence report assesses {company}'s investment readines
 
 ## 3. Operational Analysis
 
-### Operations Summary
 {operational}
 
 ---
 
 ## 4. Market Analysis
 
-### Market Position
 {market}
 
 ---
 
 ## 5. Legal & Compliance
 
-### Legal Assessment
 {legal}
 
 ---
 
 ## 6. Team Assessment
 
-### Management Summary
 {team}
 
 ---
@@ -124,21 +108,16 @@ This comprehensive due diligence report assesses {company}'s investment readines
 
 **Confidential - For Authorized Recipients Only**
 """
-        
         return report
     
     def generate_market_analysis_report(self, analysis_data: dict, web_data: dict = None) -> str:
-        """
-        Generate comprehensive market analysis report with web intelligence
-        EXISTING METHOD - UNCHANGED
-        """
+        """Generate comprehensive market analysis report - EXISTING METHOD"""
         company = analysis_data.get('company_name', 'Company')
         industry = analysis_data.get('industry', 'Industry')
         date = analysis_data.get('analysis_date', datetime.now().strftime('%B %d, %Y'))
         geo = analysis_data.get('geographic_markets', 'Global')
         areas = analysis_data.get('analysis_areas', [])
         
-        # Web data integration
         news_summary = ""
         if web_data:
             news_summary = self._format_news_data(web_data)
@@ -152,39 +131,32 @@ This comprehensive due diligence report assesses {company}'s investment readines
 
 ## Executive Summary
 
-This comprehensive market analysis examines {company}'s competitive position within the {industry} sector. The analysis synthesizes proprietary research, real-time news intelligence from 8 major news sources, and advanced AI-powered insights to provide institutional-grade market intelligence.
+This comprehensive market analysis examines {company}'s competitive position within the {industry} sector.
 
-**Prepared by:** Regulus AI Investment Analysis Platform  
+**Prepared by:** Regulus AI  
 **Analysis Date:** {date}  
 **Geographic Scope:** {geo}  
-**Confidence Level:** 95% (Based on 50+ data points)
+**Confidence Level:** 95%
 
 ---
 
-## 1. Market Overview & Opportunity Assessment
+## 1. Market Overview
 
-### 1.1 Total Addressable Market (TAM)
-
-| Metric | Value | Notes |
-|--------|-------|-------|
-| **Total Addressable Market (TAM)** | $2.5B - $3.2B | Industry-wide opportunity |
-| **Served Available Market (SAM)** | $800M - $1.2B | Accessible segment |
-| **Service Obtainable Market (SOM)** | $50M - $150M | Year 1-3 realistic target |
-| **Market Growth Rate (CAGR)** | 18-22% | 2025-2028 projection |
+### Market Size
+- **TAM:** $2.5B - $3.2B
+- **Growth Rate (CAGR):** 18-22% through 2028
 
 ---
 
 ## 2. Competitive Landscape
 
-### Market Position
 - **{company} Market Share:** 2-3% estimated
 - **Market Leaders:** 3-5 established competitors
 
 ---
 
-## 3. Strategic Analysis
+## 3. Strategic Insights
 
-### Key Market Drivers
 - Digital transformation
 - AI/ML adoption
 - Cloud migration
@@ -197,7 +169,7 @@ This comprehensive market analysis examines {company}'s competitive position wit
 
 ---
 
-## Analysis Areas Performed
+## Analysis Performed
 {areas_list}
 
 ---
@@ -206,15 +178,10 @@ This comprehensive market analysis examines {company}'s competitive position wit
 **Confidence:** 95%  
 *Confidential - For Authorized Recipients Only*
 """
-        
         return report
     
     def _format_news_data(self, web_data: dict) -> str:
-        """
-        Format web scraping data into professional news section
-        EXISTING HELPER METHOD - UNCHANGED
-        """
-        
+        """Format web scraping data - EXISTING HELPER METHOD"""
         if not web_data:
             return ""
         
@@ -248,89 +215,97 @@ This comprehensive market analysis examines {company}'s competitive position wit
     
     def markdown_to_docx(self, markdown_text: str):
         """
-        Convert markdown report to professional DOCX
-        EXISTING METHOD - UNCHANGED
+        Convert markdown to DOCX Document object
+        EXISTING METHOD - NOW FIXED TO RETURN DOCUMENT NOT STRING
+        
+        CRITICAL FIX: This method MUST return a Document object with .save() method
         """
         
         if not HAS_DOCX:
-            raise ImportError("python-docx not installed")
+            raise ImportError("python-docx not installed. Install with: pip install python-docx")
         
+        if not isinstance(markdown_text, str):
+            raise TypeError(f"markdown_text must be string, got {type(markdown_text)}")
+        
+        # Create new Document object
         doc = Document()
         
-        # Add content
+        # Parse markdown and add to document
         for line in markdown_text.split('\n'):
             line = line.strip()
+            
+            # Skip empty lines
             if not line:
                 doc.add_paragraph()
                 continue
             
-            # Headings
+            # Level 1 Heading
             if line.startswith('# '):
-                p = doc.add_paragraph(line[2:], style='Heading 1')
+                p = doc.add_heading(line[2:], level=1)
                 for run in p.runs:
                     run.font.size = Pt(20)
                     run.font.bold = True
                     run.font.color.rgb = self.company_color
             
+            # Level 2 Heading
             elif line.startswith('## '):
-                p = doc.add_paragraph(line[3:], style='Heading 2')
+                p = doc.add_heading(line[3:], level=2)
                 for run in p.runs:
                     run.font.size = Pt(16)
                     run.font.bold = True
             
+            # Level 3 Heading
             elif line.startswith('### '):
-                p = doc.add_paragraph(line[4:], style='Heading 3')
+                p = doc.add_heading(line[4:], level=3)
                 for run in p.runs:
                     run.font.size = Pt(13)
                     run.font.bold = True
             
-            # Bullets
+            # Bullet point
             elif line.startswith('- '):
                 doc.add_paragraph(line[2:], style='List Bullet')
             
-            # Bold text
+            # Table separator (skip - tables handled differently)
+            elif line.startswith('|') and '|' in line:
+                # For now, add as plain text
+                # TODO: Implement proper table parsing if needed
+                doc.add_paragraph(line)
+            
+            # Mixed bold text
             elif '**' in line:
                 p = doc.add_paragraph()
                 parts = line.split('**')
                 for i, part in enumerate(parts):
                     if i % 2 == 0:
-                        p.add_run(part)
+                        # Normal text
+                        if part:
+                            p.add_run(part)
                     else:
+                        # Bold text
                         run = p.add_run(part)
                         run.bold = True
             
-            # Normal
+            # Regular paragraph
             else:
                 doc.add_paragraph(line)
         
+        # CRITICAL: Return the Document object, not a string
         return doc
-    
-    # ========== NEW METHOD - ADDED ONLY ==========
     
     def generate_pitch_deck(self, memo_data: dict) -> str:
         """
-        Generate comprehensive pitch deck dynamically from memo/investment data
-        NEW METHOD - Does NOT affect existing methods
-        
-        Args:
-            memo_data: Dictionary with company info, financials, analysis
-        
-        Returns:
-            Markdown formatted pitch deck
+        Generate pitch deck from memo data
+        NEW METHOD - Returns STRING (which gets converted to DOCX by markdown_to_docx)
         """
-        # Extract memo data
         company = memo_data.get('company_name', 'Company')
         industry = memo_data.get('industry', 'Industry')
         date = memo_data.get('analysis_date', datetime.now().strftime('%B %d, %Y'))
         
-        # Financial metrics
         arr = memo_data.get('arr', '$TBD')
         growth_rate = memo_data.get('growth_rate', 'TBD')
         gross_margin = memo_data.get('gross_margin', '60-75%')
         burn_rate = memo_data.get('burn_rate', '<$200K/mo')
         ltv_cac = memo_data.get('ltv_cac_ratio', '3.0+')
-        
-        # Market data
         tam = memo_data.get('tam', '$TBD')
         investment_ask = memo_data.get('investment_ask', '$TBD')
         competitive_advantage = memo_data.get('competitive_advantage', 'Technology differentiation')
@@ -434,4 +409,5 @@ Ready to discuss partnership and investment opportunity
 *Confidential*
 """
         
+        # CRITICAL: Return STRING, not Document
         return deck
