@@ -16,6 +16,33 @@ from utils.qdb_styling import apply_qdb_styling, QDB_DARK_BLUE, QDB_NAVY, QDB_PU
 st.set_page_config(page_title="Financial Modeling – Regulus AI", layout="wide")
 apply_qdb_styling()
 
+# ==== GLOBAL TEAL BUTTON STYLING ====
+st.markdown("""
+<style>
+button {
+ background:linear-gradient(135deg,#16A085 0%,#138074 50%,#0E5F55 100%)!important;
+ color:white!important;
+ border:none!important;
+ border-radius:40px!important;
+ padding:12px 36px!important;
+ font-weight:700!important;
+ font-size:0.95rem!important;
+ box-shadow:0 4px 16px rgba(19,128,116,0.25)!important;
+ transition:all 0.25s ease!important;
+ cursor:pointer!important;
+}
+button:hover{
+ background:linear-gradient(135deg,#0E5F55 0%,#138074 50%,#16A085 100%)!important;
+ transform:translateY(-2px)!important;
+ box-shadow:0 6px 22px rgba(19,128,116,0.35)!important;
+}
+button:active{
+ transform:translateY(0)!important;
+ box-shadow:0 3px 10px rgba(19,128,116,0.2)!important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 def encode_image(path):
     if os.path.exists(path):
         with open(path, "rb") as f:
@@ -54,17 +81,6 @@ col1, col2, col3 = st.columns([1, 0.6, 1])
 with col2:
     if st.button("Return Home", use_container_width=True, key="home_btn"):
         st.switch_page("streamlit_app.py")
-
-st.markdown("""
-<style>
-button[key="home_btn"]{
- background:linear-gradient(135deg,#16A085 0%,#138074 80%,#0E5F55 100%)!important;
- color:white!important;border:none!important;border-radius:44px!important;
- padding:14px 44px!important;font-weight:700!important;font-size:1.05rem!important;
- box-shadow:0 8px 34px rgba(19,128,116,.25)!important;
-transition:all .2s!important;}
-button[key="home_btn"]:hover{transform:translateY(-2px);}
-</style>""", unsafe_allow_html=True)
 
 # ==== WORKFLOW TRACKER ====
 st.markdown("""
@@ -132,48 +148,50 @@ with st.expander("Set Financial Parameters and Drivers", expanded=True):
 
 # ==== ACTION BUTTON ====
 st.markdown("<br>", unsafe_allow_html=True)
-if st.button("Generate Financial Model", use_container_width=True, key="generate"):
-    try:
-        with st.spinner("Building financial model with AI validation..."):
+btn_col = st.columns([1, 1, 1])[1]
+with btn_col:
+    if st.button("Generate Financial Model", use_container_width=True, key="generate"):
+        try:
+            with st.spinner("Building financial model with AI validation..."):
+                
+                # Build projections
+                years = list(range(datetime.now().year, datetime.now().year + forecast_years))
+                revenue = [revenue_start * ((1 + growth_rate/100) ** i) for i in range(forecast_years)]
+                cogs = [r * (1 - gross_margin/100) for r in revenue]
+                gross_profit = [r - c for r, c in zip(revenue, cogs)]
+                opex = [r * opex_percent/100 for r in revenue]
+                ebit = [gp - op for gp, op in zip(gross_profit, opex)]
+                tax = [e * tax_rate/100 for e in ebit]
+                net_income = [e - t for e, t in zip(ebit, tax)]
+                
+                # Create model
+                model_df = pd.DataFrame({
+                    'Year': years,
+                    'Revenue': revenue,
+                    'COGS': cogs,
+                    'Gross Profit': gross_profit,
+                    'Gross Margin %': [(gp/r)*100 for gp, r in zip(gross_profit, revenue)],
+                    'OpEx': opex,
+                    'EBIT': ebit,
+                    'EBIT Margin %': [(e/r)*100 for e, r in zip(ebit, revenue)],
+                    'Tax': tax,
+                    'Net Income': net_income,
+                    'Net Margin %': [(n/r)*100 for n, r in zip(net_income, revenue)]
+                })
+                
+                # AI Validation
+                try:
+                    validation_prompt = f"Validate financial model for {company_name}: {forecast_years}yr forecast, {growth_rate}% CAGR. Provide brief assessment."
+                    ai_validation = llm.generate_text(validation_prompt)
+                    st.info(f"✓ AI Validation: {ai_validation[:200]}...")
+                except:
+                    st.success("Model generated successfully")
+                
+                st.session_state.financial_model = model_df
+                st.success("Financial model generated!")
             
-            # Build projections
-            years = list(range(datetime.now().year, datetime.now().year + forecast_years))
-            revenue = [revenue_start * ((1 + growth_rate/100) ** i) for i in range(forecast_years)]
-            cogs = [r * (1 - gross_margin/100) for r in revenue]
-            gross_profit = [r - c for r, c in zip(revenue, cogs)]
-            opex = [r * opex_percent/100 for r in revenue]
-            ebit = [gp - op for gp, op in zip(gross_profit, opex)]
-            tax = [e * tax_rate/100 for e in ebit]
-            net_income = [e - t for e, t in zip(ebit, tax)]
-            
-            # Create model
-            model_df = pd.DataFrame({
-                'Year': years,
-                'Revenue': revenue,
-                'COGS': cogs,
-                'Gross Profit': gross_profit,
-                'Gross Margin %': [(gp/r)*100 for gp, r in zip(gross_profit, revenue)],
-                'OpEx': opex,
-                'EBIT': ebit,
-                'EBIT Margin %': [(e/r)*100 for e, r in zip(ebit, revenue)],
-                'Tax': tax,
-                'Net Income': net_income,
-                'Net Margin %': [(n/r)*100 for n, r in zip(net_income, revenue)]
-            })
-            
-            # AI Validation
-            try:
-                validation_prompt = f"Validate financial model for {company_name}: {forecast_years}yr forecast, {growth_rate}% CAGR. Provide brief assessment."
-                ai_validation = llm.generate_text(validation_prompt)
-                st.info(f"AI Validation: {ai_validation[:200]}...")
-            except:
-                st.success("Model generated successfully")
-            
-            st.session_state.financial_model = model_df
-            st.success("Financial model generated!")
-        
-    except Exception as e:
-        st.error(f"Error: {str(e)}")
+        except Exception as e:
+            st.error(f"Error: {str(e)}")
 
 # ==== RESULTS DISPLAY ====
 if st.session_state.get("financial_model") is not None and company_name:
