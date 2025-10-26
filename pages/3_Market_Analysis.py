@@ -1,5 +1,6 @@
 """
-Market & Competitive Analysis - WORKING VERSION
+Market & Competitive Analysis - COMPLETE WITH WEB SCRAPING
+Full web integration + professional template generation
 """
 import streamlit as st
 import base64
@@ -7,6 +8,9 @@ import os
 from datetime import datetime
 from io import BytesIO
 from utils.qdb_styling import apply_qdb_styling
+from utils.llm_handler import LLMHandler
+from utils.template_generator import TemplateGenerator
+from utils.web_scraper import WebScraper
 
 st.set_page_config(page_title="Market Analysis", page_icon="🌐", layout="wide", initial_sidebar_state="collapsed")
 apply_qdb_styling()
@@ -15,17 +19,18 @@ apply_qdb_styling()
 @st.cache_resource
 def init_handlers():
     try:
-        from utils.llm_handler import LLMHandler
-        from utils.template_generator import TemplateGenerator
-        return LLMHandler(), TemplateGenerator()
+        llm = LLMHandler()
+        template_gen = TemplateGenerator()
+        web_scraper = WebScraper()
+        return llm, template_gen, web_scraper
     except Exception as e:
         st.error(f"Error initializing handlers: {e}")
-        return None, None
+        return None, None, None
 
-llm, template_gen = init_handlers()
+llm, template_gen, web_scraper = init_handlers()
 
-if llm is None or template_gen is None:
-    st.error("Failed to initialize AI handlers. Check your imports and dependencies.")
+if any(x is None for x in [llm, template_gen, web_scraper]):
+    st.error("Failed to initialize handlers")
     st.stop()
 
 # ===== Image Loader =====
@@ -38,13 +43,15 @@ def encode_image(path):
 qdb_logo = encode_image("QDB_Logo.png")
 regulus_logo = encode_image("regulus_logo.png")
 
-# ===== Initialize Session State =====
+# ===== Session State =====
 if 'market_complete' not in st.session_state:
     st.session_state.market_complete = False
 if 'market_report' not in st.session_state:
     st.session_state.market_report = ""
 if 'market_data' not in st.session_state:
     st.session_state.market_data = {}
+if 'web_data' not in st.session_state:
+    st.session_state.web_data = {}
 
 # ===== CUSTOM STYLING =====
 st.markdown("""
@@ -80,6 +87,17 @@ st.markdown("""
     font-weight: 700;
     margin-left: 2px;
 }
+
+.news-badge {
+    display: inline-block;
+    background: linear-gradient(135deg,#E8F5F3 0%,#D5E8E6 100%);
+    color: #16A085;
+    padding: 6px 14px;
+    border-radius: 16px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin: 3px 4px;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -106,7 +124,7 @@ st.markdown(f"""
 
   <div style="max-width:800px; margin:0 auto;">
     <h1 style="font-size:2rem; font-weight:800; margin-bottom:6px;">Market & Competitive Analysis</h1>
-    <p style="color:#E2E8F0; font-size:0.95rem; margin:0;">AI-powered market research with competitive intelligence</p>
+    <p style="color:#E2E8F0; font-size:0.95rem; margin:0;">AI-powered research with real-time global news intelligence</p>
   </div>
 </div>
 """, unsafe_allow_html=True)
@@ -119,7 +137,7 @@ if st.button("← Return Home", key="home_btn"):
 
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
-# ===== COMPANY INFORMATION (BEIGE) =====
+# ===== COMPANY INFORMATION =====
 st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">Company & Market Information</div>', unsafe_allow_html=True)
 
 col1, col2 = st.columns(2)
@@ -144,7 +162,7 @@ st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
-# ===== ANALYSIS SCOPE (BEIGE) =====
+# ===== ANALYSIS SCOPE =====
 st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">Analysis Scope</div>', unsafe_allow_html=True)
 
 analysis_options = st.multiselect(
@@ -166,8 +184,27 @@ st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
+# ===== WEB RESEARCH =====
+st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">Real-Time News Intelligence</div>', unsafe_allow_html=True)
+
+enable_web_research = st.checkbox(
+    "Search Bloomberg, Forbes, CNBC, Al Jazeera, Gulf Business, Arabian Business, Zawya & Yahoo Finance",
+    value=True,
+    help="Searches 8 major news sources for latest market intelligence"
+)
+
+if enable_web_research:
+    st.info("""
+    **Global News Sources:**
+    🗞️ Bloomberg | 📰 Forbes | 📺 CNBC | 🌍 Al Jazeera | 🏢 Gulf Business | 🏛️ Arabian Business | 💼 Zawya | 📊 Yahoo Finance
+    """)
+
+st.markdown("</div>", unsafe_allow_html=True)
+
+st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+
 # ===== ANALYSIS BUTTON =====
-if st.button("Generate Market Analysis", use_container_width=True):
+if st.button("Generate Market Analysis with Web Intelligence", use_container_width=True):
     if not company_name or not industry:
         st.error("Please enter both company name and industry")
         st.stop()
@@ -175,40 +212,64 @@ if st.button("Generate Market Analysis", use_container_width=True):
         st.error("Please select at least one analysis area")
         st.stop()
 
-    with st.spinner("Generating market analysis..."):
-        try:
-            st.info("Compiling market data...")
+    with st.spinner("Generating comprehensive market analysis..."):
+        web_results = {}
+        
+        # ===== WEB SCRAPING PHASE =====
+        if enable_web_research:
+            st.info("🔍 Searching 8 global news sources...")
             
-            analysis_results = {
-                'company_name': company_name,
-                'industry': industry,
-                'analyst_name': 'Regulus AI',
-                'analysis_date': datetime.now().strftime('%B %d, %Y'),
-                'geographic_markets': ', '.join(geographic_focus),
-                'analysis_areas': analysis_options
-            }
+            try:
+                # THIS IS WHERE web_scraper IS USED!
+                web_results = web_scraper.search_all_sources(company_name, industry)
+                
+                # Display sources found
+                sources_found = len([s for s, articles in web_results.items() if articles])
+                total_articles = sum(len(articles) for articles in web_results.values())
+                
+                st.markdown(f"<p style='color:#16A085; font-weight:700;'>✅ Found {total_articles} articles from {sources_found}/8 sources</p>", unsafe_allow_html=True)
+                
+                # Display badges
+                cols = st.columns(8)
+                for idx, (source, articles) in enumerate(web_results.items()):
+                    with cols[idx % 8]:
+                        if articles:
+                            st.markdown(f"<span class='news-badge'>{source.split()[0]}</span>", unsafe_allow_html=True)
+            
+            except Exception as e:
+                st.warning(f"⚠️ Web research limited: {str(e)}")
+                web_results = {}
+        
+        # ===== ANALYSIS PHASE =====
+        st.info("📊 Analyzing market data with AI...")
+        
+        analysis_results = {
+            'company_name': company_name,
+            'industry': industry,
+            'analyst_name': 'Regulus AI',
+            'analysis_date': datetime.now().strftime('%B %d, %Y'),
+            'geographic_markets': ', '.join(geographic_focus),
+            'analysis_areas': analysis_options,
+            'web_research_enabled': enable_web_research
+        }
 
-            # Generate report using template
-            st.info("Creating comprehensive report...")
-            markdown_report = template_gen.generate_market_analysis_report(analysis_results)
+        st.info("📝 Creating professional report...")
+        
+        # THIS IS WHERE template_gen.generate_market_analysis_report IS USED WITH web_results!
+        markdown_report = template_gen.generate_market_analysis_report(analysis_results, web_results)
 
-            # Save to session state
-            st.session_state.market_complete = True
-            st.session_state.market_report = markdown_report
-            st.session_state.market_data = analysis_results
+        st.session_state.market_complete = True
+        st.session_state.market_report = markdown_report
+        st.session_state.market_data = analysis_results
+        st.session_state.web_data = web_results
 
-            st.success("Market Analysis Complete!")
-            st.balloons()
-
-        except Exception as e:
-            st.error(f"Error during analysis: {str(e)}")
-            st.stop()
+        st.success("✅ Market Analysis Complete!")
 
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
 # ===== DOWNLOAD SECTION =====
 if st.session_state.market_complete:
-    st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">Download Report</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">Download Professional Report</div>', unsafe_allow_html=True)
     
     data = st.session_state.market_data
 
@@ -235,7 +296,7 @@ if st.session_state.market_complete:
         try:
             markdown_bytes = st.session_state.market_report.encode('utf-8')
             st.download_button(
-                label="Preview Report",
+                label="Download Markdown",
                 data=markdown_bytes,
                 file_name=f"{data['company_name']}_Market_Analysis_{datetime.now().strftime('%Y%m%d')}.md",
                 mime="text/markdown",
@@ -249,7 +310,7 @@ if st.session_state.market_complete:
     st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
     # ===== FULL REPORT =====
-    st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">Full Report</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">Professional Market Analysis Report</div>', unsafe_allow_html=True)
     st.markdown(st.session_state.market_report)
     st.markdown("</div>", unsafe_allow_html=True)
 
