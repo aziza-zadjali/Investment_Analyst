@@ -297,7 +297,6 @@ if run_analysis:
                 
                 st.session_state.dd_report = str(report_data)
                 st.success("Due diligence analysis completed successfully!")
-                st.balloons()
         
         except Exception as e:
             st.error(f"Analysis error: {str(e)}")
@@ -313,15 +312,12 @@ border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
 Analysis Results
 </h2>
 <p style="text-align:center;color:#555;margin-top:6px;">
-Review comprehensive due diligence report and export findings.
+Download comprehensive due diligence report.
 </p>
 </div>
 """,
         unsafe_allow_html=True,
     )
-    
-    with st.expander("View Report Preview", expanded=True):
-        st.markdown(st.session_state.dd_report[:1500])
     
     col1, col2 = st.columns(2)
     with col1:
