@@ -160,16 +160,14 @@ The opportunity presents significant strategic alignment with QDB's investment m
 
 # ==== HERO SECTION ====
 st.markdown(f"""
-<div style="
-background:linear-gradient(135deg,{QDB_DARK_BLUE} 0%, {QDB_NAVY} 100%);
-color:white;margin:0 -3rem;padding:100px 0 80px;text-align:center;">
-<div style="position:absolute;left:50px;top:48px;">
-{'<img src="'+qdb_logo+'" style="max-height:80px;">' if qdb_logo else '<b>QDB</b>'}
+<div style="background:linear-gradient(135deg,#1B2B4D 0%, #0E2E4D 100%);color:white;margin:0 -3rem;padding:70px 0 50px;text-align:center;">
+<div style="position:absolute;left:50px;top:35px;">
+{'<img src="'+qdb_logo+'" style="max-height:70px;">' if qdb_logo else '<b>QDB</b>'}
 </div>
-<h1 style="font-size:2.8rem;font-weight:800;">Investment Memorandum</h1>
-<p style="font-size:1.35rem;color:#E2E8F0;">Comprehensive Investment Recommendation</p>
-<p style="color:#CBD5E0;font-size:1.1rem;max-width:750px;margin:auto;">
-Final workflow step: Generate professional investment memos with strategic scoring and actionable recommendations for Qatar Development Bank.
+<h1 style="font-size:2.5rem;font-weight:800;margin:0 0 10px 0;">Investment Memorandum</h1>
+<p style="font-size:1.2rem;color:#E2E8F0;margin:0 0 8px 0;font-weight:500;">Comprehensive Investment Recommendation</p>
+<p style="color:#CBD5E0;font-size:0.95rem;max-width:700px;margin:0 auto;">
+Generate professional investment memos with strategic scoring and actionable recommendations for Qatar Development Bank.
 </p>
 </div>
 """, unsafe_allow_html=True)
@@ -180,19 +178,21 @@ with col2:
     if st.button("Return Home", use_container_width=True, key="home_btn"):
         st.switch_page("streamlit_app.py")
 
+st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+
 # ==== WORKFLOW TRACKER ====
 st.markdown("""
 <style>
-.track{background:#F6F5F2;margin:-2px -3rem;padding:34px 0;
+.track{background:#F6F5F2;margin:0 -3rem;padding:24px 0;
 display:flex;justify-content:space-evenly;align-items:center;}
-.circle{width:54px;height:54px;border-radius:50%;display:flex;
+.circle{width:48px;height:48px;border-radius:50%;display:flex;
 align-items:center;justify-content:center;font-weight:700;
-background:#CBD5E0;color:#475569;font-size:0.95rem;}
-.circle.active{background:linear-gradient(135deg,#138074 0%,#0E5F55 100%);
-color:white;box-shadow:0 5px 15px rgba(19,128,116,0.4);}
-.label{margin-top:7px;font-size:0.9rem;font-weight:600;color:#708090;}
-.label.active{color:#138074;}
-.pipe{height:3px;width:70px;background:#CBD5E0;}
+background:#CBD5E0;color:#475569;font-size:0.9rem;}
+.circle.active{background:linear-gradient(135deg,#16A085 0%,#0E5F55 100%);
+color:white;box-shadow:0 4px 12px rgba(19,128,116,0.3);}
+.label{margin-top:5px;font-size:0.8rem;font-weight:600;color:#708090;}
+.label.active{color:#0E5F55;font-weight:700;}
+.pipe{height:2px;width:60px;background:#CBD5E0;}
 </style>
 <div class="track">
  <div><div class="circle">1</div><div class="label">Deal Sourcing</div></div>
@@ -207,15 +207,16 @@ color:white;box-shadow:0 5px 15px rgba(19,128,116,0.4);}
 </div>
 """, unsafe_allow_html=True)
 
-# ==== COMPANY INFO SECTION (LIGHT BLUE) ====
+st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+
+# ==== COMPANY INFO SECTION (DARK BLUE) ====
 st.markdown("""
-<div style="background:#EBF3F8;margin:50px -3rem 0 -3rem;padding:45px 3rem;
-border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
-<h2 style="text-align:center;color:#1B2B4D;font-weight:700;">Company & Deal Information</h2>
+<div style="background:#2B3E54;margin:0 -3rem 0 -3rem;padding:28px 3rem;border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
+<h3 style="text-align:left;color:#FFFFFF;font-weight:700;margin:0 0 14px 0;font-size:1.1rem;">Company & Deal Information</h3>
 </div>
 """, unsafe_allow_html=True)
 
-with st.expander("Enter Company and Investment Details", expanded=True):
+with st.expander("Enter Details", expanded=True):
     col1, col2, col3 = st.columns(3)
     with col1:
         company_name = st.text_input("Company Name *", key="memo_company")
@@ -235,22 +236,23 @@ with st.expander("Enter Company and Investment Details", expanded=True):
     with col6:
         ownership = st.text_input("Ownership %", placeholder="10", key="memo_own")
 
-# ==== BUSINESS DETAILS (LIGHT BEIGE) ====
+st.markdown("<div style='height:2px;'></div>", unsafe_allow_html=True)
+
+# ==== BUSINESS DETAILS (BEIGE) ====
 st.markdown("""
-<div style="background:#FAF7F2;margin:50px -3rem 0 -3rem;padding:45px 3rem;
-border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
-<h2 style="text-align:center;color:#1B2B4D;font-weight:700;">Business & Strategic Details</h2>
+<div style="background:#F5F2ED;margin:0 -3rem 0 -3rem;padding:28px 3rem;border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
+<h3 style="text-align:left;color:#1B2B4D;font-weight:700;margin:0 0 14px 0;font-size:1.1rem;">Business & Strategic Details</h3>
 </div>
 """, unsafe_allow_html=True)
 
-with st.expander("Business Model, Thesis & Market Data", expanded=True):
+with st.expander("Business Model & Market Data", expanded=True):
     col_b1, col_b2 = st.columns(2)
     with col_b1:
-        business_model = st.text_area("Business Model", height=70, key="memo_biz")
-        investment_thesis = st.text_area("Investment Thesis", height=70, key="memo_thesis")
+        business_model = st.text_area("Business Model", height=60, key="memo_biz")
+        investment_thesis = st.text_area("Investment Thesis", height=60, key="memo_thesis")
     with col_b2:
-        products = st.text_area("Products & Services", height=70, key="memo_products")
-        highlights = st.text_area("Key Highlights", height=70, key="memo_highlights")
+        products = st.text_area("Products & Services", height=60, key="memo_products")
+        highlights = st.text_area("Key Highlights", height=60, key="memo_highlights")
     
     col_m1, col_m2, col_m3 = st.columns(3)
     with col_m1:
@@ -260,11 +262,12 @@ with st.expander("Business Model, Thesis & Market Data", expanded=True):
     with col_m3:
         growth = st.text_input("Growth Rate", placeholder="150%", key="memo_growth")
 
-# ==== SCORING (LIGHT BLUE) ====
+st.markdown("<div style='height:2px;'></div>", unsafe_allow_html=True)
+
+# ==== SCORING (DARK BLUE) ====
 st.markdown("""
-<div style="background:#EBF3F8;margin:50px -3rem 0 -3rem;padding:45px 3rem;
-border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
-<h2 style="text-align:center;color:#1B2B4D;font-weight:700;">Strategic Assessment Scoring (Optional)</h2>
+<div style="background:#2B3E54;margin:0 -3rem 0 -3rem;padding:28px 3rem;border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
+<h3 style="text-align:left;color:#FFFFFF;font-weight:700;margin:0 0 14px 0;font-size:1.1rem;">Strategic Assessment Scoring</h3>
 </div>
 """, unsafe_allow_html=True)
 
@@ -278,7 +281,7 @@ gulf_res = 6
 composite = 6.4
 
 if include_scoring:
-    with st.expander("Gulf Resonance Scoring", expanded=True):
+    with st.expander("Gulf Resonance Scores", expanded=True):
         col_s1, col_s2 = st.columns(2)
         with col_s1:
             strategic_clarity = st.slider("Strategic Clarity", 1, 10, 7, key="memo_clarity")
@@ -291,8 +294,9 @@ if include_scoring:
         composite = (strategic_clarity + symbolic_fluency + execution + archetypal + gulf_res) / 5
         st.metric("Composite Score", f"{composite:.1f}/10")
 
+st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+
 # ==== GENERATE BUTTON ====
-st.markdown("<br>", unsafe_allow_html=True)
 btn_col = st.columns([1, 1, 1])[1]
 with btn_col:
     if st.button("Generate Investment Memo", use_container_width=True, key="gen_memo"):
@@ -338,13 +342,13 @@ with btn_col:
                 st.success("Investment memo generated!")
                 st.rerun()
 
-# ==== RESULTS DISPLAY (LIGHT BEIGE) ====
+# ==== RESULTS DISPLAY (BEIGE) ====
 if st.session_state.memo_complete and st.session_state.get('memo_data'):
-    st.markdown("---")
+    st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+    
     st.markdown("""
-<div style="background:#FAF7F2;margin:30px -3rem 0 -3rem;padding:45px 3rem;
-border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
-<h2 style="text-align:center;color:#1B2B4D;font-weight:700;">Investment Memo Generated</h2>
+<div style="background:#F5F2ED;margin:0 -3rem 0 -3rem;padding:28px 3rem;border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
+<h3 style="text-align:left;color:#1B2B4D;font-weight:700;margin:0;font-size:1.1rem;">Investment Memo Generated</h3>
 </div>
 """, unsafe_allow_html=True)
     
@@ -356,50 +360,37 @@ border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
         col_center = st.columns([1, 1, 1])[1]
         with col_center:
             st.download_button(
-                "Download Investment Memo (DOCX)",
+                "Download DOCX",
                 bio.getvalue(),
                 f"Investment_Memo_{st.session_state.memo_data['company_name'].replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.docx",
                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
     except Exception as e:
-        st.error(f"DOCX generation error: {str(e)}")
+        st.error(f"DOCX error: {str(e)}")
     
     # Preview
-    with st.expander("View Full Memo", expanded=True):
+    with st.expander("View Memo", expanded=False):
         st.markdown(st.session_state.memo_content)
     
-    # Completion Message
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    st.markdown(f"""
-<div style='background:linear-gradient(135deg,{QDB_PURPLE} 0%,{QDB_DARK_BLUE} 100%);
-border-radius:12px;padding:40px;color:white;text-align:center;'>
-<h2 style='margin:0 0 10px 0;'>Workflow Complete!</h2>
-<p style='margin:0;font-size:1.1rem;'>Investment analysis and memo generation finished successfully.</p>
-</div>
-""", unsafe_allow_html=True)
-    
     # Navigation
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
     col_nav1, col_nav2, col_nav3 = st.columns(3)
-    
     with col_nav1:
-        if st.button("Back to Financial Modeling", use_container_width=True, key="back_fin"):
+        if st.button("Back to Financial", use_container_width=True, key="back_fin"):
             st.switch_page("pages/4_Financial_Modeling.py")
-    
     with col_nav2:
         if st.button("Return Home", use_container_width=True, key="home_final"):
             st.switch_page("streamlit_app.py")
-    
     with col_nav3:
-        if st.button("Start New Analysis", use_container_width=True, key="restart"):
+        if st.button("New Analysis", use_container_width=True, key="restart"):
             st.switch_page("pages/1_Deal_Sourcing.py")
 
 # ==== FOOTER ====
 st.markdown(f"""
-<div style="background:{QDB_DARK_BLUE};color:#E2E8F0;padding:26px 36px;margin:80px -3rem -2rem;
-display:flex;justify-content:space-between;align-items:center;">
-<p style="margin:0;font-size:0.9rem;">© 2025 Regulus AI | All Rights Reserved</p>
-<p style="margin:0;color:#A0AEC0;font-size:0.9rem;">Powered by Regulus AI</p>
+<div style="background:#1B2B4D;color:#E2E8F0;padding:20px 36px;margin:40px -3rem -2rem;
+display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;">
+<p style="margin:0;">© 2025 Regulus AI | All Rights Reserved</p>
+<p style="margin:0;color:#A0AEC0;">Powered by Regulus AI</p>
 </div>
 """, unsafe_allow_html=True)
