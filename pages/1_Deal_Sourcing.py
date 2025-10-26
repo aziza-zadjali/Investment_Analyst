@@ -1,247 +1,241 @@
 """
-AI‑Powered Deal Sourcing | Regulus × QDB
-Scrapes startup data and outputs a daily list of qualified deals | Full QDB visual branding
+Deal Discovery & Sourcing Page
+Teal theme, fixed code with visual step tracker and centered design
 """
 
 import streamlit as st
-import pandas as pd
-import random
-from datetime import datetime
-from utils.qdb_styling import (
-    apply_qdb_styling,
-    qdb_section_start,
-    qdb_section_end,
-    QDB_DARK_BLUE,
-)
+from utils.web_scraper import WebScraper
 from utils.llm_handler import LLMHandler
+from utils.template_generator import TemplateGenerator
+import pandas as pd
+from datetime import datetime
+from utils.qdb_styling import apply_qdb_styling
+import base64
+import os
 
-# -------------------------------------
-# PAGE CONFIGURATION
-# -------------------------------------
-st.set_page_config(
-    page_title="Deal Discovery & Sourcing – Regulus AI",
-    layout="wide",
-    initial_sidebar_state="collapsed",
-)
+# --- Page setup ---
+st.set_page_config(page_title="Deal Sourcing - Regulus", layout="wide")
 apply_qdb_styling()
 
-# -------------------------------------
-# DARK HEADER SECTION
-# -------------------------------------
+# --- Helper to safely embed logos ---
+def encode_image(path):
+    if os.path.exists(path):
+        with open(path, "rb") as f:
+            return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
+    return None
+
+# --- Initialize Session Data ---
+if "discovered_deals" not in st.session_state:
+    st.session_state.discovered_deals = []
+if "selected_deals" not in st.session_state:
+    st.session_state.selected_deals = []
+if "saved_deals" not in st.session_state:
+    st.session_state.saved_deals = []
+if "show_contact_form" not in st.session_state:
+    st.session_state.show_contact_form = {}
+
+# --- Handlers ---
+@st.cache_resource
+def init_handlers():
+    return WebScraper(), LLMHandler(), TemplateGenerator()
+
+scraper, llm, template_gen = init_handlers()
+
+# --- HEADER ---
 st.markdown(
-    f"""
-<div style="background:linear-gradient(135deg,#1B2B4D 0%,#2C3E5E 100%);
-    color:white;text-align:center;margin:0 -3rem;
-    padding:85px 25px 70px;position:relative;">
-  <h1 style="font-size:2.4rem;font-weight:700;letter-spacing:-0.3px;">
-    AI‑Powered Deal Sourcing
-  </h1>
-  <p style="color:#CBD5E0;font-size:1rem;margin-top:8px;max-width:760px;margin:auto;">
-    Automated startup discovery from accelerators and funding platforms with LLM‑based analysis and daily qualifications.
-  </p>
+    """
+<div style="
+    background: linear-gradient(135deg, #1B2B4D 0%, #2C3E5E 100%);
+    color: white; text-align: center;
+    margin: 0 -3rem; padding: 70px 20px;
+">
+  <h1 style="font-weight:700; font-size:2rem;">Deal Discovery & Sourcing</h1>
+  <p style="color:#CBD5E0;">AI-powered investment opportunity discovery from global platforms</p>
 </div>
 """,
     unsafe_allow_html=True,
 )
 
-# -------------------------------------
-# PREMIUM WORKFLOW TRACKER
-# -------------------------------------
+# --- STEP TRACKER ---
 st.markdown(
     """
 <style>
-.workflow-wrap {
-    background:#F6F5F2;
-    margin:0 -3rem;
-    padding:42px 40px 32px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    flex-wrap:nowrap;
-    position:relative;
-    font-family:'Segoe UI',sans-serif;
+.step-container {
+    background-color: #F6F5F2;
+    margin: 0 -3rem;
+    padding: 20px 40px;
+    display: flex; justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
 }
-.step {text-align:center;flex:1;position:relative;}
+
+.steps {
+    display: flex; justify-content: center; align-items: center; gap: 12px; flex: 1;
+}
+
+.step {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+
 .circle {
-    width:56px;height:56px;border-radius:50%;
-    display:flex;align-items:center;justify-content:center;
-    margin:0 auto 12px auto;font-weight:700;
-    font-size:1rem;transition:all 0.3s ease;
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; justify-content: center; align-items: center;
+    font-weight: 600; font-size: 0.95rem;
 }
-.active {
-    background:linear-gradient(135deg,#0E5F55 0%,#22A38B 100%);
-    color:#fff;box-shadow:0 4px 18px rgba(14,95,85,0.35);transform:scale(1.05);
+
+.circle.active { background-color: #138074; color: white; box-shadow: 0 3px 10px rgba(19,128,116,0.4);}
+.circle.inactive { background-color: #D1D5DB; color: #9CA3AF;}
+
+.label { font-size: 0.8rem; font-weight: 600;}
+.label.active { color: #138074;}
+.label.inactive { color: #9CA3AF;}
+
+.line {
+    height: 2px; width: 40px; background: #D1D5DB; align-self: center;
 }
-.inactive {background:#D8DEE9;color:#475569;}
-.label {
-    font-size:0.95rem;font-weight:600;letter-spacing:0.25px;margin-top:4px;
-}
-.active-label {color:#0E5F55;text-shadow:0 0 6px rgba(14,95,85,0.35);}
-.inactive-label {color:#96A6B3;}
-.connector {
-    position:absolute;top:28px;right:-50%;width:100%;height:3px;border-radius:3px;
-    background:linear-gradient(90deg,#CBD5E0 0%,#97BFC0 100%);
-}
-.step:last-child .connector {display:none;}
-@keyframes pulseGlow{
-    0%{box-shadow:0 0 0 0 rgba(19,128,116,0.4);}
-    50%{box-shadow:0 0 0 12px rgba(19,128,116,0);}
-    100%{box-shadow:0 0 0 0 rgba(19,128,116,0.4);}
-}
-.active:after{
-    content:"";position:absolute;inset:2px;border-radius:50%;
-    animation:pulseGlow 2s infinite;
+
+.link {
+    text-decoration: none; color: #138074; font-weight: 600; font-size: 0.9rem;
 }
 </style>
 
-<div class="workflow-wrap">
-  <div class="step">
-    <div class="circle active">1</div>
-    <div class="label active-label">Deal Sourcing</div>
-    <div class="connector"></div>
+<div class="step-container">
+  <a href="streamlit_app.py" class="link">Back to Home</a>
+  <div class="steps">
+    <div class="step">
+      <div class="circle active">1</div><div class="label active">Deal Sourcing</div>
+    </div>
+    <div class="line"></div>
+    <div class="step">
+      <div class="circle inactive">2</div><div class="label inactive">Due Diligence</div>
+    </div>
+    <div class="line"></div>
+    <div class="step">
+      <div class="circle inactive">3</div><div class="label inactive">Market</div>
+    </div>
+    <div class="line"></div>
+    <div class="step">
+      <div class="circle inactive">4</div><div class="label inactive">Financials</div>
+    </div>
+    <div class="line"></div>
+    <div class="step">
+      <div class="circle inactive">5</div><div class="label inactive">Memo</div>
+    </div>
   </div>
-  <div class="step">
-    <div class="circle inactive">2</div>
-    <div class="label inactive-label">Due Diligence</div>
-    <div class="connector"></div>
-  </div>
-  <div class="step">
-    <div class="circle inactive">3</div>
-    <div class="label inactive-label">Market Analysis</div>
-    <div class="connector"></div>
-  </div>
-  <div class="step">
-    <div class="circle inactive">4</div>
-    <div class="label inactive-label">Financial Modeling</div>
-    <div class="connector"></div>
-  </div>
-  <div class="step">
-    <div class="circle inactive">5</div>
-    <div class="label inactive-label">Investment Memo</div>
-  </div>
+  <div style="color:#999;font-size:0.9rem;">Regulus AI</div>
 </div>
 """,
     unsafe_allow_html=True,
 )
 
-# -------------------------------------
-# FILTERS SECTION
-# -------------------------------------
-qdb_section_start("light")
+# ========================
+# DEFINE INVESTMENT CRITERIA
+# ========================
+with st.expander("Define Investment Criteria", expanded=True):
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        st.markdown("**Unattractive Industry Screening** - Exclude sectors per QDB list")
+    with col2:
+        enable_filter = st.checkbox("Enable Filter", True)
+
+    industries = st.multiselect(
+        "Target Industries",
+        ["Technology", "Healthcare", "Energy", "Finance", "Retail", "Manufacturing"],
+        default=["Technology", "Healthcare"],
+    )
+    sectors = st.multiselect(
+        "Sectors",
+        ["Fintech", "ClimateTech", "HealthTech", "AI/ML", "SaaS"],
+        default=["Fintech"],
+    )
+
+    stage = st.multiselect("Stage", ["Pre-Seed", "Seed", "Series A", "Growth"], ["Seed"])
+    geography = st.multiselect("Geography", ["MENA", "Europe", "North America"], ["MENA"])
+    deal_count = st.number_input("Deals to source", 5, 50, 15, 5)
+
+# ========================
+# DATA SOURCE SELECTION
+# ========================
+st.subheader("Select Data Sources")
+
+sources = st.multiselect(
+    "Active Providers",
+    ["Crunchbase", "AngelList", "PitchBook", "Magnitt", "Wamda", "Dealroom"],
+    ["Crunchbase", "AngelList", "Magnitt"],
+)
+
+if sources:
+    st.markdown("#### Selected:")
+    cols = st.columns(len(sources))
+    for i, src in enumerate(sources):
+        with cols[i]:
+            st.markdown(f"**{src}**")
+            st.caption("Global funding and startup data")
+
+# ========================
+# CENTERED TEAL BUTTON
+# ========================
+colA, colB, colC = st.columns([1, 0.8, 1])
+with colB:
+    discover_clicked = st.button("Discover Deals", type="primary", use_container_width=True)
 
 st.markdown(
-    f"""
-<div style="text-align:center;max-width:960px;margin:0 auto 35px;">
-  <h2 style="color:{QDB_DARK_BLUE};font-weight:700;font-size:1.9rem;">Daily Smart Deal Discovery</h2>
-  <p style="color:#555;font-size:1.05rem;">
-     Scrape, filter and rank deals from accelerators and funding databases based on selected criteria.
-  </p>
-</div>
+    """
+<style>
+div.stButton > button:first-child {
+    background: linear-gradient(135deg, #138074 0%, #0e5f55 100%) !important;
+    color: white !important; border: none !important; border-radius: 40px !important;
+    padding: 12px 30px !important; font-weight:700 !important; font-size:0.95rem !important;
+    box-shadow: 0 4px 10px rgba(19,128,116,0.3); transition:all 0.2s ease;
+}
+div.stButton > button:first-child:hover {
+    background: linear-gradient(135deg,#0e5f55 0%,#138074 100%) !important;
+    transform: translateY(-2px);
+}
+</style>
 """,
     unsafe_allow_html=True,
 )
 
-with st.expander("🎯 Discovery Parameters", expanded=True):
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        industries = st.multiselect(
-            "Industries",
-            ["Fintech", "HealthTech", "AI / ML", "Cleantech", "SaaS", "Manufacturing"],
-            ["AI / ML", "Fintech"],
+# ========================
+# DISCOVER DEALS
+# ========================
+if discover_clicked:
+    all_deals = []
+    st.info("Fetching deals...")
+    for i in range(deal_count):
+        all_deals.append(
+            {
+                "Company": f"Startup {i+1}",
+                "Industry": industries[i % len(industries)],
+                "Sector": sectors[i % len(sectors)],
+                "Stage": stage[0],
+                "Region": geography[0],
+                "Ticket": f"${(i % 5) + 1}M",
+            }
         )
-    with c2:
-        regions = st.multiselect(
-            "Regions",
-            ["MENA", "Europe", "North America", "Asia Pacific"],
-            ["MENA"],
-        )
-    with c3:
-        stage = st.selectbox(
-            "Funding Stage",
-            ["Pre‑Seed", "Seed", "Series A", "Series B", "Growth"],
-            index=1,
-        )
-    c4, c5 = st.columns([2, 1])
-    with c4:
-        keywords = st.text_input("Keywords (Optional)", "AI, SaaS, Climate Innovation")
-    with c5:
-        deal_count = st.slider("Deals per run", 5, 50, 10, 5)
+    st.session_state.discovered_deals = all_deals
+    st.success(f"Discovered {len(all_deals)} potential deals!")
 
-qdb_section_end()
-
-# -------------------------------------
-# EXECUTION BUTTON
-# -------------------------------------
-st.markdown("<br>", unsafe_allow_html=True)
-center = st.columns([1, 0.7, 1])[1]
-with center:
-    run = st.button("🚀 Run AI‑Driven Sourcing", use_container_width=True)
-
-# -------------------------------------
-# EXECUTION LOGIC
-# -------------------------------------
-if run:
-    qdb_section_start("white")
-    st.header("📈 Fetching and Qualifying Deals")
-
-    sources = [
-        "Y Combinator Startups",
-        "Qatar Development Accelerators",
-        "Crunchbase API",
-        "Techstars Demo Day"
-    ]
-    progress = st.progress(0)
-    deals = []
-    for idx, src in enumerate(sources):
-        st.info(f"Scraping: {src}")
-        for i in range(deal_count // 3):
-            deals.append(
-                {
-                    "Company": f"{random.choice(['NovaTech','EcoCore','AltFin','Biomind'])} {i+1}",
-                    "Industry": random.choice(industries or ["Technology"]),
-                    "Stage": stage,
-                    "Region": random.choice(regions or ["Global"]),
-                    "Ticket Size (USD M)": random.randint(1, 15),
-                    "Revenue ($ M)": round(random.uniform(0.5, 25.0), 2),
-                    "Founded": random.randint(2016, 2024),
-                    "Employees": random.randint(8, 200),
-                    "Source": src,
-                }
-            )
-        progress.progress((idx + 1) / len(sources))
-    df = pd.DataFrame(deals)
-    st.success(f"✅ {len(deals)} qualified deals detected via accelerator feeds and APIs.")
+# ========================
+# DISPLAY RESULTS
+# ========================
+if st.session_state.discovered_deals:
+    st.markdown("### Discovered Deals")
+    df = pd.DataFrame(st.session_state.discovered_deals)
     st.dataframe(df, use_container_width=True)
-    qdb_section_end()
 
-    # ----- AI SUMMARY -----
-    qdb_section_start("light")
-    st.subheader("🤖 Regulus AI Summary & Highlights")
-    try:
-        llm = LLMHandler()
-        context = (
-            f"Summarize {len(deals)} deals discovered within {', '.join(industries)} industries "
-            f"across {', '.join(regions)} in {stage} stage. Focus on key investment themes and market outlook."
-        )
-        summary = llm.generate_text(context)
-        st.markdown(summary)
-    except Exception as e:
-        st.warning(f"⚠️ LLM could not generate summary: {e}")
-    qdb_section_end()
-
-    # ----- NEXT STEP CTA -----
-    st.markdown(
-        f"""
-        <div style="background-color:#F6F5F2;padding:60px 20px;margin:60px -3rem -2rem;text-align:center;">
-          <h3 style="color:{QDB_DARK_BLUE};font-size:1.6rem;margin-bottom:10px;">Next Step in Workflow</h3>
-          <p style="color:#555;margin-bottom:25px;">Proceed to Due Diligence for financial and compliance assessment.</p>
-          <a href="?page=dd" style="
-              background-color:#319795;color:white;text-decoration:none;
-              border-radius:40px;padding:12px 38px;font-weight:600;
-              box-shadow:0 3px 10px rgba(49,151,149,0.3);">
-              → Continue to Due Diligence
-          </a>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+# ========================
+# FOOTER
+# ========================
+st.markdown(
+    """
+<div style="background-color:#1B2B4D;color:#E2E8F0;padding:25px 20px;margin:40px -3rem 0 -3rem;">
+  <div style="display:flex;justify-content:space-between;align-items:center;max-width:1400px;margin:0 auto;">
+    <p>© 2025 Regulus AI. All rights reserved.</p>
+    <p>Powered by Regulus AI</p>
+  </div>
+</div>
+""",
+    unsafe_allow_html=True,
+)
