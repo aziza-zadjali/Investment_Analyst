@@ -60,42 +60,41 @@ llm, fin_analyzer = init_handlers()
 if 'financial_model' not in st.session_state:
     st.session_state.financial_model = None
 
+# ==== RETURN HOME (TOP LEFT - HORIZONTAL) ====
+if st.button("← Return Home", use_container_width=False, key="home_btn"):
+    st.switch_page("streamlit_app.py")
+
+st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+
 # ==== HERO SECTION ====
 st.markdown(f"""
-<div style="
-background:linear-gradient(135deg,{QDB_DARK_BLUE} 0%, {QDB_NAVY} 100%);
-color:white;margin:0 -3rem;padding:100px 0 80px;text-align:center;">
-<div style="position:absolute;left:50px;top:48px;">
-{'<img src="'+qdb_logo+'" style="max-height:80px;">' if qdb_logo else '<b>QDB</b>'}
+<div style="background:linear-gradient(135deg,#1B2B4D 0%, #0E2E4D 100%);color:white;margin:0 -3rem;padding:70px 0 50px;text-align:center;">
+<div style="position:absolute;left:50px;top:35px;">
+{'<img src="'+qdb_logo+'" style="max-height:70px;">' if qdb_logo else '<b>QDB</b>'}
 </div>
-<h1 style="font-size:2.8rem;font-weight:800;">Financial Modeling & Projections</h1>
-<p style="font-size:1.35rem;color:#E2E8F0;">Build Comprehensive Financial Models and Forecasts</p>
-<p style="color:#CBD5E0;font-size:1.1rem;max-width:750px;margin:auto;">
+<h1 style="font-size:2.5rem;font-weight:800;margin:0 0 10px 0;">Financial Modeling & Projections</h1>
+<p style="font-size:1.2rem;color:#E2E8F0;margin:0 0 8px 0;font-weight:500;">Build Comprehensive Financial Models and Forecasts</p>
+<p style="color:#CBD5E0;font-size:0.95rem;max-width:700px;margin:0 auto;">
 AI-powered 3-5 year financial projections, revenue forecasting, and profitability analysis. Export models in Excel and CSV formats.
 </p>
 </div>
 """, unsafe_allow_html=True)
 
-# ==== RETURN HOME (TOP LEFT - HORIZONTAL) ====
-if st.button("← Return Home", use_container_width=False, key="home_top_left"):
-    st.switch_page("streamlit_app.py")
-
-st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
-
+st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
 # ==== WORKFLOW TRACKER ====
 st.markdown("""
 <style>
-.track{background:#F6F5F2;margin:-2px -3rem;padding:34px 0;
+.track{background:#F6F5F2;margin:0 -3rem;padding:24px 0;
 display:flex;justify-content:space-evenly;align-items:center;}
-.circle{width:54px;height:54px;border-radius:50%;display:flex;
+.circle{width:48px;height:48px;border-radius:50%;display:flex;
 align-items:center;justify-content:center;font-weight:700;
-background:#CBD5E0;color:#475569;font-size:0.95rem;}
-.circle.active{background:linear-gradient(135deg,#138074 0%,#0E5F55 100%);
-color:white;box-shadow:0 5px 15px rgba(19,128,116,0.4);}
-.label{margin-top:7px;font-size:0.9rem;font-weight:600;color:#708090;}
-.label.active{color:#138074;}
-.pipe{height:3px;width:70px;background:#CBD5E0;}
+background:#CBD5E0;color:#475569;font-size:0.9rem;}
+.circle.active{background:linear-gradient(135deg,#16A085 0%,#0E5F55 100%);
+color:white;box-shadow:0 4px 12px rgba(19,128,116,0.3);}
+.label{margin-top:5px;font-size:0.8rem;font-weight:600;color:#708090;}
+.label.active{color:#0E5F55;font-weight:700;}
+.pipe{height:2px;width:60px;background:#CBD5E0;}
 </style>
 <div class="track">
  <div><div class="circle">1</div><div class="label">Deal Sourcing</div></div>
@@ -110,15 +109,16 @@ color:white;box-shadow:0 5px 15px rgba(19,128,116,0.4);}
 </div>
 """, unsafe_allow_html=True)
 
-# ==== COMPANY INFO SECTION ====
+st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+
+# ==== COMPANY INFO SECTION (DARK BLUE) ====
 st.markdown("""
-<div style="background:white;margin:50px -3rem 0 -3rem;padding:45px 3rem;
-border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
-<h2 style="text-align:center;color:#1B2B4D;font-weight:700;">Company & Model Setup</h2>
+<div style="background:#2B3E54;margin:0 -3rem 0 -3rem;padding:28px 3rem;border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
+<h3 style="text-align:left;color:#FFFFFF;font-weight:700;margin:0 0 14px 0;font-size:1.1rem;">Company & Model Setup</h3>
 </div>
 """, unsafe_allow_html=True)
 
-with st.expander("Enter Company and Financial Assumptions", expanded=True):
+with st.expander("Enter Financial Information", expanded=True):
     col1, col2, col3 = st.columns(3)
     with col1:
         company_name = st.text_input("Company Name", placeholder="Enter company name", key="company_name")
@@ -127,11 +127,12 @@ with st.expander("Enter Company and Financial Assumptions", expanded=True):
     with col3:
         currency = st.selectbox("Currency", ["USD","EUR","GBP","QAR","AED"], index=0, key="currency")
 
-# ==== MODEL PARAMETERS ====
+st.markdown("<div style='height:2px;'></div>", unsafe_allow_html=True)
+
+# ==== MODEL PARAMETERS (BEIGE) ====
 st.markdown("""
-<div style="background:white;margin:50px -3rem 0 -3rem;padding:45px 3rem;
-border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
-<h2 style="text-align:center;color:#1B2B4D;font-weight:700;">Financial Assumptions</h2>
+<div style="background:#F5F2ED;margin:0 -3rem 0 -3rem;padding:28px 3rem;border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
+<h3 style="text-align:left;color:#1B2B4D;font-weight:700;margin:0 0 14px 0;font-size:1.1rem;">Financial Assumptions</h3>
 </div>
 """, unsafe_allow_html=True)
 
@@ -147,8 +148,9 @@ with st.expander("Set Financial Parameters and Drivers", expanded=True):
         opex_percent = st.slider("OpEx (% of Revenue)", 0, 100, 40, key="opex")
         tax_rate = st.slider("Tax Rate (%)", 0, 50, 20, key="tax")
 
+st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+
 # ==== ACTION BUTTON ====
-st.markdown("<br>", unsafe_allow_html=True)
 btn_col = st.columns([1, 1, 1])[1]
 with btn_col:
     if st.button("Generate Financial Model", use_container_width=True, key="generate"):
@@ -180,14 +182,6 @@ with btn_col:
                     'Net Margin %': [(n/r)*100 for n, r in zip(net_income, revenue)]
                 })
                 
-                # AI Validation
-                try:
-                    validation_prompt = f"Validate financial model for {company_name}: {forecast_years}yr forecast, {growth_rate}% CAGR. Provide brief assessment."
-                    ai_validation = llm.generate_text(validation_prompt)
-                    st.info(f"✓ AI Validation: {ai_validation[:200]}...")
-                except:
-                    st.success("Model generated successfully")
-                
                 st.session_state.financial_model = model_df
                 st.success("Financial model generated!")
             
@@ -196,11 +190,11 @@ with btn_col:
 
 # ==== RESULTS DISPLAY ====
 if st.session_state.get("financial_model") is not None and company_name:
-    st.markdown("---")
+    st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+    
     st.markdown("""
-<div style="background:white;margin:30px -3rem 0 -3rem;padding:45px 3rem;
-border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
-<h2 style="text-align:center;color:#1B2B4D;font-weight:700;">Financial Projections</h2>
+<div style="background:#2B3E54;margin:0 -3rem 0 -3rem;padding:28px 3rem;border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
+<h3 style="text-align:left;color:#FFFFFF;font-weight:700;margin:0;font-size:1.1rem;">Financial Projections</h3>
 </div>
 """, unsafe_allow_html=True)
 
@@ -225,7 +219,7 @@ border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
         st.line_chart(df.set_index('Year')[['Gross Margin %','EBIT Margin %','Net Margin %']])
     
     # Key metrics
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
     col_m1, col_m2, col_m3, col_m4 = st.columns(4)
     with col_m1:
         st.metric("Year 1 Revenue", f"{currency} {df.iloc[0]['Revenue']:.1f}M")
@@ -238,11 +232,10 @@ border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
         st.metric("Avg Net Margin", f"{df['Net Margin %'].mean():.1f}%")
     
     # EXPORT SECTION
-    st.markdown("---")
+    st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
     st.markdown("""
-<div style="background:white;margin:30px -3rem 0 -3rem;padding:45px 3rem;
-border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
-<h2 style="text-align:center;color:#1B2B4D;font-weight:700;">Export Financial Model</h2>
+<div style="background:#F5F2ED;margin:0 -3rem 0 -3rem;padding:28px 3rem;border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
+<h3 style="text-align:left;color:#1B2B4D;font-weight:700;margin:0;font-size:1.1rem;">Export Financial Model</h3>
 </div>
 """, unsafe_allow_html=True)
 
@@ -265,7 +258,7 @@ border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
         for col_num, header in enumerate(data.columns, 1):
             cell = ws.cell(row=3, column=col_num, value=header)
             cell.font = Font(bold=True, color="FFFFFF")
-            cell.fill = PatternFill(start_color="138074", end_color="138074", fill_type="solid")
+            cell.fill = PatternFill(start_color="16A085", end_color="16A085", fill_type="solid")
         
         # Data
         for r_idx, row in enumerate(data.values, 4):
@@ -296,7 +289,7 @@ border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
         )
     
     # NAVIGATION
-    st.markdown("<br><br>", unsafe_allow_html=True)
+    st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
     col_nav1, col_nav2, col_nav3 = st.columns(3)
     
     with col_nav1:
@@ -313,9 +306,9 @@ border-top:3px solid #138074;box-shadow:0 0 12px rgba(0,0,0,0.05);">
 
 # ==== FOOTER ====
 st.markdown(f"""
-<div style="background:{QDB_DARK_BLUE};color:#E2E8F0;padding:26px 36px;margin:80px -3rem -2rem;
-display:flex;justify-content:space-between;align-items:center;">
-<p style="margin:0;font-size:0.9rem;">© 2025 Regulus AI | All Rights Reserved</p>
-<p style="margin:0;color:#A0AEC0;font-size:0.9rem;">Powered by Regulus AI</p>
+<div style="background:#1B2B4D;color:#E2E8F0;padding:20px 36px;margin:40px -3rem -2rem;
+display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;">
+<p style="margin:0;">© 2025 Regulus AI | All Rights Reserved</p>
+<p style="margin:0;color:#A0AEC0;">Powered by Regulus AI</p>
 </div>
 """, unsafe_allow_html=True)
