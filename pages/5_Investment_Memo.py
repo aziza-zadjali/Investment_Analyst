@@ -1,308 +1,457 @@
 """
-Investment Memo & Pitch Deck Generator
-FIXED: Properly handles markdown to DOCX conversion with Document object
+Enhanced Investment Memo Generation with Scoring Framework
 """
+
 import streamlit as st
-import base64
-import os
 from datetime import datetime
 from io import BytesIO
-from utils.qdb_styling import apply_qdb_styling
-from utils.llm_handler import LLMHandler
 from utils.template_generator import TemplateGenerator
+from utils.llm_handler import LLMHandler
 
-st.set_page_config(page_title="Investment Memo", page_icon="📋", layout="wide", initial_sidebar_state="collapsed")
-apply_qdb_styling()
+st.set_page_config(page_title="Investment Memo", page_icon="📝", layout="wide")
 
-# ===== Initialize Handlers =====
+# Initialize handlers
 @st.cache_resource
 def init_handlers():
-    try:
-        llm = LLMHandler()
-        template_gen = TemplateGenerator()
-        return llm, template_gen
-    except Exception as e:
-        st.error(f"Error initializing handlers: {e}")
-        return None, None
+    return TemplateGenerator(), LLMHandler()
 
-llm, template_gen = init_handlers()
+template_gen, llm = init_handlers()
 
-if llm is None or template_gen is None:
-    st.error("Failed to initialize handlers")
-    st.stop()
-
-# ===== Image Loader =====
-def encode_image(path):
-    if os.path.exists(path):
-        with open(path, "rb") as f:
-            return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
-    return None
-
-qdb_logo = encode_image("QDB_Logo.png")
-regulus_logo = encode_image("regulus_logo.png")
-
-# ===== Session State =====
+# Session state
 if 'memo_complete' not in st.session_state:
     st.session_state.memo_complete = False
-if 'pitch_deck_content' not in st.session_state:
-    st.session_state.pitch_deck_content = ""
-if 'memo_data' not in st.session_state:
-    st.session_state.memo_data = {}
+if 'memo_content' not in st.session_state:
+    st.session_state.memo_content = ""
 
-# ===== CUSTOM STYLING =====
 st.markdown("""
-<style>
-.stButton>button {
-    background: linear-gradient(135deg,#16A085 0%,#138074 100%)!important;
-    color:white!important;
-    border:none!important;
-    border-radius:8px!important;
-    padding:12px 24px!important;
-    font-weight:700!important;
-    font-size:0.95rem!important;
-    box-shadow:0 4px 12px rgba(22,160,133,0.3)!important;
-    transition:all 0.25s ease!important;
-}
-
-.stButton>button:hover{
-    background: linear-gradient(135deg,#0E5F55 0%,#107563 100%)!important;
-    transform:translateY(-2px)!important;
-    box-shadow:0 6px 18px rgba(22,160,133,0.4)!important;
-}
-
-.section-beige {
-    background-color: #F6F5F2;
-    border-radius: 10px;
-    padding: 20px;
-    margin: 12px 0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-
-.required-asterisk {
-    color: #E74C3C;
-    font-weight: 700;
-    margin-left: 2px;
-}
-</style>
-""", unsafe_allow_html=True)
-
-# ===== HERO HEADER =====
-st.markdown(f"""
-<div style="
-    background: linear-gradient(135deg,#1B2B4D 0%,#2C3E5E 100%);
-    color: white;
-    text-align: center;
-    margin: 0 -3rem;
-    padding: 40px 20px 50px 20px;
-    position: relative;
-    overflow:visible;
-    width: calc(100% + 6rem);
-    border-bottom: 3px solid #16A085;">
-
-  <div style="position:absolute; top:15px; left:35px;">
-    {'<img src="'+qdb_logo+'" style="max-height:55px;">' if qdb_logo else ''}
-  </div>
-
-  <div style="position:absolute; top:15px; right:35px;">
-    {'<img src="'+regulus_logo+'" style="max-height:55px;">' if regulus_logo else ''}
-  </div>
-
-  <div style="max-width:800px; margin:0 auto;">
-    <h1 style="font-size:2rem; font-weight:800; margin-bottom:6px;">Investment Memorandum</h1>
-    <p style="color:#E2E8F0; font-size:0.95rem; margin:0;">Generate professional pitch decks from investment data</p>
-  </div>
+<div style="padding: 1.5rem 0; border-bottom: 2px solid #f0f0f0;">
+    <h1 style="margin: 0; font-size: 2.5rem;">📝 Investment Memo Generator</h1>
+    <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 1.1rem;">
+        AI-powered professional investment memos with scoring framework
+    </p>
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
-# ===== HOME BUTTON =====
-if st.button("← Return Home", key="home_btn"):
-    st.switch_page("streamlit_app.py")
+# Company & Deal Information
+st.subheader("🏢 Company & Deal Information")
 
-st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+col1, col2, col3 = st.columns(3)
 
-# ===== MEMO INFORMATION SECTION =====
-st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">Investment Memorandum Details</div>', unsafe_allow_html=True)
-
-col1, col2 = st.columns(2)
 with col1:
-    st.markdown("<div style='color:#1B2B4D; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Company Name <span class='required-asterisk'>*</span></div>", unsafe_allow_html=True)
-    company_name = st.text_input("Company Name", placeholder="e.g., TechStartup Inc", label_visibility="collapsed", key="company")
+    company_name = st.text_input("Company Name *", placeholder="e.g., GreenTech Solutions")
+    founded_year = st.text_input("Founded", placeholder="e.g., 2020")
 
 with col2:
-    st.markdown("<div style='color:#1B2B4D; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Industry <span class='required-asterisk'>*</span></div>", unsafe_allow_html=True)
-    industry = st.text_input("Industry", placeholder="e.g., FinTech", label_visibility="collapsed", key="industry")
+    industry = st.text_input("Industry/Sector *", placeholder="e.g., Renewable Energy")
+    location = st.text_input("Location", placeholder="e.g., San Francisco, CA")
 
-col3, col4 = st.columns(2)
 with col3:
-    st.markdown("<div style='color:#1B2B4D; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Annual Revenue (ARR)</div>", unsafe_allow_html=True)
-    arr = st.text_input("Annual Revenue", placeholder="e.g., $5M", label_visibility="collapsed", key="arr")
+    stage = st.selectbox("Investment Stage *", ["Seed", "Series A", "Series B", "Series C", "Growth", "Pre-IPO"])
+    deal_size = st.text_input("Investment Amount *", placeholder="e.g., $5M")
+
+col4, col5, col6 = st.columns(3)
 
 with col4:
-    st.markdown("<div style='color:#1B2B4D; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Growth Rate YoY</div>", unsafe_allow_html=True)
-    growth_rate = st.text_input("Growth Rate", placeholder="e.g., 35%", label_visibility="collapsed", key="growth")
+    valuation = st.text_input("Pre-Money Valuation *", placeholder="e.g., $50M")
 
-# ===== FINANCIAL METRICS =====
-col5, col6, col7 = st.columns(3)
 with col5:
-    st.markdown("<div style='color:#1B2B4D; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Gross Margin</div>", unsafe_allow_html=True)
-    gross_margin = st.text_input("Gross Margin", placeholder="e.g., 70%", label_visibility="collapsed", key="gm")
+    ownership = st.text_input("Ownership %", placeholder="e.g., 10%")
 
 with col6:
-    st.markdown("<div style='color:#1B2B4D; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Monthly Burn Rate</div>", unsafe_allow_html=True)
-    burn_rate = st.text_input("Burn Rate", placeholder="e.g., $150K", label_visibility="collapsed", key="br")
+    recommendation = st.selectbox("Recommendation *", ["STRONG BUY", "BUY", "HOLD", "PASS"])
 
-with col7:
-    st.markdown("<div style='color:#1B2B4D; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>LTV/CAC Ratio</div>", unsafe_allow_html=True)
-    ltv_cac = st.text_input("LTV/CAC Ratio", placeholder="e.g., 3.5", label_visibility="collapsed", key="ltv")
+st.divider()
 
-# ===== KEY BUSINESS DATA =====
-col8, col9 = st.columns(2)
-with col8:
-    st.markdown("<div style='color:#1B2B4D; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Market TAM</div>", unsafe_allow_html=True)
-    tam = st.text_input("TAM", placeholder="e.g., $2.5B", label_visibility="collapsed", key="tam")
+# Business Overview
+st.subheader("📊 Business Overview")
 
-with col9:
-    st.markdown("<div style='color:#1B2B4D; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Investment Ask</div>", unsafe_allow_html=True)
-    investment_ask = st.text_input("Investment Ask", placeholder="e.g., $5M", label_visibility="collapsed", key="ask")
+col_bus1, col_bus2 = st.columns(2)
 
-# ===== QUALITATIVE DATA =====
-st.markdown("<div style='color:#1B2B4D; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Competitive Advantage</div>", unsafe_allow_html=True)
-competitive_advantage = st.text_area("Competitive Advantage", placeholder="e.g., Proprietary AI technology with 95% accuracy", height=80, label_visibility="collapsed", key="comp_adv")
+with col_bus1:
+    business_model = st.text_area("Business Model", height=100, placeholder="Describe the company's business model...")
+    products_services = st.text_area("Products/Services", height=100, placeholder="Describe key products and services...")
 
-st.markdown("</div>", unsafe_allow_html=True)
+with col_bus2:
+    investment_thesis = st.text_area("Investment Thesis", height=100, placeholder="Why is this a compelling investment?")
+    key_highlights = st.text_area("Key Highlights", height=100, placeholder="List key achievements and strengths...")
 
-st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+st.divider()
 
-# ===== GENERATE BUTTON =====
-if st.button("Generate Pitch Deck", use_container_width=True, key="gen_btn"):
-    if not company_name or not industry:
-        st.error("❌ Please enter company name and industry")
-        st.stop()
+# Market Analysis
+st.subheader("🌐 Market Analysis")
 
-    with st.spinner("🔄 Generating pitch deck..."):
-        try:
-            # Compile memo data
-            memo_data = {
-                'company_name': company_name,
-                'industry': industry,
-                'arr': arr or '$TBD',
-                'growth_rate': growth_rate or 'TBD',
-                'gross_margin': gross_margin or '60-75%',
-                'burn_rate': burn_rate or '<$200K/mo',
-                'ltv_cac_ratio': ltv_cac or '3.0+',
-                'tam': tam or '$TBD',
-                'investment_ask': investment_ask or '$TBD',
-                'competitive_advantage': competitive_advantage or 'Technology differentiation',
-                'analysis_date': datetime.now().strftime('%B %d, %Y'),
-                'analyst_name': 'Regulus AI Investment Platform',
-            }
-            
-            st.session_state.memo_data = memo_data
-            
-            # Step 1: Generate pitch deck (returns string)
-            st.info("📝 Creating pitch deck content...")
-            pitch_content = template_gen.generate_pitch_deck(memo_data)
-            
-            # Verify we got a string
-            if not isinstance(pitch_content, str):
-                raise TypeError(f"generate_pitch_deck() must return string, got {type(pitch_content)}")
-            
-            st.session_state.pitch_deck_content = pitch_content
-            st.success("✅ Pitch deck content created")
-            
-            st.session_state.memo_complete = True
-            st.success("✅ Investment Memo Generated!")
+col_mkt1, col_mkt2, col_mkt3 = st.columns(3)
 
-        except Exception as e:
-            st.error(f"❌ Error: {str(e)}")
-            import traceback
-            st.error(traceback.format_exc())
-            st.stop()
+with col_mkt1:
+    tam = st.text_input("TAM (Total Addressable Market)", placeholder="e.g., $50B")
 
-st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+with col_mkt2:
+    sam = st.text_input("SAM (Serviceable Addressable Market)", placeholder="e.g., $5B")
 
-# ===== DOWNLOAD & PREVIEW SECTION =====
-if st.session_state.memo_complete and st.session_state.pitch_deck_content:
-    st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">📥 Download Pitch Deck</div>', unsafe_allow_html=True)
+with col_mkt3:
+    som = st.text_input("SOM (Serviceable Obtainable Market)", placeholder="e.g., $500M")
+
+market_trends = st.text_area("Market Trends & Drivers", height=80, placeholder="Describe market dynamics, growth drivers, and trends...")
+competitive_landscape = st.text_area("Competitive Landscape", height=80, placeholder="Describe competitors and competitive positioning...")
+
+st.divider()
+
+# Financial Performance
+st.subheader("💰 Financial Performance")
+
+col_fin1, col_fin2, col_fin3 = st.columns(3)
+
+with col_fin1:
+    current_revenue = st.text_input("Current Revenue (ARR)", placeholder="e.g., $10M")
+
+with col_fin2:
+    revenue_growth = st.text_input("Revenue Growth Rate", placeholder="e.g., 150% YoY")
+
+with col_fin3:
+    gross_margin = st.text_input("Gross Margin", placeholder="e.g., 75%")
+
+col_fin4, col_fin5, col_fin6 = st.columns(3)
+
+with col_fin4:
+    burn_rate = st.text_input("Monthly Burn Rate", placeholder="e.g., $500K")
+
+with col_fin5:
+    runway = st.text_input("Runway (Months)", placeholder="e.g., 18 months")
+
+with col_fin6:
+    unit_economics = st.text_input("LTV/CAC Ratio", placeholder="e.g., 3.5x")
+
+st.divider()
+
+# Initialize scoring variables with defaults
+strategic_clarity = 7
+symbolic_fluency = 6
+execution_discipline = 6
+archetypal_fit = 7
+gulf_resonance = 6
+composite_score = 6.4
+enable_scoring = False
+
+# Gulf Resonance Scoring Framework (Optional)
+with st.expander("📊 **Optional:** Gulf Resonance Scoring Framework", expanded=False):
+    st.info("**Strategic Investment Scoring Framework:** Rate each dimension from 1-10 based on comprehensive analysis.")
     
-    col_dl1, col_dl2, col_dl3 = st.columns([2, 1, 1])
+    col_s1, col_s2 = st.columns(2)
+    
+    with col_s1:
+        strategic_clarity = st.slider("Strategic Clarity", min_value=1, max_value=10, value=7, help="Clear vision, mission, and strategic roadmap")
+        symbolic_fluency = st.slider("Symbolic Fluency", min_value=1, max_value=10, value=6, help="Brand positioning and market narrative")
+        execution_discipline = st.slider("Execution Discipline", min_value=1, max_value=10, value=6, help="Track record of delivering on commitments")
+    
+    with col_s2:
+        archetypal_fit = st.slider("Archetypal Fit", min_value=1, max_value=10, value=7, help="Alignment with portfolio strategy and thesis")
+        gulf_resonance = st.slider("Gulf Resonance", min_value=1, max_value=10, value=6, help="Regional market fit and cultural alignment")
+    
+    composite_score = (strategic_clarity + symbolic_fluency + execution_discipline + archetypal_fit + gulf_resonance) / 5
+    st.metric("Composite Score", f"{composite_score:.1f}/10")
+    enable_scoring = st.checkbox("Include scoring framework in memo", value=False)
+
+st.divider()
+
+# Team Information
+st.subheader("👥 Team & Leadership")
+team_info = st.text_area("Management Team", height=100, placeholder="Describe key team members, their backgrounds, and relevant experience...")
+
+st.divider()
+
+# Risks & Mitigation
+st.subheader("⚠️ Risks & Mitigation")
+
+col_risk1, col_risk2 = st.columns(2)
+
+with col_risk1:
+    risks = st.text_area("Key Risks", height=150, placeholder="Identify market, execution, financial, and regulatory risks...")
+
+with col_risk2:
+    mitigation = st.text_area("Mitigation Strategies", height=150, placeholder="Describe strategies to address identified risks...")
+
+st.divider()
+
+# Generate Button
+if st.button("🚀 Generate Investment Memo", type="primary", use_container_width=True):
+    
+    if not company_name or not industry or not stage or not deal_size or not valuation:
+        st.error("⚠️ Please fill in all required fields (*)")
+        st.stop()
+    
+    with st.spinner("🤖 Generating professional investment memo..."):
+        
+        memo_data = {
+            'company_name': company_name,
+            'analyst_name': 'Regulus AI Investment Team',
+            'analysis_date': datetime.now().strftime('%B %d, %Y'),
+            'stage': stage,
+            'investment_size': deal_size,
+            'valuation': valuation,
+            'ownership': ownership if ownership else 'TBD',
+            'recommendation': recommendation,
+            'founded': founded_year if founded_year else 'N/A',
+            'location': location if location else 'N/A',
+            'industry': industry,
+            'business_model': business_model if business_model else 'To be documented',
+            'products_services': products_services if products_services else 'To be documented',
+            'investment_thesis': investment_thesis if investment_thesis else 'To be developed',
+            'key_highlights': key_highlights if key_highlights else 'To be documented',
+            'tam': tam if tam else 'N/A',
+            'sam': sam if sam else 'N/A',
+            'som': som if som else 'N/A',
+            'market_trends': market_trends if market_trends else 'To be analyzed',
+            'competitive_landscape': competitive_landscape if competitive_landscape else 'To be researched',
+            'current_revenue': current_revenue if current_revenue else 'N/A',
+            'revenue_growth': revenue_growth if revenue_growth else 'N/A',
+            'gross_margin': gross_margin if gross_margin else 'N/A',
+            'burn_rate': burn_rate if burn_rate else 'N/A',
+            'runway': runway if runway else 'N/A',
+            'unit_economics': unit_economics if unit_economics else 'N/A',
+            'team_info': team_info if team_info else 'To be documented',
+            'business_risks': risks if risks else 'To be identified',
+            'risk_mitigation': mitigation if mitigation else 'To be developed'
+        }
+        
+        if enable_scoring:
+            memo_data['scoring'] = {
+                'strategic_clarity': strategic_clarity,
+                'symbolic_fluency': symbolic_fluency,
+                'execution_discipline': execution_discipline,
+                'archetypal_fit': archetypal_fit,
+                'gulf_resonance': gulf_resonance,
+                'composite_score': composite_score
+            }
+        else:
+            memo_data['scoring'] = None
+        
+        if not investment_thesis or investment_thesis == "":
+            st.info("💡 Generating investment thesis with AI...")
+            try:
+                thesis_prompt = f"Generate a compelling investment thesis for {company_name}, a {stage} stage company in the {industry} industry. Context: Business Model: {business_model[:500] if business_model else 'Not provided'}, Market: TAM {tam}, SAM {sam}, Current Revenue: {current_revenue}, Growth: {revenue_growth}. Provide a concise 2-3 paragraph investment thesis highlighting why this is an attractive investment opportunity."
+                memo_data['investment_thesis'] = llm.generate(thesis_prompt)
+            except Exception as e:
+                st.warning(f"Could not generate thesis: {e}")
+        
+        st.info("📝 Generating comprehensive investment memo...")
+        memo_content = generate_investment_memo(memo_data)
+        
+        st.session_state.memo_complete = True
+        st.session_state.memo_content = memo_content
+        st.session_state.memo_data = memo_data
+        
+        st.success("✅ Investment Memo Generated!")
+        st.rerun()
+
+# Display Results
+if st.session_state.memo_complete:
+    
+    st.divider()
+    st.subheader("📥 Download Investment Memo")
+    
+    col_dl1, col_dl2 = st.columns(2)
     
     with col_dl1:
-        try:
-            # Step 2: Convert markdown to DOCX (returns Document object)
-            docx_doc = template_gen.markdown_to_docx(st.session_state.pitch_deck_content)
-            
-            # Verify we got a Document object with .save() method
-            if not hasattr(docx_doc, 'save'):
-                raise TypeError(f"markdown_to_docx() must return Document object with .save() method, got {type(docx_doc)}")
-            
-            # Step 3: Save to BytesIO buffer
-            docx_buffer = BytesIO()
-            docx_doc.save(docx_buffer)
-            docx_bytes = docx_buffer.getvalue()
-            
-            # Step 4: Create download button
-            st.download_button(
-                label="📄 Download Pitch Deck (DOCX)",
-                data=docx_bytes,
-                file_name=f"{st.session_state.memo_data.get('company_name', 'Company')}_Pitch_Deck_{datetime.now().strftime('%Y%m%d')}.docx",
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                use_container_width=True
-            )
-            st.success("✅ DOCX Download Ready")
-            
-        except TypeError as te:
-            st.error(f"❌ Type Error: {str(te)}")
-            st.error("**Issue:** markdown_to_docx() not returning Document object")
-        except Exception as e:
-            st.error(f"❌ Download Error: {str(e)}")
-            import traceback
-            st.error(traceback.format_exc())
+        st.download_button(
+            label="⬇️ Download Markdown (.md)",
+            data=st.session_state.memo_content,
+            file_name=f"{st.session_state.memo_data['company_name'].replace(' ', '_')}_Investment_Memo_{datetime.now().strftime('%Y%m%d')}.md",
+            mime="text/markdown"
+        )
     
     with col_dl2:
-        st.info("✅ Ready")
+        try:
+            docx_doc = template_gen.markdown_to_docx(st.session_state.memo_content)
+            docx_buffer = BytesIO()
+            docx_doc.save(docx_buffer)
+            docx_buffer.seek(0)
+            
+            st.download_button(
+                label="⬇️ Download DOCX (.docx)",
+                data=docx_buffer.getvalue(),
+                file_name=f"{st.session_state.memo_data['company_name'].replace(' ', '_')}_Investment_Memo_{datetime.now().strftime('%Y%m%d')}.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            )
+        except Exception as e:
+            st.error(f"Error generating DOCX: {e}")
     
-    with col_dl3:
-        if st.button("📋 Copy", key="copy_btn"):
-            st.success("Ready to share")
+    st.divider()
     
-    st.markdown("</div>", unsafe_allow_html=True)
-    
-    st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
-    
-    # ===== FULL PITCH DECK PREVIEW =====
-    st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">🎯 Pitch Deck Preview</div>', unsafe_allow_html=True)
-    
-    # Display in expandable sections for better readability
-    with st.expander("📖 View Full Pitch Deck", expanded=True):
-        st.markdown(st.session_state.pitch_deck_content)
-    
-    st.markdown("</div>", unsafe_allow_html=True)
+    with st.expander("📄 Preview Investment Memo", expanded=True):
+        st.markdown(st.session_state.memo_content)
 
-st.markdown("<div style='height:20px;'></div>", unsafe_allow_html=True)
 
-# ===== FOOTER =====
-st.markdown(f"""
-<div style="
-    background-color:#1B2B4D;
-    color:#E2E8F0;
-    padding:28px 40px;
-    margin:40px -3rem -2rem -3rem;
-    font-size:0.92rem;
-    width: calc(100% + 6rem);">
-  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; max-width:1400px; margin:auto;">
-    <div style="flex:2;">
-      <ul style="list-style:none; display:flex; gap:30px; flex-wrap:wrap; padding:0; margin:0;">
-        <li><a href="#" style="text-decoration:none; color:#E2E8F0; font-weight:500;">About</a></li>
-        <li><a href="#" style="text-decoration:none; color:#E2E8F0; font-weight:500;">Contact</a></li>
-      </ul>
-    </div>
-    <div style="flex:1; text-align:right; display:flex; align-items:center; justify-content:flex-end; gap:12px;">
-      <p style="margin:0; color:#A0AEC0; font-size:0.88rem; font-weight:600;">Powered by Regulus AI</p>
-      {'<img src="'+regulus_logo+'" style="max-height:45px; opacity:0.92;">' if regulus_logo else ''}
-    </div>
-  </div>
-</div>
-""", unsafe_allow_html=True)
+def generate_investment_memo(data):
+    """Generate comprehensive investment memo"""
+    
+    memo = f"""# INVESTMENT MEMORANDUM
+## {data['company_name']}
+
+**{data['stage']} Stage Investment Opportunity**
+
+---
+
+**Prepared by:** {data['analyst_name']}  
+**Date:** {data['analysis_date']}  
+**Investment Amount:** {data['investment_size']}  
+**Valuation:** {data['valuation']} (Pre-Money)  
+**Ownership:** {data['ownership']}
+
+---
+
+## EXECUTIVE SUMMARY
+
+### Investment Recommendation: **{data['recommendation']}**
+
+{data['investment_thesis']}
+
+### Key Investment Highlights
+
+{data['key_highlights']}
+
+---
+
+## 1. COMPANY OVERVIEW
+
+### Background
+
+- **Founded:** {data['founded']}
+- **Location:** {data['location']}
+- **Industry:** {data['industry']}
+- **Stage:** {data['stage']}
+
+### Products & Services
+
+{data['products_services']}
+
+### Business Model
+
+{data['business_model']}
+
+---
+
+## 2. MARKET OPPORTUNITY
+
+### Market Size
+
+- **Total Addressable Market (TAM):** {data['tam']}
+- **Serviceable Addressable Market (SAM):** {data['sam']}
+- **Serviceable Obtainable Market (SOM):** {data['som']}
+
+### Market Trends & Drivers
+
+{data['market_trends']}
+
+### Competitive Landscape
+
+{data['competitive_landscape']}
+
+---
+
+## 3. FINANCIAL PERFORMANCE
+
+### Current Metrics
+
+- **Current Revenue (ARR):** {data['current_revenue']}
+- **Revenue Growth:** {data['revenue_growth']}
+- **Gross Margin:** {data['gross_margin']}
+- **Monthly Burn Rate:** {data['burn_rate']}
+- **Runway:** {data['runway']}
+- **Unit Economics (LTV/CAC):** {data['unit_economics']}
+
+---
+
+## 4. MANAGEMENT TEAM
+
+{data['team_info']}
+
+---
+
+## 5. INVESTMENT TERMS
+
+### Proposed Structure
+
+- **Investment Amount:** {data['investment_size']}
+- **Pre-Money Valuation:** {data['valuation']}
+- **Ownership:** {data['ownership']}
+
+---
+
+## 6. RISK ANALYSIS
+
+### Key Risks
+
+{data['business_risks']}
+
+### Risk Mitigation Strategies
+
+{data['risk_mitigation']}
+
+---
+"""
+
+    if data.get('scoring'):
+        scores = data['scoring']
+        memo += f"""
+## 7. STRATEGIC ASSESSMENT FRAMEWORK
+
+### Gulf Resonance Scoring
+
+| Dimension | Score | Description |
+|-----------|-------|-------------|
+| **Strategic Clarity** | {scores['strategic_clarity']}/10 | Clear vision, mission, and strategic roadmap |
+| **Symbolic Fluency** | {scores['symbolic_fluency']}/10 | Brand positioning and market narrative |
+| **Execution Discipline** | {scores['execution_discipline']}/10 | Track record of delivering on commitments |
+| **Archetypal Fit** | {scores['archetypal_fit']}/10 | Alignment with portfolio strategy |
+| **Gulf Resonance** | {scores['gulf_resonance']}/10 | Regional market fit and cultural alignment |
+
+**Composite Score: {scores['composite_score']:.1f}/10**
+
+---
+"""
+
+    memo += f"""
+## 8. RECOMMENDATION & NEXT STEPS
+
+### Investment Recommendation: **{data['recommendation']}**
+
+Based on comprehensive analysis, we recommend **{data['recommendation']}** for this investment opportunity.
+
+---
+
+**CONFIDENTIAL - For Internal Use Only**
+
+**Prepared by:** {data['analyst_name']}  
+**Date:** {data['analysis_date']}
+"""
+    
+    return memo
+
+
+# Sidebar
+with st.sidebar:
+    st.markdown("### 💡 Investment Memo Features")
+    st.markdown("""
+✓ **Comprehensive Analysis**
+✓ **Professional Format**
+✓ **Scoring Framework**
+✓ **AI-Enhanced Content**
+✓ **Market Assessment**
+✓ **Financial Metrics**
+✓ **Risk Analysis**
+✓ **Download MD & DOCX**
+""")
+    
+    if st.session_state.memo_complete:
+        st.divider()
+        st.markdown("### 📋 Memo Summary")
+        data = st.session_state.memo_data
+        st.caption(f"**Company:** {data.get('company_name', 'N/A')}")
+        st.caption(f"**Stage:** {data.get('stage', 'N/A')}")
+        st.caption(f"**Investment:** {data.get('investment_size', 'N/A')}")
+        st.caption(f"**Recommendation:** {data.get('recommendation', 'N/A')}")
+        
+        if data.get('scoring'):
+            st.caption(f"**Composite Score:** {data['scoring']['composite_score']:.1f}/10")
