@@ -253,7 +253,7 @@ with btn_col:
                 st.success("DD Report Generated!")
                 st.rerun()
 
-# ==== RESULTS DISPLAY (DARK BLUE HEADERS) ====
+# ==== RESULTS DISPLAY ====
 if st.session_state.dd_report:
     st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
     
@@ -289,28 +289,28 @@ if st.session_state.dd_report:
     
     st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
     
-    # Detailed sections
+    # Detailed sections - FIXED with st.markdown instead of st.subheading
     col_d1, col_d2 = st.columns(2)
     with col_d1:
-        st.subheading("Financial Health")
+        st.markdown("**Financial Health**")
         st.write(f"**Profitability:** {data['profitability']}\n**Cash:** {data['cash_position']}\n**Burn:** {data['burn_rate']}")
-        st.subheading("Team & Leadership")
+        st.markdown("**Team & Leadership**")
         st.write(f"**CEO/Founder:** {data['ceo_experience']}")
         st.write(f"**Board:** {data['board_quality']}")
     with col_d2:
-        st.subheading("Risk Assessment")
+        st.markdown("**Risk Assessment**")
         st.write(f"**Operational Risks:** {data['operational_risks']}")
-        st.subheading("Competitive Position")
+        st.markdown("**Competitive Position**")
         st.write(f"{data['competitive_position']}")
     
     st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
     
     col_d3, col_d4 = st.columns(2)
     with col_d3:
-        st.subheading("Legal & IP")
+        st.markdown("**Legal & IP**")
         st.write(f"**Status:** {data['legal_status']}\n**IP:** {data['ip_assets']}")
     with col_d4:
-        st.subheading("Customer & Revenue")
+        st.markdown("**Customer & Revenue**")
         st.write(f"**Customers:** {data['top_customers']}\n**Quality:** {data['revenue_quality']}")
     
     # EXPORT SECTION
