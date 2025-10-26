@@ -1,6 +1,6 @@
 """
-Investment Memo Generation | Regulus AI × QDB
-Final workflow step with comprehensive investment recommendation.
+Investment Memo + Pitch Deck Generation | Regulus AI × QDB
+Final workflow with DOCX memo and PPTX pitch deck
 """
 import streamlit as st
 from datetime import datetime
@@ -19,25 +19,14 @@ st.markdown("""
 <style>
 button {
  background:linear-gradient(135deg,#16A085 0%,#138074 50%,#0E5F55 100%)!important;
- color:white!important;
- border:none!important;
- border-radius:40px!important;
- padding:12px 36px!important;
- font-weight:700!important;
- font-size:0.95rem!important;
- box-shadow:0 4px 16px rgba(19,128,116,0.25)!important;
- transition:all 0.25s ease!important;
- cursor:pointer!important;
-}
+ color:white!important;border:none!important;border-radius:40px!important;
+ padding:12px 36px!important;font-weight:700!important;font-size:0.95rem!important;
+ box-shadow:0 4px 16px rgba(19,128,116,0.25)!important;transition:all 0.25s ease!important;
+ cursor:pointer!important;}
 button:hover{
  background:linear-gradient(135deg,#0E5F55 0%,#138074 50%,#16A085 100%)!important;
- transform:translateY(-2px)!important;
- box-shadow:0 6px 22px rgba(19,128,116,0.35)!important;
-}
-button:active{
- transform:translateY(0)!important;
- box-shadow:0 3px 10px rgba(19,128,116,0.2)!important;
-}
+ transform:translateY(-2px)!important;box-shadow:0 6px 22px rgba(19,128,116,0.35)!important;}
+button:active{transform:translateY(0)!important;box-shadow:0 3px 10px rgba(19,128,116,0.2)!important;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -164,10 +153,10 @@ st.markdown(f"""
 <div style="position:absolute;left:50px;top:35px;">
 {'<img src="'+qdb_logo+'" style="max-height:70px;">' if qdb_logo else '<b>QDB</b>'}
 </div>
-<h1 style="font-size:2.5rem;font-weight:800;margin:0 0 10px 0;">Investment Memorandum</h1>
-<p style="font-size:1.2rem;color:#E2E8F0;margin:0 0 8px 0;font-weight:500;">Comprehensive Investment Recommendation</p>
+<h1 style="font-size:2.5rem;font-weight:800;margin:0 0 10px 0;">Investment Memorandum & Pitch Deck</h1>
+<p style="font-size:1.2rem;color:#E2E8F0;margin:0 0 8px 0;font-weight:500;">Comprehensive Investment Recommendation & Analyst Review</p>
 <p style="color:#CBD5E0;font-size:0.95rem;max-width:700px;margin:0 auto;">
-Generate professional investment memos with strategic scoring and actionable recommendations for Qatar Development Bank.
+Generate professional investment memos (DOCX) and pitch decks (PPTX) for analyst review and executive presentation.
 </p>
 </div>
 """, unsafe_allow_html=True)
@@ -271,7 +260,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-include_scoring = st.checkbox("Include Scoring Framework in Memo", key="memo_include_score")
+include_scoring = st.checkbox("Include Scoring Framework", key="memo_include_score")
 
 strategic_clarity = 7
 symbolic_fluency = 6
@@ -297,13 +286,13 @@ if include_scoring:
 st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
 
 # ==== GENERATE BUTTON ====
-btn_col = st.columns([1, 1, 1])[1]
-with btn_col:
-    if st.button("Generate Investment Memo", use_container_width=True, key="gen_memo"):
+col_btn1, col_btn2, col_btn3 = st.columns([1, 1, 1])
+with col_btn2:
+    if st.button("Generate Memo & Pitch Deck", use_container_width=True, key="gen_memo"):
         if not company_name or not industry or not deal_size or not valuation:
             st.error("Please fill all required fields (*)")
         else:
-            with st.spinner("Generating investment memo..."):
+            with st.spinner("Generating memo and pitch deck..."):
                 memo_data = {
                     'company_name': company_name,
                     'analysis_date': datetime.now().strftime('%B %d, %Y'),
@@ -339,7 +328,7 @@ with btn_col:
                 st.session_state.memo_complete = True
                 st.session_state.memo_content = memo_content
                 st.session_state.memo_data = memo_data
-                st.success("Investment memo generated!")
+                st.success("Memo and pitch deck ready!")
                 st.rerun()
 
 # ==== RESULTS DISPLAY (BEIGE) ====
@@ -348,30 +337,47 @@ if st.session_state.memo_complete and st.session_state.get('memo_data'):
     
     st.markdown("""
 <div style="background:#F5F2ED;margin:0 -3rem 0 -3rem;padding:28px 3rem;border-top:2px solid #16A085;border-bottom:1px solid #E0E0E0;">
-<h3 style="text-align:left;color:#1B2B4D;font-weight:700;margin:0;font-size:1.1rem;">Investment Memo Generated</h3>
+<h3 style="text-align:left;color:#1B2B4D;font-weight:700;margin:0;font-size:1.1rem;">Generated Documents</h3>
 </div>
 """, unsafe_allow_html=True)
     
-    # Download DOCX Only
-    try:
-        doc = template_gen.markdown_to_docx(st.session_state.memo_content)
-        bio = BytesIO()
-        doc.save(bio)
-        col_center = st.columns([1, 1, 1])[1]
-        with col_center:
+    col_dl1, col_dl2 = st.columns(2)
+    
+    # Download DOCX
+    with col_dl1:
+        try:
+            doc = template_gen.markdown_to_docx(st.session_state.memo_content)
+            bio = BytesIO()
+            doc.save(bio)
             st.download_button(
-                "Download DOCX",
+                "📄 Download Memo (DOCX)",
                 bio.getvalue(),
                 f"Investment_Memo_{st.session_state.memo_data['company_name'].replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.docx",
                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
-    except Exception as e:
-        st.error(f"DOCX error: {str(e)}")
+        except Exception as e:
+            st.error(f"Memo error: {str(e)}")
+    
+    # Download PPTX
+    with col_dl2:
+        try:
+            prs = template_gen.generate_pitch_deck(st.session_state.memo_data)
+            bio = BytesIO()
+            prs.save(bio)
+            st.download_button(
+                "🎯 Download Pitch Deck (PPTX)",
+                bio.getvalue(),
+                f"Pitch_Deck_{st.session_state.memo_data['company_name'].replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.pptx",
+                "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                use_container_width=True
+            )
+        except Exception as e:
+            st.error(f"Pitch deck error: {str(e)}")
     
     # Preview
     with st.expander("View Memo", expanded=False):
-        st.markdown(st.session_state.memo_content)
+        st.markdown(st.session_state.memo_content[:2000] + "...")
     
     # Navigation
     st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
