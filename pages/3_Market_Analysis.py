@@ -1,6 +1,6 @@
 """
 Market & Competitive Analysis - COMPLETE WITH WEB SCRAPING
-Full web integration + professional template generation
+Full web integration + professional template generation - DOCX ONLY
 """
 import streamlit as st
 import base64
@@ -267,43 +267,28 @@ if st.button("Generate Market Analysis with Web Intelligence", use_container_wid
 
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
-# ===== DOWNLOAD SECTION =====
+# ===== DOWNLOAD SECTION (DOCX ONLY) =====
 if st.session_state.market_complete:
     st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">Download Professional Report</div>', unsafe_allow_html=True)
     
     data = st.session_state.market_data
 
-    col_dl1, col_dl2 = st.columns(2)
-    
-    with col_dl1:
-        try:
-            docx_doc = template_gen.markdown_to_docx(st.session_state.market_report)
-            docx_buffer = BytesIO()
-            docx_doc.save(docx_buffer)
-            docx_bytes = docx_buffer.getvalue()
-            
-            st.download_button(
-                label="Download DOCX Report",
-                data=docx_bytes,
-                file_name=f"{data['company_name']}_Market_Analysis_{datetime.now().strftime('%Y%m%d')}.docx",
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                use_container_width=True
-            )
-        except Exception as e:
-            st.error(f"Error generating DOCX: {str(e)}")
-
-    with col_dl2:
-        try:
-            markdown_bytes = st.session_state.market_report.encode('utf-8')
-            st.download_button(
-                label="Download Markdown",
-                data=markdown_bytes,
-                file_name=f"{data['company_name']}_Market_Analysis_{datetime.now().strftime('%Y%m%d')}.md",
-                mime="text/markdown",
-                use_container_width=True
-            )
-        except Exception as e:
-            st.error(f"Error preparing markdown: {str(e)}")
+    # SINGLE BUTTON - DOCX ONLY
+    try:
+        docx_doc = template_gen.markdown_to_docx(st.session_state.market_report)
+        docx_buffer = BytesIO()
+        docx_doc.save(docx_buffer)
+        docx_bytes = docx_buffer.getvalue()
+        
+        st.download_button(
+            label="Download Professional Report (DOCX)",
+            data=docx_bytes,
+            file_name=f"{data['company_name']}_Market_Analysis_{datetime.now().strftime('%Y%m%d')}.docx",
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            use_container_width=True
+        )
+    except Exception as e:
+        st.error(f"Error generating report: {str(e)}")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
