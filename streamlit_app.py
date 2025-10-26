@@ -230,26 +230,19 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
-# ===== DASHBOARD HEADER WITH TOGGLE BUTTON =====
-header_cols = st.columns([1, 0.15])
+# ===== DASHBOARD TOGGLE BUTTON (CENTERED) =====
+st.markdown("<div style='text-align:center; padding:12px 0;'>", unsafe_allow_html=True)
+if st.button(
+    f"{'▼ Hide' if st.session_state.dashboard_expanded else '▶ View'} Dashboard",
+    key="toggle_dashboard",
+    use_container_width=False
+):
+    st.session_state.dashboard_expanded = not st.session_state.dashboard_expanded
+    st.rerun()
+st.markdown("</div>", unsafe_allow_html=True)
 
-with header_cols[0]:
-    st.markdown(f"""
-    <div style="display:flex; align-items:center; gap:12px; padding:16px 0;">
-        <h2 style="color:#1B2B4D; font-size:1.6rem; font-weight:800; margin:0;">
-            📊 Your Analysis Dashboard
-        </h2>
-    </div>
-    """, unsafe_allow_html=True)
+st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
 
-with header_cols[1]:
-    if st.button(
-        f"{'▼ Hide' if st.session_state.dashboard_expanded else '▶ View'} Dashboard",
-        key="toggle_dashboard",
-        use_container_width=True
-    ):
-        st.session_state.dashboard_expanded = not st.session_state.dashboard_expanded
-        st.rerun()
 
 # ===== DASHBOARD CONTENT (CONDITIONAL) =====
 if st.session_state.dashboard_expanded:
