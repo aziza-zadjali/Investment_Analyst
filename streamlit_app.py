@@ -36,7 +36,7 @@ regulus_logo = encode_image("regulus_logo.png")
 if 'dashboard_expanded' not in st.session_state:
     st.session_state.dashboard_expanded = True
 
-# ===== HERO SECTION (COMPACT WITH FULL-WIDTH CURVE) =====
+# ===== HERO SECTION (FULL-WIDTH) =====
 st.markdown(f"""
 <div style="
     background: linear-gradient(135deg,#1B2B4D 0%,#2C3E5E 100%);
@@ -45,7 +45,8 @@ st.markdown(f"""
     margin: 0 -3rem;
     padding: 60px 20px 80px 20px;
     position: relative;
-    overflow:visible;">
+    overflow:visible;
+    width: calc(100% + 6rem);">
 
   <!-- Left: QDB -->
   <div style="position:absolute; top:18px; left:35px;">
@@ -66,11 +67,12 @@ st.markdown(f"""
   </div>
 
   <!-- FULL-WIDTH Decorative Divider -->
-  <svg viewBox="0 0 1920 140" xmlns="http://www.w3.org/2000/svg" style="position:absolute; bottom:-1px; left:0; width:calc(100% + 6rem); margin-left:-3rem; height:100px; overflow:visible;">
+  <svg viewBox="0 0 1920 140" xmlns="http://www.w3.org/2000/svg" style="position:absolute; bottom:-1px; left:0; width:calc(100% + 6rem); margin-left:0; height:100px; overflow:visible;">
     <path fill="#F6F5F2" d="M0,40 Q480,20 960,40 T1920,40 L1920,140 L0,140 Z"></path>
   </svg>
 </div>
 """, unsafe_allow_html=True)
+
 
 # ===== STYLE: Consistent Navigation & Smart Dashboard =====
 st.markdown("""
@@ -489,14 +491,15 @@ qdb_section_end()
 
 st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
 
-# ===== FOOTER =====
+# ===== FOOTER (FULL-WIDTH) =====
 st.markdown(f"""
 <div style="
     background-color:#1B2B4D;
     color:#E2E8F0;
     padding:28px 40px;
-    margin:40px -3rem -2rem -3rem;
-    font-size:0.92rem;">
+    margin:40px -3rem 0 -3rem;
+    font-size:0.92rem;
+    width: calc(100% + 6rem);">
   <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; max-width:1400px; margin:auto;">
     <div style="flex:2;">
       <ul style="list-style:none; display:flex; gap:30px; flex-wrap:wrap; padding:0; margin:0;">
