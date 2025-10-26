@@ -1,6 +1,6 @@
 """
 Due Diligence Analysis | Regulus AI × QDB
-Clean, consistent styling: Blue → White → Blue
+Clean, compact styling with grey section headers
 """
 import streamlit as st
 from datetime import datetime
@@ -59,53 +59,52 @@ if 'dd_data' not in st.session_state:
 # === RETURN HOME ===
 if st.button("← Return Home", use_container_width=False):
     st.switch_page("streamlit_app.py")
-st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='height:2px;'></div>", unsafe_allow_html=True)
 
-# === HERO SECTION (BLUE) ===
+# === HERO SECTION (SMALLER) ===
 st.markdown(f"""
 <div style="background:linear-gradient(135deg,#1B2B4D 0%,#0E2E4D 100%);color:white;
-margin:0 -3rem;padding:70px 0 50px;text-align:center;position:relative;">
-<div style="position:absolute;left:50px;top:35px;">
-{'<img src="'+qdb_logo+'" style="max-height:70px;">' if qdb_logo else '<b>QDB</b>'}
+margin:0 -3rem;padding:50px 0 35px;text-align:center;position:relative;">
+<div style="position:absolute;left:50px;top:20px;">
+{'<img src="'+qdb_logo+'" style="max-height:60px;">' if qdb_logo else '<b>QDB</b>'}
 </div>
-<div style="position:absolute;right:50px;top:35px;">
-{'<img src="'+regulus_logo+'" style="max-height:70px;">' if regulus_logo else '<b>REGULUS</b>'}
+<div style="position:absolute;right:50px;top:20px;">
+{'<img src="'+regulus_logo+'" style="max-height:60px;">' if regulus_logo else '<b>REGULUS</b>'}
 </div>
-<h1 style="font-size:2.5rem;font-weight:800;margin:0 0 10px 0;">Enhanced Due Diligence Analysis</h1>
-<p style="font-size:1.1rem;color:#E2E8F0;margin:0;font-weight:500;">
+<h1 style="font-size:2.1rem;font-weight:800;margin:0 0 6px 0;">Enhanced Due Diligence Analysis</h1>
+<p style="font-size:1rem;color:#E2E8F0;margin:0;font-weight:500;">
 Financial + Legal + Operational + AML/Compliance Screening
 </p>
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
 
-# === SECTION 1: COMPANY INFO (WHITE) ===
+# === SECTION 1: COMPANY INFO (GREY HEADER, COMPACT) ===
 st.markdown("""
-<div style="background:#FFFFFF;margin:0 -3rem;padding:24px 3rem;
+<div style="background:#E8E8E8;margin:0 -3rem;padding:14px 3rem;
 border-top:2px solid #16A085;">
-<h3 style="color:#1B2B4D;font-weight:700;margin:0;">Company Information</h3>
+<h3 style="color:#333333;font-weight:700;margin:0;font-size:1rem;">Company Information</h3>
 </div>
 """, unsafe_allow_html=True)
 
 col1, col2 = st.columns(2)
 with col1:
-    company_name = st.text_input("Company Name *", placeholder="e.g., Baladna Q.P.S.C.", key="comp_name")
+    company_name = st.text_input("Company Name *", placeholder="e.g., Baladna Q.P.S.C.", key="comp_name", label_visibility="collapsed")
 with col2:
-    company_website = st.text_input("Company Website (Optional)", placeholder="e.g., baladna.com", key="comp_web")
+    company_website = st.text_input("Company Website (Optional)", placeholder="e.g., baladna.com", key="comp_web", label_visibility="collapsed")
 
-st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
 
-# === SECTION 2: DOCUMENT UPLOAD (WHITE) ===
+# === SECTION 2: DOCUMENT UPLOAD (WHITE, COMPACT) ===
 st.markdown("""
-<div style="background:#FFFFFF;margin:0 -3rem;padding:24px 3rem;
+<div style="background:#FFFFFF;margin:0 -3rem;padding:14px 3rem;
 border-top:2px solid #16A085;">
-<h3 style="color:#1B2B4D;font-weight:700;margin:0;">Upload Supporting Documents</h3>
-<p style="color:#666;margin:4px 0 0 0;font-size:0.9rem;">
-Legal, financial, and operational files (PDF, DOCX, XLSX)
-</p>
+<h3 style="color:#1B2B4D;font-weight:700;margin:0;font-size:1rem;">Upload Supporting Documents</h3>
 </div>
 """, unsafe_allow_html=True)
+
+st.markdown("<div style='height:2px;'></div>", unsafe_allow_html=True)
 
 uploaded_files = st.file_uploader(
     "Select documents",
@@ -116,23 +115,22 @@ uploaded_files = st.file_uploader(
 )
 
 if uploaded_files:
-    st.success(f"✅ {len(uploaded_files)} file(s) uploaded successfully")
+    st.success(f"✅ {len(uploaded_files)} file(s) uploaded successfully", icon="✅")
 
-st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
 
-# === SECTION 3: WEB EXTRACTION (WHITE) ===
+# === SECTION 3: WEB EXTRACTION (GREY HEADER, COMPACT) ===
 st.markdown("""
-<div style="background:#FFFFFF;margin:0 -3rem;padding:24px 3rem;
+<div style="background:#E8E8E8;margin:0 -3rem;padding:14px 3rem;
 border-top:2px solid #16A085;">
-<h3 style="color:#1B2B4D;font-weight:700;margin:0;">Optional: Web Data Extraction</h3>
-<p style="color:#666;margin:4px 0 0 0;font-size:0.9rem;">
-Automatically fetch public investor relations data
-</p>
+<h3 style="color:#333333;font-weight:700;margin:0;font-size:1rem;">Optional: Web Data Extraction</h3>
 </div>
 """, unsafe_allow_html=True)
 
+st.markdown("<div style='height:2px;'></div>", unsafe_allow_html=True)
+
 enable_web_extraction = st.checkbox(
-    "Enable automatic web data extraction from investor relations",
+    "Automatically fetch public investor relations data",
     value=False,
     key="web_extract"
 )
@@ -140,7 +138,7 @@ enable_web_extraction = st.checkbox(
 if enable_web_extraction and not company_website:
     st.warning("⚠️ Please provide company website above to use this feature")
 
-st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
 
 # === ANALYSIS BUTTON ===
 col_btn_l, col_btn_c, col_btn_r = st.columns([1, 1.2, 1])
@@ -311,14 +309,16 @@ Provide: Recommendation, strengths, concerns, required actions."""
 
 # === RESULTS DISPLAY ===
 if st.session_state.dd_complete:
-    st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
     
     st.markdown("""
-    <div style="background:#FFFFFF;margin:0 -3rem;padding:24px 3rem;
+    <div style="background:#FFFFFF;margin:0 -3rem;padding:14px 3rem;
     border-top:2px solid #16A085;">
-    <h3 style="color:#1B2B4D;font-weight:700;margin:0;">Download Reports</h3>
+    <h3 style="color:#1B2B4D;font-weight:700;margin:0;font-size:1rem;">Download Reports</h3>
     </div>
     """, unsafe_allow_html=True)
+    
+    st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
     
     data = st.session_state.dd_data
     col_dl1, col_dl2 = st.columns(2)
@@ -352,13 +352,13 @@ if st.session_state.dd_complete:
         except Exception as e:
             st.error(f"DOCX export error: {str(e)}")
     
-    st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
     
     # Preview
     with st.expander("📄 Preview Full Report"):
         st.markdown(st.session_state.dd_report)
     
-    st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
     
     # Navigation
     col_nav1, col_nav2, col_nav3 = st.columns(3)
