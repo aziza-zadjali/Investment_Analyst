@@ -1,6 +1,6 @@
 """
 Deal Discovery & Sourcing | Regulus AI × QDB
-Hero styled identical to main page, working home navigation, no icons.
+Hero styled identical to main page, with ticket size investment filter.
 """
 import streamlit as st
 import os, base64, pandas as pd
@@ -48,7 +48,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ==== RETURN HOME BUTTON (PROPER STREAMLIT NAVIGATION) ====
+# ==== RETURN HOME BUTTON ====
 col1, col2, col3 = st.columns([1, 0.6, 1])
 with col2:
     if st.button("Return Home", use_container_width=True, key="home_btn"):
@@ -128,9 +128,18 @@ with st.expander("Define Investment Criteria", expanded=True):
         "Regions",["MENA","Europe","North America","Asia Pacific"],["MENA"]
     )
     stage = c3.selectbox("Funding Stage",["Pre-Seed","Seed","Series A","Series B","Growth"],index=1)
+    
     c4, c5 = st.columns([2,1])
     sectors = c4.multiselect("Sectors",["Fintech","AI/ML","ClimateTech","HealthTech","SaaS"],["Fintech"])
     deal_count = c5.slider("Deals per run",5,50,15,5)
+
+    # ==== TICKET SIZE FILTER ====
+    st.markdown("---")
+    t1, t2 = st.columns(2)
+    with t1:
+        min_investment = st.slider("Minimum Ticket Size (USD Millions)", 0, 50, 1, 1, key="min_ticket")
+    with t2:
+        max_investment = st.slider("Maximum Ticket Size (USD Millions)", 1, 100, 20, 1, key="max_ticket")
 
 sources = st.multiselect(
     "Active Sources",
@@ -168,15 +177,21 @@ if discover:
     data=[]
     for s in sources:
         st.write(f"Scraping {s}...")
-        data+=scraper.search_startups(s,industries,sectors,[stage],regions,limit=int(deal_count/len(sources)))
+        data+=scraper.search_startups(
+            s, industries, sectors, [stage], regions, 
+            min_ticket=min_investment, 
+            max_ticket=max_investment,
+            limit=int(deal_count/len(sources))
+        )
     if not data:
-        st.warning("No results found.")
+        st.warning("No results found matching your criteria.")
     else:
         df=pd.DataFrame(data)
-        st.success(f"{len(df)} deals found.")
+        st.success(f"{len(df)} deals found in your ticket size range.")
         st.dataframe(df,use_container_width=True)
         st.markdown("#### AI Summary")
-        st.info(llm.generate_text(f"Summarize {len(df)} deals for {', '.join(industries)} in {', '.join(regions)}."))
+        filter_summary = f"{len(df)} deals for {', '.join(industries)} in {', '.join(regions)}, ticket size: ${min_investment}M-${max_investment}M"
+        st.info(llm.generate_text(f"Summarize: {filter_summary}"))
 
 # ==== FOOTER ====
 st.markdown(
@@ -187,5 +202,5 @@ display:flex;justify-content:space-between;align-items:center;">
   <p style="margin:0;color:#A0AEC0;font-size:0.9rem;">Powered by Regulus AI</p>
 </div>
 """,
-    unsafe_allow_html=True,
+    unsafe_home_html=True,
 )
