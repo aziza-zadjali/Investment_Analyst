@@ -132,12 +132,12 @@ if st.button("← Return Home", key="home_btn"):
 
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
-# ===== COMPANY INFORMATION SECTION (BLUE) =====
-st.markdown('<div class="section-blue"><div class="section-title">🏢 Company & Market Information</div>', unsafe_allow_html=True)
+# ===== COMPANY INFORMATION SECTION (BEIGE - NO BLUE BACKGROUND) =====
+st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">Company & Market Information</div>', unsafe_allow_html=True)
 
 col1, col2 = st.columns(2)
 with col1:
-    st.markdown("<div style='color:#E2E8F0; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Company Name <span class='required-asterisk'>*</span></div>", unsafe_allow_html=True)
+    st.markdown("<div style='color:#1B2B4D; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Company Name <span class='required-asterisk'>*</span></div>", unsafe_allow_html=True)
     company_name = st.text_input(
         "Company Name",
         placeholder="e.g., Tesla",
@@ -146,7 +146,7 @@ with col1:
     )
 
 with col2:
-    st.markdown("<div style='color:#E2E8F0; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Industry/Sector <span class='required-asterisk'>*</span></div>", unsafe_allow_html=True)
+    st.markdown("<div style='color:#1B2B4D; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Industry/Sector <span class='required-asterisk'>*</span></div>", unsafe_allow_html=True)
     industry = st.text_input(
         "Industry/Sector",
         placeholder="e.g., Electric Vehicles",
@@ -156,7 +156,7 @@ with col2:
 
 col3, col4 = st.columns(2)
 with col3:
-    st.markdown("<div style='color:#E2E8F0; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Geographic Markets</div>", unsafe_allow_html=True)
+    st.markdown("<div style='color:#1B2B4D; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Geographic Markets</div>", unsafe_allow_html=True)
     geographic_focus = st.multiselect(
         "Geographic Markets",
         ["North America", "Europe", "Asia Pacific", "Latin America", "Middle East & Africa", "Global"],
@@ -165,7 +165,7 @@ with col3:
     )
 
 with col4:
-    st.markdown("<div style='color:#E2E8F0; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Company Website (Optional)</div>", unsafe_allow_html=True)
+    st.markdown("<div style='color:#1B2B4D; font-size:0.85rem; margin-bottom:4px; font-weight:600;'>Company Website (Optional)</div>", unsafe_allow_html=True)
     company_website = st.text_input(
         "Company Website",
         placeholder="e.g., tesla.com",
@@ -178,7 +178,7 @@ st.markdown("</div>", unsafe_allow_html=True)
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
 # ===== ANALYSIS SCOPE SECTION (BEIGE) =====
-st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">📊 Analysis Scope</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">Analysis Scope</div>', unsafe_allow_html=True)
 
 analysis_options = st.multiselect(
     "Select Analysis Areas",
@@ -200,7 +200,7 @@ st.markdown("</div>", unsafe_allow_html=True)
 st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
 # ===== WEB RESEARCH SECTION (BEIGE) =====
-st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">🌐 Optional: Web Research</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">Optional: Web Research</div>', unsafe_allow_html=True)
 
 enable_web_research = st.checkbox(
     "Enable automatic web research",
@@ -231,9 +231,9 @@ if st.button("Generate Market Analysis", use_container_width=True):
         st.error("⚠️ Please select at least one analysis area")
         st.stop()
 
-    with st.spinner("🔍 Conducting comprehensive market analysis..."):
+    with st.spinner("Conducting comprehensive market analysis..."):
         if enable_web_research:
-            st.info("📡 Gathering market data from web sources...")
+            st.info("Gathering market data from web sources...")
             try:
                 search_queries = [
                     f"{industry} market size analysis",
@@ -241,12 +241,12 @@ if st.button("Generate Market Analysis", use_container_width=True):
                     f"{industry} market trends 2025"
                 ]
                 for query in search_queries:
-                    st.caption(f"🔎 Searching: {query}")
-                st.success("✅ Web research completed")
+                    st.caption(f"Searching: {query}")
+                st.success("Web research completed")
             except Exception as e:
-                st.warning(f"⚠️ Web research encountered issues: {e}")
+                st.warning(f"Web research encountered issues: {e}")
 
-        st.info("🤖 Analyzing with AI...")
+        st.info("Analyzing with AI...")
         analysis_results = {
             'company_name': company_name,
             'industry': industry,
@@ -258,7 +258,7 @@ if st.button("Generate Market Analysis", use_container_width=True):
 
         # --- AI ANALYSIS ---
         if "Market Size & Growth" in analysis_options:
-            st.info("📈 Analyzing market size and growth...")
+            st.info("Analyzing market size and growth...")
             market_prompt = f"""
 Analyze the market size and growth for {company_name} in the {industry} industry. Geographic focus: {', '.join(geographic_focus)}.
 
@@ -274,7 +274,7 @@ Provide detailed analysis covering:
                 analysis_results['market_size_growth'] = "Analysis unavailable"
 
         if "Competitive Landscape" in analysis_options:
-            st.info("🏆 Analyzing competitive landscape...")
+            st.info("Analyzing competitive landscape...")
             competitive_prompt = f"""
 Analyze the competitive landscape for {company_name} in the {industry} industry.
 """
@@ -284,7 +284,7 @@ Analyze the competitive landscape for {company_name} in the {industry} industry.
                 analysis_results['competitive_landscape'] = "Analysis unavailable"
 
         if "Market Trends & Drivers" in analysis_options:
-            st.info("📊 Analyzing market trends...")
+            st.info("Analyzing market trends...")
             trends_prompt = f"""
 Analyze current and emerging trends in the {industry} industry affecting {company_name}.
 """
@@ -294,7 +294,7 @@ Analyze current and emerging trends in the {industry} industry affecting {compan
                 analysis_results['market_trends'] = "Analysis unavailable"
 
         if "SWOT Analysis" in analysis_options:
-            st.info("💡 Conducting SWOT analysis...")
+            st.info("Conducting SWOT analysis...")
             swot_prompt = f"""
 Conduct a comprehensive SWOT analysis for {company_name} in the {industry} industry.
 """
@@ -304,7 +304,7 @@ Conduct a comprehensive SWOT analysis for {company_name} in the {industry} indus
                 analysis_results['swot_analysis'] = "Analysis unavailable"
 
         if "Porter's Five Forces" in analysis_options:
-            st.info("🎯 Applying Porter's Five Forces...")
+            st.info("Applying Porter's Five Forces...")
             porter_prompt = f"""
 Apply Porter's Five Forces framework to analyze {company_name}'s competitive position in the {industry} industry.
 """
@@ -314,7 +314,7 @@ Apply Porter's Five Forces framework to analyze {company_name}'s competitive pos
                 analysis_results['porters_five_forces'] = "Analysis unavailable"
 
         if "Customer Segmentation" in analysis_options:
-            st.info("👥 Analyzing customer segments...")
+            st.info("Analyzing customer segments...")
             segment_prompt = f"""
 Analyze customer segmentation for {company_name} in the {industry} industry.
 """
@@ -324,7 +324,7 @@ Analyze customer segmentation for {company_name} in the {industry} industry.
                 analysis_results['customer_segmentation'] = "Analysis unavailable"
 
         if "Regulatory Environment" in analysis_options:
-            st.info("⚖️ Assessing regulatory environment...")
+            st.info("Assessing regulatory environment...")
             regulatory_prompt = f"""
 Analyze the regulatory environment for {company_name} in the {industry} industry.
 """
@@ -333,14 +333,14 @@ Analyze the regulatory environment for {company_name} in the {industry} industry
             except Exception as e:
                 analysis_results['regulatory_environment'] = "Analysis unavailable"
 
-        st.info("📝 Generating comprehensive market report...")
+        st.info("Generating comprehensive market report...")
         markdown_report = template_gen.generate_market_analysis_report(analysis_results)
 
         st.session_state.market_complete = True
         st.session_state.market_report = markdown_report
         st.session_state.market_data = analysis_results
 
-        st.success("✅ Market Analysis Complete!")
+        st.success("Market Analysis Complete!")
 
 st.markdown("</div>", unsafe_allow_html=True)
 
@@ -348,7 +348,7 @@ st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
 # ===== RESULTS SECTION (BLUE) =====
 if st.session_state.market_complete:
-    st.markdown('<div class="section-blue"><div class="section-title">📥 Download Report</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-blue"><div class="section-title">Download Report</div>', unsafe_allow_html=True)
     
     data = st.session_state.market_data
 
@@ -363,35 +363,35 @@ if st.session_state.market_complete:
             docx_bytes = docx_buffer.getvalue()  # ✅ Extract bytes from buffer
             
             st.download_button(
-                label="📄 Download DOCX Report",
+                label="Download DOCX Report",
                 data=docx_bytes,  # ✅ Pass bytes, not BytesIO object
                 file_name=f"{data['company_name']}_Market_Analysis_{datetime.now().strftime('%Y%m%d')}.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True
             )
         except Exception as e:
-            st.error(f"❌ Error generating DOCX: {str(e)}")
+            st.error(f"Error generating DOCX: {str(e)}")
 
     with col_dl2:
         try:
             # ✅ Markdown download with bytes
             markdown_bytes = st.session_state.market_report.encode('utf-8')
             st.download_button(
-                label="📋 Preview Report",
+                label="Preview Report",
                 data=markdown_bytes,  # ✅ Pass bytes
                 file_name=f"{data['company_name']}_Market_Analysis_{datetime.now().strftime('%Y%m%d')}.md",
                 mime="text/markdown",
                 use_container_width=True
             )
         except Exception as e:
-            st.error(f"❌ Error preparing markdown: {str(e)}")
+            st.error(f"Error preparing markdown: {str(e)}")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
     # ===== FULL REPORT SECTION (BEIGE) =====
-    st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">📖 Full Report</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-beige"><div style="font-size:1.2rem; font-weight:700; color:#1B2B4D; margin-bottom:12px;">Full Report</div>', unsafe_allow_html=True)
     st.markdown(st.session_state.market_report)
     st.markdown("</div>", unsafe_allow_html=True)
 
